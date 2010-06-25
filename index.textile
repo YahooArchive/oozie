@@ -13,7 +13,9 @@ h2(#download). Downloads
 
 The source for Oozie can be obtained from "github":http://github.com/yahoo/oozie/tarball/oozie-2.0.0. It can also be accessed via git from the "source repository":http://github.com/yahoo/oozie.
 
-Users may communicate with each other and Yahoo on Oozie user's mailing list oozie-users@yahoogroups.com.
+Users may communicate with each other and Yahoo on Oozie user's mailing list:
+
+"oozie-users@yahoogroups.com":mailto:oozie-users@yahoogroups.com
 
 h2(#notices).  Credits & Notices
 
