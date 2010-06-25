@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-06-25
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Quick_Start"></a>
+<div class="section"><h2> Oozie Quick Start</h2>
+<p><ul><ul><li><a href="#Introduction">Introduction</a>
+</li>
+<li><a href="#System_Requirements">System Requirements</a>
+</li>
+<li><a href="#Get_the_Right_Oozie_Distro">Get the Right Oozie Distro</a>
+</li>
+<li><a href="#Install_and_Start_Oozie_server_and_Oozie_Console">Install and Start Oozie server and Oozie Console</a>
+</li>
+<li><a href="#Checking_Oozie_is_Running_via_Oozie_Console">Checking Oozie is Running via Oozie Console</a>
+</li>
+<li><a href="#Oozie_Documentation">Oozie Documentation</a>
+</li>
+<li><a href="#Running_the_Examples">Running the Examples</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Introduction"></a>
+<div class="section"><h3>Introduction</h3>
+<p>The following instructions setup Oozie using an in-memory SQL DB (HSQLDB). To install Oozie with MySQL refer to
+<a href="./AG_Install.html">Oozie Install</a>
+ documentation.</p>
+<a name="System_Requirements"></a>
+</div>
+<div class="section"><h3>System Requirements</h3>
+<p><ul><li>Unix (tested in Linux and Mac OS X)</li>
+<li>Java 1.6+</li>
+<li><a href="http://hadoop.apache.org" class="externalLink">Hadoop</a>
+ (tested with 0.20.0)</li>
+<li><a href="http://hadoop.apache.org/pig/releases.html" class="externalLink">Pig 0.2.0</a>
+</li>
+<li><a href="http://tomcat.apache.org" class="externalLink">Tomcat 6.x</a>
+ (tested with 6.0.18)</li>
+</ul>
+</p>
+<p>The Java 1.6+ <tt>bin</tt>
+ directory should be in the command path.</p>
+<p>Hadoop should be installed and running. (<a href="./ENG_HadoopQuickInstall.html">Hadoop Quick Install</a>
+).</p>
+<p>Tomcat should be installed and running.</p>
+<a name="Get_the_Right_Oozie_Distro"></a>
+</div>
+<div class="section"><h3>Get the Right Oozie Distro</h3>
+<p>Get the Oozie distro for the corresponding version of Hadoop.</p>
+<p>The <tt>tar.gz</tt>
+ file contains the following components.</p>
+<p><ul><li>Oozie server WAR file (wars/oozie.war)</li>
+<li>Oozie command line tool (bin/oozie)</li>
+<li>Oozie command line tool bundle (oozie-client.tar.gz)</li>
+<li>Oozie documentation WAR file (wars/ooziedocs.war) (for local use expanded within a <tt>docs/</tt>
+ directory)</li>
+<li>Oozie examples (oozie-examples.tar.gz)</li>
+</ul>
+</p>
+<a name="Install_and_Start_Oozie_server_and_Oozie_Console"></a>
+</div>
+<div class="section"><h3>Install and Start Oozie server and Oozie Console</h3>
+<p>Stop Tomcat.</p>
+<p>If present, delete the old <tt>oozie.war</tt>
+ and <tt>ooziedocs.war</tt>
+ files, and <tt>oozie</tt>
+ and <tt>ooziedocs</tt>
+ directories from
+Tomcat's <tt>webapps/</tt>
+ directory.</p>
+<p>Copy the <tt>oozie.war</tt>
+ and <tt>ooziedocs.war</tt>
+ files from the distro in Tomcat's <tt>webapps/</tt>
+ directory.</p>
+<p>Oozie installation assumes that Tomcat is running on localhost on port 8080</p>
+<p>If Tomcat is running in a different port or Hadoop is running in another box, then the <tt>CATALINA_OPTS</tt>
+ environment
+variable of the shell from where tomcat is invoked must be set to:</p>
+<p><pre>
+export CATALINA_OPTS=&quot;-Doozie.base.url=http://&lt;TOMCAT_HOST&gt;:&lt;TOMCAT_PORT&gt;/oozie&quot;
+</pre></p>
+<p>Start Tomcat.</p>
+<p>Check the Oozie log file <tt>${CATALINA_HOME}/logs/oozie.log</tt>
+ to ensure Oozie started properly, there should an
+'Oozie started' log entry.</p>
+<p><b>NOTE:</b>
+ If the <tt>CATALINA_HOME</tt>
+ environment variable has not been set, check under the directory where Tomcat has been
+installed.</p>
+<a name="Checking_Oozie_is_Running_via_Oozie_Console"></a>
+</div>
+<div class="section"><h3>Checking Oozie is Running via Oozie Console</h3>
+<p>From a browser go to <b><a href="http://localhost:8080/oozie" class="externalLink">http://localhost:8080/oozie</a>
+</b>
+, the Oozie console should come up and Oozie should be <b>NORMAL</b>
+.</p>
+<a name="Oozie_Documentation"></a>
+</div>
+<div class="section"><h3>Oozie Documentation</h3>
+<p>From a browser go to <b><a href="http://localhost:8080/ooziedocs" class="externalLink">http://localhost:8080/ooziedocs</a>
+</b>
+, the Oozie Documentation should appear.</p>
+<a name="Running_the_Examples"></a>
+</div>
+<div class="section"><h3>Running the Examples</h3>
+<p>Refer to the <a href="./DG_Examples.html">Running the Examples</a>
+ document for details on running the examples.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

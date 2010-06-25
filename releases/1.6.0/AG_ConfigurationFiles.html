@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-05-21
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Configuration_Files"></a>
+<div class="section"><h2> Oozie Configuration Files</h2>
+<p><ul><ul><li><a href="#Introduction">Introduction</a>
+</li>
+<li><a href="#Oozie_Server_Default_Configuration">Oozie Server, Default Configuration</a>
+</li>
+<li><a href="#Oozie_Server_Site_Configuration">Oozie Server, Site Configuration</a>
+</li>
+<li><a href="#Oozie_Logging_Configuration">Oozie Logging Configuration</a>
+</li>
+<li><a href="#Oozie_Security_Configuration">Oozie Security Configuration</a>
+</li>
+<li><a href="#Loading_Oozie_Configuration_Files_from_a_Directory">Loading Oozie Configuration Files from a Directory</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Introduction"></a>
+<div class="section"><h3>Introduction</h3>
+<p>Oozie configuration is done in 3 different configuration files, one for the configuration of Oozie itself, one for the
+logging configuration and one for security configuration.</p>
+<p>Oozie configuration files are read from the classpath (default) or from a directory specified at start up time.</p>
+<a name="Oozie_Server_Default_Configuration"></a>
+</div>
+<div class="section"><h3>Oozie Server, Default Configuration</h3>
+<p>Similar to Hadoop, Oozie has a <tt>oozie-default.xml</tt>
+ configuration file which defines all possible configuration
+properties as well as their default values.</p>
+<p>The <tt>oozie-default.xml</tt>
+ file is bundled within Oozie JAR file and it should not be modified.</p>
+<p>The <tt>oozie-default.xml</tt>
+ file is always loaded from the classpath.</p>
+<p>For reference purposes, this documentation includes a copy of the <a href="./oozie-default.xml.txt">oozie-default.xml</a>
+ file.</p>
+<a name="Oozie_Server_Site_Configuration"></a>
+</div>
+<div class="section"><h3>Oozie Server, Site Configuration</h3>
+<p>Oozie configuration can be customized and tuned for a particular installation with an additional <b>site</b>
+ configuration
+file. The configuration file is a Hadoop configuration file:</p>
+<p><pre>
+&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;PROPERTY_NAME&lt;/name&gt;
+        &lt;value&gt;PROPERTY_VALUE&lt;/value&gt;
+        &lt;description&gt;PROPERTY_DESCRIPTION&lt;/description&gt;
+    &lt;/property&gt;
+    ...
+&lt;/configuration&gt;
+</pre></p>
+<p>Similar to Hadoop, the properties set in the <b>site</b>
+ configuration file override the values defined in default
+configuration file, <tt>oozie-default.xml</tt>
+</p>
+<p>The default name for the <b>site</b>
+ configuration file is <tt>oozie-site.xml</tt>
+.</p>
+<p>The name of the <b>site</b>
+ configuration file can be changed by setting the Java System Propety <tt>oozie.config.file</tt>
+ in the
+servlet container running Oozie.</p>
+<p><b>NOTE:</b>
+ In Tomcat, Java System Properties must be set in the <tt>CATALINA_OPTS</tt>
+ environment variable in the shell from
+where Tomcat is started. For example: <tt>export CATALINA_OPTS=&quot;-Doozie.config.file=my-oozie-site.xml&quot;</tt>
+.</p>
+<p>By default, the <b>site</b>
+ configuration file is read from the classpath.</p>
+<a name="Oozie_Logging_Configuration"></a>
+</div>
+<div class="section"><h3>Oozie Logging Configuration</h3>
+<p>Oozie uses Log4J for loggin.</p>
+<p>The default Log4J configuration file for Oozie is <tt>oozie-log4j.properties</tt>
+ and it is bundled with the web-application.</p>
+<p>The name of the Log4J configuration file can be changed by setting the Java System Propety <tt>oozie.log4j.file</tt>
+ in the
+servlet container running Oozie.</p>
+<p><b>NOTE:</b>
+ In Tomcat, Java System Properties must be set in the <tt>CATALINA_OPTS</tt>
+ environment variable in the shell from
+where Tomcat is started.</p>
+<p>The default Log4J bundled with Oozie is <a href="./oozie-log4j.properties.txt">oozie-log4j.properties</a>
+.</p>
+<p><b>NOTE:</b>
+ In Tomcat, Java System Properties must be set in the <tt>CATALINA_OPTS</tt>
+ environment variable in the shell from
+where Tomcat is started. For example: <tt>export CATALINA_OPTS=&quot;-Doozie.log4j.file=my-log4j.properties&quot;</tt>
+.</p>
+<p>By default, the <b>log4j</b>
+ configuration file is read from the classpath.</p>
+<a name="Oozie_Security_Configuration"></a>
+</div>
+<div class="section"><h3>Oozie Security Configuration</h3>
+<p>Oozie provides a pluggable mechanism for authorization, via the <tt>AuthorizationService</tt>
+ class.</p>
+<p>Refer to the <a href="./AG_Security.html">Oozie Security</a>
+ documentation for details on how Oozie security works.</p>
+<p>The bundled <tt>AuthorizationService</tt>
+ reads the list of Administrator users from the <tt>adminusers.txt</tt>
+ file.</p>
+<p>The name of the <tt>adminusers.txt</tt>
+ file is not changeable via configuration.</p>
+<p>The <tt>adminusers.txt</tt>
+ file is only loaded if Oozie configuration is loaded from a directory, when Oozie configuration
+is loaded from the classpath the <tt>adminusers.txt</tt>
+ files is not loaded and Oozie runs with no admin users configured.</p>
+<p>The <tt>adminusers.txt</tt>
+ is a text file that contains one username per line.</p>
+<a name="Loading_Oozie_Configuration_Files_from_a_Directory"></a>
+</div>
+<div class="section"><h3>Loading Oozie Configuration Files from a Directory</h3>
+<p>Oozie server, logging and security configuration files can be read from a directory in the local file system.</p>
+<p>The directory from where to read the configuration files can be specified by setting the Java System Propety
+ <tt>oozie.config.dir</tt>
+ in the servlet container running Oozie.</p>
+<p>The specified directory must be an absolute path.</p>
+<p><b>NOTE:</b>
+ In Tomcat, Java System Properties must be set in the <tt>CATALINA_OPTS</tt>
+ environment variable in the shell from
+where Tomcat is started. For example: <tt>export CATALINA_OPTS=&quot;-Doozie.config.dir=/home/tucu/oozie-conf&quot;</tt>
+.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

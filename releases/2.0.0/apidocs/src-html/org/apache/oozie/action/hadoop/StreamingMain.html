@@ -1,0 +1,192 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one<a name="line.2"></a>
+<FONT color="green">003</FONT>     * or more contributor license agreements.  See the NOTICE file<a name="line.3"></a>
+<FONT color="green">004</FONT>     * distributed with this work for additional information<a name="line.4"></a>
+<FONT color="green">005</FONT>     * regarding copyright ownership.  The ASF licenses this file<a name="line.5"></a>
+<FONT color="green">006</FONT>     * to you under the Apache License, Version 2.0 (the<a name="line.6"></a>
+<FONT color="green">007</FONT>     * "License"); you may not use this file except in compliance<a name="line.7"></a>
+<FONT color="green">008</FONT>     * with the License.  You may obtain a copy of the License at<a name="line.8"></a>
+<FONT color="green">009</FONT>     *<a name="line.9"></a>
+<FONT color="green">010</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.10"></a>
+<FONT color="green">011</FONT>     *<a name="line.11"></a>
+<FONT color="green">012</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.12"></a>
+<FONT color="green">013</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.13"></a>
+<FONT color="green">014</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.14"></a>
+<FONT color="green">015</FONT>     * See the License for the specific language governing permissions and<a name="line.15"></a>
+<FONT color="green">016</FONT>     * limitations under the License.<a name="line.16"></a>
+<FONT color="green">017</FONT>     */<a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.oozie.action.hadoop;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import org.apache.hadoop.conf.Configuration;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import org.apache.hadoop.mapred.JobClient;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import org.apache.hadoop.mapred.JobConf;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import org.apache.hadoop.mapred.RunningJob;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    public class StreamingMain extends MapReduceMain {<a name="line.25"></a>
+<FONT color="green">026</FONT>    <a name="line.26"></a>
+<FONT color="green">027</FONT>        public static void main(String[] args) throws Exception {<a name="line.27"></a>
+<FONT color="green">028</FONT>            run(StreamingMain.class, args);<a name="line.28"></a>
+<FONT color="green">029</FONT>        }<a name="line.29"></a>
+<FONT color="green">030</FONT>    <a name="line.30"></a>
+<FONT color="green">031</FONT>        protected RunningJob submitJob(Configuration actionConf) throws Exception {<a name="line.31"></a>
+<FONT color="green">032</FONT>            JobConf jobConf = new JobConf();<a name="line.32"></a>
+<FONT color="green">033</FONT>    <a name="line.33"></a>
+<FONT color="green">034</FONT>            jobConf.set("mapred.mapper.class", "org.apache.hadoop.streaming.PipeMapper");<a name="line.34"></a>
+<FONT color="green">035</FONT>            jobConf.set("mapred.reducer.class", "org.apache.hadoop.streaming.PipeReducer");<a name="line.35"></a>
+<FONT color="green">036</FONT>            jobConf.set("mapred.map.runner.class", "org.apache.hadoop.streaming.PipeMapRunner");<a name="line.36"></a>
+<FONT color="green">037</FONT>    <a name="line.37"></a>
+<FONT color="green">038</FONT>            jobConf.set("mapred.input.format.class", "org.apache.hadoop.mapred.TextInputFormat");<a name="line.38"></a>
+<FONT color="green">039</FONT>            jobConf.set("mapred.output.format.class", "org.apache.hadoop.mapred.TextOutputFormat");<a name="line.39"></a>
+<FONT color="green">040</FONT>            jobConf.set("mapred.output.value.class", "org.apache.hadoop.io.Text");<a name="line.40"></a>
+<FONT color="green">041</FONT>            jobConf.set("mapred.output.key.class", "org.apache.hadoop.io.Text");<a name="line.41"></a>
+<FONT color="green">042</FONT>    <a name="line.42"></a>
+<FONT color="green">043</FONT>            jobConf.set("mapred.create.symlink", "yes");<a name="line.43"></a>
+<FONT color="green">044</FONT>            jobConf.set("mapred.used.genericoptionsparser", "true");<a name="line.44"></a>
+<FONT color="green">045</FONT>    <a name="line.45"></a>
+<FONT color="green">046</FONT>            jobConf.set("stream.addenvironment", "");<a name="line.46"></a>
+<FONT color="green">047</FONT>    <a name="line.47"></a>
+<FONT color="green">048</FONT>            String value = actionConf.get("oozie.streaming.mapper");<a name="line.48"></a>
+<FONT color="green">049</FONT>            if (value != null) {<a name="line.49"></a>
+<FONT color="green">050</FONT>                jobConf.set("stream.map.streamprocessor", value);<a name="line.50"></a>
+<FONT color="green">051</FONT>            }<a name="line.51"></a>
+<FONT color="green">052</FONT>            value = actionConf.get("oozie.streaming.reducer");<a name="line.52"></a>
+<FONT color="green">053</FONT>            if (value != null) {<a name="line.53"></a>
+<FONT color="green">054</FONT>                jobConf.set("stream.reduce.streamprocessor", value);<a name="line.54"></a>
+<FONT color="green">055</FONT>            }<a name="line.55"></a>
+<FONT color="green">056</FONT>            value = actionConf.get("oozie.streaming.record-reader");<a name="line.56"></a>
+<FONT color="green">057</FONT>            if (value != null) {<a name="line.57"></a>
+<FONT color="green">058</FONT>                jobConf.set("stream.recordreader.class", value);<a name="line.58"></a>
+<FONT color="green">059</FONT>            }<a name="line.59"></a>
+<FONT color="green">060</FONT>            String[] values = getStrings(actionConf, "oozie.streaming.record-reader-mapping");<a name="line.60"></a>
+<FONT color="green">061</FONT>            for (String s : values) {<a name="line.61"></a>
+<FONT color="green">062</FONT>                String[] kv = s.split("=");<a name="line.62"></a>
+<FONT color="green">063</FONT>                jobConf.set("stream.recordreader." + kv[0], kv[1]);<a name="line.63"></a>
+<FONT color="green">064</FONT>            }<a name="line.64"></a>
+<FONT color="green">065</FONT>            values = getStrings(actionConf, "oozie.streaming.env");<a name="line.65"></a>
+<FONT color="green">066</FONT>            value = jobConf.get("stream.addenvironment", "");<a name="line.66"></a>
+<FONT color="green">067</FONT>            if (value.length() &gt; 0) {<a name="line.67"></a>
+<FONT color="green">068</FONT>                value = value + " ";<a name="line.68"></a>
+<FONT color="green">069</FONT>            }<a name="line.69"></a>
+<FONT color="green">070</FONT>            for (String s : values) {<a name="line.70"></a>
+<FONT color="green">071</FONT>                value = value + s + " ";<a name="line.71"></a>
+<FONT color="green">072</FONT>            }<a name="line.72"></a>
+<FONT color="green">073</FONT>            jobConf.set("stream.addenvironment", value);<a name="line.73"></a>
+<FONT color="green">074</FONT>    <a name="line.74"></a>
+<FONT color="green">075</FONT>            addActionConf(jobConf, actionConf);<a name="line.75"></a>
+<FONT color="green">076</FONT>    <a name="line.76"></a>
+<FONT color="green">077</FONT>            // propagate delegation related props from launcher job to MR job<a name="line.77"></a>
+<FONT color="green">078</FONT>            if (System.getenv("HADOOP_TOKEN_FILE_LOCATION") != null) {<a name="line.78"></a>
+<FONT color="green">079</FONT>                jobConf.set("mapreduce.job.credentials.binary", System.getenv("HADOOP_TOKEN_FILE_LOCATION"));<a name="line.79"></a>
+<FONT color="green">080</FONT>            }<a name="line.80"></a>
+<FONT color="green">081</FONT>    <a name="line.81"></a>
+<FONT color="green">082</FONT>            JobClient jobClient = null;<a name="line.82"></a>
+<FONT color="green">083</FONT>            RunningJob runJob = null;<a name="line.83"></a>
+<FONT color="green">084</FONT>            boolean exception = false;<a name="line.84"></a>
+<FONT color="green">085</FONT>            try {<a name="line.85"></a>
+<FONT color="green">086</FONT>                jobClient = createJobClient(jobConf);<a name="line.86"></a>
+<FONT color="green">087</FONT>                runJob = jobClient.submitJob(jobConf);<a name="line.87"></a>
+<FONT color="green">088</FONT>            }<a name="line.88"></a>
+<FONT color="green">089</FONT>            catch (Exception ex) {<a name="line.89"></a>
+<FONT color="green">090</FONT>                exception = true;<a name="line.90"></a>
+<FONT color="green">091</FONT>                throw ex;<a name="line.91"></a>
+<FONT color="green">092</FONT>            }<a name="line.92"></a>
+<FONT color="green">093</FONT>            finally {<a name="line.93"></a>
+<FONT color="green">094</FONT>                try {<a name="line.94"></a>
+<FONT color="green">095</FONT>                    if (jobClient != null) {<a name="line.95"></a>
+<FONT color="green">096</FONT>                        jobClient.close();<a name="line.96"></a>
+<FONT color="green">097</FONT>                    }<a name="line.97"></a>
+<FONT color="green">098</FONT>                }<a name="line.98"></a>
+<FONT color="green">099</FONT>                catch (Exception ex) {<a name="line.99"></a>
+<FONT color="green">100</FONT>                    if (exception) {<a name="line.100"></a>
+<FONT color="green">101</FONT>                        System.out.println("JobClient Error: " + ex);<a name="line.101"></a>
+<FONT color="green">102</FONT>                    }<a name="line.102"></a>
+<FONT color="green">103</FONT>                    else {<a name="line.103"></a>
+<FONT color="green">104</FONT>                        throw ex;<a name="line.104"></a>
+<FONT color="green">105</FONT>                    }<a name="line.105"></a>
+<FONT color="green">106</FONT>                }<a name="line.106"></a>
+<FONT color="green">107</FONT>            }<a name="line.107"></a>
+<FONT color="green">108</FONT>            return runJob;<a name="line.108"></a>
+<FONT color="green">109</FONT>        }<a name="line.109"></a>
+<FONT color="green">110</FONT>    <a name="line.110"></a>
+<FONT color="green">111</FONT>        public static void setStreaming(Configuration conf, String mapper, String reducer, String recordReader,<a name="line.111"></a>
+<FONT color="green">112</FONT>                                        String[] recordReaderMapping, String[] env) {<a name="line.112"></a>
+<FONT color="green">113</FONT>            if (mapper != null) {<a name="line.113"></a>
+<FONT color="green">114</FONT>                conf.set("oozie.streaming.mapper", mapper);<a name="line.114"></a>
+<FONT color="green">115</FONT>            }<a name="line.115"></a>
+<FONT color="green">116</FONT>            if (reducer != null) {<a name="line.116"></a>
+<FONT color="green">117</FONT>                conf.set("oozie.streaming.reducer", reducer);<a name="line.117"></a>
+<FONT color="green">118</FONT>            }<a name="line.118"></a>
+<FONT color="green">119</FONT>            if (recordReader != null) {<a name="line.119"></a>
+<FONT color="green">120</FONT>                conf.set("oozie.streaming.record-reader", recordReader);<a name="line.120"></a>
+<FONT color="green">121</FONT>            }<a name="line.121"></a>
+<FONT color="green">122</FONT>            setStrings(conf, "oozie.streaming.record-reader-mapping", recordReaderMapping);<a name="line.122"></a>
+<FONT color="green">123</FONT>            setStrings(conf, "oozie.streaming.env", env);<a name="line.123"></a>
+<FONT color="green">124</FONT>        }<a name="line.124"></a>
+<FONT color="green">125</FONT>    <a name="line.125"></a>
+<FONT color="green">126</FONT>    }<a name="line.126"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-05-21
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Workflow_ReRrun"></a>
+<div class="section"><h2> Workflow ReRrun</h2>
+<p><ul><ul><li><a href="#Configs">Configs</a>
+</li>
+<li><a href="#Pre-Conditions">Pre-Conditions</a>
+</li>
+<li><a href="#ReRun">ReRun</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Configs"></a>
+<div class="section"><h3>Configs</h3>
+<p><ul><li>oozie.wf.application.path</li>
+<li>oozie.wf.rerun.skip.nodes</li>
+<li>Above two are mandatory configs.</li>
+<li>Skip nodes are comma separated list of action names. They can be any action nodes including decision node.</li>
+</ul>
+</p>
+<a name="Pre-Conditions"></a>
+</div>
+<div class="section"><h3>Pre-Conditions</h3>
+<p><ul><li>Workflow with id wfId should exist.</li>
+<li>Workflow with id wfId should be in SUCCEEDED/KILLED/FAILED.</li>
+<li>Nodes specified in the config oozie.wf.rerun.skip.nodes must be completed successfully.</li>
+</ul>
+</p>
+<a name="ReRun"></a>
+</div>
+<div class="section"><h3>ReRun</h3>
+<p><ul><li>Reloads the configs.</li>
+<li>Creates a new Workflow Instance with the same wfId.</li>
+<li>Deletes the actions that are not skipped from the DB and copies data from old Workflow Instance to new one for skipped actions.</li>
+<li>Action handler will skip the nodes given in the config with the same exit transition as before.</li>
+</ul>
+</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

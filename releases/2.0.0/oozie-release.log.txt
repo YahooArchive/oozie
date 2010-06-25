@@ -1,0 +1,331 @@
+2.0.2.2
+- Bug: 3716688, Oozie materialization is performed late after nominal time.
+- Bug: 3721233, Queue ActionCheck command with higher priority when callback happens 
+- Bug: 3708327, Oozie not closing JobClient instances - exhausts Job Tracker handles
+- Bug: 3701561, coordinator dataset uri-template should not be only directory.
+- Bug: 3696045, coord ignore the <done-flag> specified in the included dataset.
+- Bug: 3656790, ActionEndCommand should set Pending before queuing SignalCommand.
+- Bug: 3689101, Remove passing action type to ActionCheckCommand
+- Bug: 3686197, Log info by the return boolean value from queueSerial
+- Bug: 3701154, Reset pending when action set to failed
+- Bug: 3662753, DOC: Update all EL functions in CoordFunctionSpec with "coord:" prefix
+- Bug: 3673921, A job's createTime should be earlier than the endTime
+- Bug: 3704561, printStackTrace in XServletException
+- Bug: 3712166, Exceptions from El Function are not shown up in logs
+- Bug: 3731485, CoordSubmitCommand should not queue two CoordJobMatLookupCommand
+- Bug: 3454905, CI2: Add coordinator tests to oozie examples package
+- Bug: 3662822, DOC: Add CommandLineUtility for coordinator
+- Bug: 3724995, DOC: update coordinator ooziedocs
+- Bug: 3656534, DOC: Create twiki for coordinator job rerun/suspend/resume
+- Bug: 3748784, Testcase should not use any specific user name
+- Bug: 3756366, Set Hadoop 0.20.2 and HSQL as default
+- Bug: 3758348, Update readme & license
+
+2.0.2.1
+- Bug: 3671452, Add support to hadoop 104
+- Bug: 3659960, oozie should be packaged with latest yjava_byauth.jar file (for yahoo branch only).
+- Bug: 3677054, upgrade bouncer_auth_java jar file to the laterst (for yahoo branch only).
+- Cobmining the security and non-security packages together.
+
+2.0.1.2
+- Bug: 3634076, UGI caching in Oozie.
+- Bug: 3655829 - Add support to hadoop 103
+- Bug: 3653276, Make sure the signal command doesn't reprocess the same action.
+- Bug: 3653256, Before adding class path to DistributedCache, create FileSystem with default properties.
+- Bug: 3653216, For Pig security pass HADOOP_TOKEN_FILE_LOCATION as environment variable.
+
+2.0.2.0
+- Building security packages
+
+2.0.1.1
+- Bug: 3633249, UGI caching in oozie.
+- Bug: 3626555, Log messages in recovery and checker service.
+- Bug: 3630252, Fix SLA event_ids are out of order
+- Bug: 3633874, Fix command.java to catch error and roll back trx
+- Bug: 3636313, Update last_modified_time in coord commands
+- Bug: 3652591, Remove type Null in ActionCheckCommand & ActionKillCommand
+- Bug: 3652531, Update Coord Twiki for dataIn, dataOut, and nominalTime 
+
+2.0.1
+- Bug: 3620400, Authorization Service error
+- Bug: 3616405, Fix pending & pending_age for wf_actions
+- Bug: 3613493, Most of the coordinator commands don't include JOB and Action tag in the log.
+- Bug: 3613342, CoordActionCheckCommand does not always update lastmodtime.
+- Bug: 3600610, On coord action tab in UI, the frequency column contains the username
+- Bug: 3558258, Deprecated SSH actions in documentation for Oozie 1.x
+- Bug: 3612405, Add namenode URL to documentantion for <delete> tag
+- Bug: 3576501, Add Coord spec to docs, add SLA schema, add 0.2 schema, add pig 'arguments' in 0.2 schema
+- Bug: 3609208, NullPointerException in OozieClient
+- Bug: 3440642, Throw exception if user defines reserved variables in client or default config
+- Bug: 3586776, Rename CoordinatorTimeout class to CoordActionTimeout
+- Bug: 3609208, NullPointerException in OozieClient
+- Bug: 3608269, oozie client throws NullPointerException.
+- Bug: 3528040, Oozie 2.0 client does not work with 1.x
+- Bug: 3572011, Incorrect Logging when using Oracle DB
+- Bug: 3604433, Verify all table columns are copied in Store classes
+- Bug: 3604124, no KILLED sla event for workflow action.
+- Bug: 3466230, Add len and offset to job -info 
+- Bug: 3422276, add SLA argument for OozieCLI
+- Bug: 3600835, no workflow action status events.
+- Bug: 3597506, Remove locking code from  all store classes.
+- Bug: 3597911, Null pointer in CoordActionUpdate if workflow is not submitted via coord job
+- Bug: 3597414, Fix oozie job -info wf@action failed 
+- Bug: 3572247, Fix SLA event sequence out of order
+- Bug: 3572149, Fixed jobs filter
+- Bug: 3542490, Table Indexing
+- Bug: 3594182, Submit job failed with NullPointException.
+- Bug: 3300265, Java wrapper for passwords in keydb file (FOR YAHOO branch only).
+- Bug: 3576334, Bump up the schema version of workflow
+- Bug: 3579265, Oozie does not handle the long running MR job.
+- Bug: 3534163, Support new config for Pig "oozie.pig.options".
+- Bug: 3433399, fixed the incorrect display of time unit, timeout, and timezone
+- Bug: 3462548, Making build/testcases work with Hadoop 20.1 and Hadoop 20.100
+- Bug: 3454906, Hadoop Minicluster Integration
+- Bug: 3527259, close WorkflowStore in AuthorizationService
+- Bug: 3463067, fs action, chmod operation octal mask does not work properly
+- Bug: 3462548, Hadoop 20 Security integration
+- Bug: 3456343, set group that can modify MR jobs in actions started by Oozie
+- Bug: 3454896, dump pig.log file to STDERR in case of error.
+- Bug: 3455793, capture and store pig actions hadoop job ids.
+- Bug: 3392345, revert Action-Workflow locking order.
+- Bug: 3392337, actionexecutor should not be invoked within a DB transaction.
+- Bug: 3337766, check if Jobclient.getJob() returns null in ActionExecutors.  Will be null if JT doesn't recognize ID.  If so, fail action and workflow.
+- Bug: 2984580, fixing IOUtils to zip classes in different packages
+- Bug: 3373640, refactor Hadoop JobClient/FileSystem creation into a factory pattern
+- bug: 3568447, Safemode does not prohibit any scheduled service to run.
+- Bug: 3450715, DB Naming Convention
+- Bug: 3554394, LiteWorkflowAppParser validate re-factor
+- Bug: 3539170, Print files in current directory of the Launcher
+- Bug: 3394321, dataIn(s) should check input is a valid input data event.
+- Bug: 3368056, Coordinator Job Dryrun functionality
+- Bug: 3530452, Sampler not working for JDBC connections
+- Bug: 3440600, Remove propagate-configuration from coordinator xsd
+- Bug: 3325023, recovery thread
+- Bug: 3404055, use oracle
+- Bug: 3400448, update status to FAILED when start-instance is newer than end-instance.
+- Bug: 3408761, Queueing the CoordActionInputCheckCommand too quickly in catch-up mode.
+- Bug: 3433967, properties starts with oozie.* should be added into proto action conf.
+- Bug: 3440771, Log Action KILL command.
+- Bug: 3440774, Log Action Start commands.
+- Bug: 3462544, the coord job status should be "SUCCEEDED" if the start time is atfer end time. 
+- Bug: 3465942, ActionChecker Command should check the lastcheck time before doing any processing.
+- Bug: 3469152, ActionChecker Command should update lastchecktime when job tracker is unreachable.
+- Bug: 3542543, Check LastModifiedTime before running Command.
+- Bug: 3274804, report dependencies are missing when dataset uses latest().
+- Bug: 3511946, Oozie complains about variables that are commented out.
+- Bug: 3512209, oozie in safemode still create new job.
+- Bug: 3505265, not record FAILED sla events .
+- Bug: 3512507, Better error reporting when a CoordActionStartCommand failed to submit workflow.
+- Bug: 3404074, data events not resolved correctly when use latest() and current().
+- Bug: 3408761, Queueing the CoordActionInputCheckCommand too quickly in catch-up mode.
+- Bug: 3527259, Close WorkflowStore in AuthorizationService.
+- Bug: 3385629, Add index to jobId to improve performance 
+- Bug: 3248466, Add coord name and actionId EL functions
+- Bug: 3300747, Add execution order support FIFO, LIFO, LAST_ONLY
+- Bug: 3301150, prioritize commands in the queue to avoid coordinator stuck at premater
+- Bug: 3505250, fixed -filter for coordinator jobs
+- Hadoop Versions:
+  - 0.20.1.3092118008
+  - 0.20.100.0
+
+2.0.0
+- Bug: 3433399, fixed the incorrect display of time unit, timeout, and timezone
+- Bug: 3422258, added -verbose to oozie jobs and job -info commands
+- Bug: 3421747, Cannot kill/suspend a coord job
+- Bug: 3422417, is MINUTES supported in sla-info
+- Bug: 3422426, cannot add record to sla table
+- Bug: 3421224, coord job is submitted as tomcat.user
+- Bug: 3388885, Error submitting sub workflows
+- Bug: 3247729, Propagate FAILED action state to workflow job
+- Bug: 3260410, Action stuck in PREP when variable not defined
+- Bug: 3403198, Add optional 'done-flag' XML tag to coordinator schema
+- Bug: 3418000, Keep original coordinator.xml in DB 
+- Bug: 3386754, Validate GMS SLA schema 
+- Bug: 3408201, Coordinator Action Id creation should follow the WF standard.
+- Bug: 3258373, oozie job -info support for coord action id and workflow action id
+- Bug: 3340645, fix the typo for tag "start-instance" 
+- Bug: 3245332, Trim whitespace in coordinator.xml and workflow.xml and properties file 
+- Bug: 3401358, hoursInDay fails in start-instance.
+- Bug: 3376811, safemode
+- Bug: 3292099,  tzOffset should not require argument.
+- Bug: 3254556, -filter, -offset, -len now work correctly with -jobtype coord
+- Bug: 3394579, Add CLI option to retrieve 'log' and 'definition' info for Coord jobs and WF jobs
+- Bug: 3301150, Add two read locks to avoid the problems of the inconsistent states of "PREMATER"
+- Bug: 3367512, coord job status=RUNNING even pass the end time.
+- Bug: 3375424, Materialization of current instances.
+- Bug: 3380291, Make user and group name available for HDFS security check.
+- Bug: 3379536, Increased length of predicate loop to allow TestPurgeService to pass when run in suite
+- Bug: 3327346, Change column wfinstance to MEDUIUMBLOB for large workflow.
+- Bug: 3341200, Timeout set to -1 for past actions
+- Bug: 3353999, SLA servlet for WS interface.
+- Bug: 3348576, coord:nomialTime() is not evaluated in coord app
+- Bug: 3337552, Retrieve Coordinator ExternalId in json client
+- Bug: 3254548, status update displays correctly on command line
+- Bug: 3347582, SLA support in Oozie 
+- Bug: 3337766, check if Jobclient.getJob() returns null in ActionExecutors.  Will be null if JT doesn't recognize ID.  If so, fail action and workflow.
+- Bug: 3303618, last modified time is being updated
+- Hadoop Versions:
+  - 0.20.1
+
+1.6.4
+- Packaging with security and non-security
+- Bug 3677054, upgrade bouncer_auth_java jar file to the laterst (for yahoo branch only)
+
+1.6.3
+- Bug: 3634076, UGI caching in Oozie 1.6.3.
+- Bug: 3655829, Add support to hadoop 103.
+- Bug: 3653276, Make sure the signal command doesn't reprocess the same action.
+- Bug: 3653256, Before adding class path to DistributedCache, create FileSystem with default properties.
+- Bug: 3653216, For Pig security pass HADOOP_TOKEN_FILE_LOCATION as environment variable.
+- Bug: 3656790, ActionEndCommand should set Pending before queuing SignalCommand.
+
+1.6.2
+- Bundled hadoop-core-0.20.101.0.jar, hadoop-streaming-0.20.101.0.jar and hadoop-test-0.20.101.0.jar
+- Bug: 3579265, Oozie does not handle the long running MR job
+- Hadoop Versions:
+  - 0.20.101.0
+
+1.6.1
+- Making build/testcases work with Hadoop 20.1 and Hadoop 20.100
+- Bug: 3454906, Hadoop Minicluster Integration
+- Getting all testcases to work with Kerberos ON/OFF
+  - 0.20.100.0
+
+1.6.0
+- Bug: 3527259, close WorkflowStore in AuthorizationService 
+- Bug: 3463067, fs action, chmod operation octal mask does not work properly
+- Bug: 3462548, Hadoop 20 Security integration
+- Bug: 3456343, set group that can modify MR jobs in actions started by Oozie
+- Bug: 3454896, dump pig.log file to STDERR in case of error.
+- Bug: 3455793, capture and store pig actions hadoop job ids.
+- Bug: 3392345, revert Action-Workflow locking order.
+- Bug: 3392337, actionexecutor should not be invoked within a DB transaction.
+- Bug: 3337766, check if Jobclient.getJob() returns null in ActionExecutors.  Will be null if JT doesn't recognize ID.  If so, fail action and workflow (backporting from 2.0)
+- Bug: 2984580, fixing IOUtils to zip classes in different packages
+- Bug: 3373640, refactor Hadoop JobClient/FileSystem creation into a factory pattern
+- Hadoop Versions:
+  - 0.20.100.0
+
+1.5.7
+- Bug: 3527259, close store in authorizeForJob(), otherwise we leak connections for KILL commands
+
+1.5.6
+- Bug: 3325252, change callback processing to queue command instead executing it
+- Bug: 3317491, resolving variables in job&default properties values on submission
+- Bug: 3317033, propagating default properties parsing errors to the client
+- Bug: 3303688, refactoring launcher mapper to use a counter flag to indicate error of main, launcher task finishes successfully (it does not kill itself) and the hadoop task logs will be retained.
+- Bug: 3308924, fixing FS action error message on move when target exists
+- Bug: 3316986, pig log level can now be changed using the 'oozie.pig.log.level' property in the pig action configuration, default value is INFO. Changing Pig log4j file from 'hadoop.properties' to 'piglo4j.properties' (for clarity to soembody seeing the launcher output)
+- Bug: 3316989, removed hadoop-streaming JAR from distribution (only needed for testing)
+- Improving launcher STDOUT message
+- Hadoop Versions:
+  - 0.20.1
+
+1.5.5
+- Bug: 2802114, action name increased from 20 to 50 max len
+- Bug: 2833076,	 Pig output is caputred in launcher log
+- Bug: 2862106, action errors have error code
+- Bug: 2862143, improved log messages
+- Bug: 3053713, fix handling of <file> in pig actions
+- Bug: 3061960, reporting success when Pig failed
+- Bug: 3071326, disable External Entity resolution in XML parser
+- Bug: 3071394, store action's Hadoop counters in WF instance context
+- Bug: 3071482,	trim jobconf properties on submission
+- Bug: 3101566, MR jobs should have oozie in the name
+- Bug: 3075029,	simplify Oozie buildversioning
+- Bug: 3097810, "remove custom pig parameter resolution and use pig native resolution"
+- Bug: 3071381, "Improve client error reporting due to AUTH failures"
+- Bug: 3071405, "removed required group.name property in job submission"
+- Java Action Executor supports capture-output
+- Added workflow XML validation to the oozie client
+- Added Pipes support for MR Jobs
+- Added validation for unsupported actions (HTTP, EMAIL)
+- Oozie Job, Action params available to Java Main actions (MR, Pig, etc)
+- Bug: 3043948,"Output Generation fixed for Streaming Jobs"
+- Hadoop Versions:
+  - 0.20.1
+
+1.5.2
+--
+- Added Java Main Example
+- Hadoop Versions:
+  - 0.18.3
+  - 0.20.0
+
+1.5.1
+--
+- Bug: 2995006 - Queue name not propagated for launcher job - bugfix
+1.5.0
+--
+- Bug: 2926833 - Sub-Workflow Recovery logic
+- Bug: 2862192 - propogation of user/group while logging
+- Bug: 2932087 - Actions to use Recovery ID instead of action ID
+- Bug: 2932408 - FS ActionExecutor - HA Recovery
+- Bug: 2862149 - Java Action Node. (MapRed and Pig via Java Action Node)
+- Hadoop Versions:
+  - 0.18.3
+  - 0.20.0
+
+1.0.1
+--
+- Bug:2862132,2862196 - Remove oozie app log and use oozie.log instead
+- Queue name in example made configurable. "default" is used now.
+- Bug:2862185,"chmod support added to FS Action"
+- Bug:2862068,"Callbacks will be verified before updating Action Status"
+- Bug:2821436,"Using UDF classes within PIG scripts don't work on oozie"
+- Bug:2824120,"In the hadoop streaming it is not identifying the <file> tag"
+- Bug:2830804,"Performance test"
+- Bug:2827605,"Illegal Argument Exception is coming when the mapper includes %+"
+- Bug:2806259,"Main workflow configuration is not propogated to the subworkflow."
+- Bug:2824114,"Not able to excute hadoop streaming jobs because the hadoop sreaming job is not avilable in lib folder of oozie."
+- Bug:2826436,"collecting jobs status metrics"
+- Bug:2839122,"logs to have date along with time"
+- Bug:2839125,"oozie version to be made available in oozie-console"
+
+1.0
+--
+- Apache Compliance
+- Fine tuning the workflow schema for simplicity and consistency.
+- Changed the deployment model from bundles to a HDFS directory.
+  - Workflow deployment is not required. Workflow application bundle should be copied on to the HDFS.
+  - Workflow job is started by ponting to the HDFS path.
+- Changed security model to incorporate user propagaion rules.
+- Workflow job parameters can be referred as variables, ${myInputDir}, from the workflow.xml
+- Pig Job execution done via a MapReduce job instead of ssh.
+- Ability to recover from Oozie failure in case Oozie fails just after starting a job and before registering information about the started job.
+- Added job failure and Action Failure, to go along with Job and Action Kill.
+- Retries for Action End.
+- Logs can be viewed from the console - with filters on jobid.
+- Error code and error info reflected correctly in the console.
+- Minor changes to the Command Line Interface.
+
+0.3
+--
+- Oozie exception logging changes
+- Action Notification Retry
+- Test cases to run on ports different from default ones
+- Oozie to work on Hadoop 20
+- Removed Configuration.java from oozie code base and added as a part of different hadoop 18 jar
+- Pre and post hook for action executors
+- Prepare(delete) hook for hadoop and pig action executors
+- Passing job context information for all action executors
+- Logging enhancements and improved some log statements
+- Action Executor to attain lock at job level. This needs to be changed
+- Bugfix: Actions in the queue will be skipped if the Job is suspended
+0.2
+---
+- Added oozie unit(oozie testing frame work)
+- Cleaned up all the test case (removing commented code and few coding pattern consistency changes)
+- Workflow Recovery Module
+- Removal of composite executor
+- WorkFlowLite. System can be configured to use Lite or JBPM
+- XLog enhancements. Common prefix in all Callable log messages, with app name, jobid, actionid, log token
+- Installation Documents
+- Documentation Updates
+- Examples fixed to work with workflowLite
+0.1
+---
+- Seperation of Execution layer
+- Application Life cycle
+- Ported to Hadoop 18.3
+

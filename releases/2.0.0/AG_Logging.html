@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-06-25
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Logging"></a>
+<div class="section"><h2> Oozie Logging</h2>
+<p><ul><ul><li><a href="#Logging_Framework">Logging Framework</a>
+</li>
+<li><a href="#Oozie_Logging_Configuration">Oozie Logging Configuration</a>
+</li>
+<li><a href="#Logging_Configuration_Hot_Reaload">Logging Configuration Hot Reaload</a>
+</li>
+<li><a href="#Log_Files">Log Files</a>
+</li>
+<li><a href="#Workflow_Application_Logging_Web_Services_Access">Workflow Application Logging, Web Services Access</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Logging_Framework"></a>
+<div class="section"><h3>Logging Framework</h3>
+<p>Oozie uses Apache Commons-Logging as its logging interface and Apache Log4j as its logging implementation.</p>
+<p>Oozie dependency with Log4j is encapsulated in XLogService class. There are two reasons of this dependency:</p>
+<p><ul><li>Hot reload of Logging configuration.</li>
+<li>Access to application logs via web services.</li>
+</ul>
+</p>
+<a name="Oozie_Logging_Configuration"></a>
+</div>
+<div class="section"><h3>Oozie Logging Configuration</h3>
+<p>By default, Oozie logging configuration is read from the <tt>oozie-log4j.properties</tt>
+ file in the classpath.</p>
+<p>With the Java System Property <tt>oozie.log4j.file</tt>
+ is possible to change the name of the Log4j configuration file to load.</p>
+<p>If the Java System Property <tt>oozie.config.dir</tt>
+ is specified the Log4j configuration file is loaded from the specified
+directory instead of the classpath.</p>
+<p>The bundled <tt>oozie-log4j.properties</tt>
+ is pre-configured to write the logs in Tomcat's <tt>logs/</tt>
+ directory.</p>
+<p><b>IMPORTANT:</b>
+ Only '.properties' Log4j configuration files are supported for hot reload and application log web access.</p>
+<a name="Logging_Configuration_Hot_Reaload"></a>
+</div>
+<div class="section"><h3>Logging Configuration Hot Reaload</h3>
+<p>If the Log4j configuration is loaded from a configuration file (instead the classpath, refer to previous section), then
+hot reload is enabled.</p>
+<p>By default the Log4j configuration file is monitored for changes every 10 seconds. If a change happened, the Log4j
+configuration will be reloaded.</p>
+<p>The reload interval can be changed by setting the <tt>oozie.log4j.reload</tt>
+ property. The number specified is the monitoring
+interval in seconds.</p>
+<a name="Log_Files"></a>
+</div>
+<div class="section"><h3>Log Files</h3>
+<p>Oozie has 4 log files:</p>
+<p><ul><li>oozie.log: web services log streaming works from this log.</li>
+<li>oozie-ops.log: messages for Admin/Operations to monitor.</li>
+<li>oozie-instrumentation.log: intrumentation data, every 60 seconds (configurable).</li>
+<li>oozie-audit.log: audit messages, workflow jobs changes.</li>
+</ul>
+</p>
+<a name="Workflow_Application_Logging_Web_Services_Access"></a>
+</div>
+<div class="section"><h3>Workflow Application Logging, Web Services Access</h3>
+<p>To have web services access to application logging, the logger category <tt>oozie</tt>
+ must use the
+ <tt>DailyRollingFileAppender</tt>
+ appender and it must be configured for daily or hourly (default and recommended) rolling.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

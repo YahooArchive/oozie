@@ -1,0 +1,323 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one<a name="line.2"></a>
+<FONT color="green">003</FONT>     * or more contributor license agreements.  See the NOTICE file<a name="line.3"></a>
+<FONT color="green">004</FONT>     * distributed with this work for additional information<a name="line.4"></a>
+<FONT color="green">005</FONT>     * regarding copyright ownership.  The ASF licenses this file<a name="line.5"></a>
+<FONT color="green">006</FONT>     * to you under the Apache License, Version 2.0 (the<a name="line.6"></a>
+<FONT color="green">007</FONT>     * "License"); you may not use this file except in compliance<a name="line.7"></a>
+<FONT color="green">008</FONT>     * with the License.  You may obtain a copy of the License at<a name="line.8"></a>
+<FONT color="green">009</FONT>     *<a name="line.9"></a>
+<FONT color="green">010</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.10"></a>
+<FONT color="green">011</FONT>     *<a name="line.11"></a>
+<FONT color="green">012</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.12"></a>
+<FONT color="green">013</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.13"></a>
+<FONT color="green">014</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.14"></a>
+<FONT color="green">015</FONT>     * See the License for the specific language governing permissions and<a name="line.15"></a>
+<FONT color="green">016</FONT>     * limitations under the License.<a name="line.16"></a>
+<FONT color="green">017</FONT>     */<a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.oozie.action.hadoop;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import org.apache.pig.Main;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import org.apache.hadoop.conf.Configuration;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import org.apache.hadoop.fs.Path;<a name="line.22"></a>
+<FONT color="green">023</FONT>    <a name="line.23"></a>
+<FONT color="green">024</FONT>    import java.io.OutputStream;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.io.FileOutputStream;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.io.BufferedReader;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.io.FileReader;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.io.File;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import java.io.IOException;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import java.util.Map;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import java.util.List;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import java.util.ArrayList;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import java.util.Properties;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import java.net.URL;<a name="line.34"></a>
+<FONT color="green">035</FONT>    <a name="line.35"></a>
+<FONT color="green">036</FONT>    public class PigMain extends LauncherMain {<a name="line.36"></a>
+<FONT color="green">037</FONT>    <a name="line.37"></a>
+<FONT color="green">038</FONT>        public static void main(String[] args) throws Exception {<a name="line.38"></a>
+<FONT color="green">039</FONT>            run(PigMain.class, args);<a name="line.39"></a>
+<FONT color="green">040</FONT>        }<a name="line.40"></a>
+<FONT color="green">041</FONT>    <a name="line.41"></a>
+<FONT color="green">042</FONT>        protected void run(String[] args) throws Exception {<a name="line.42"></a>
+<FONT color="green">043</FONT>            System.out.println();<a name="line.43"></a>
+<FONT color="green">044</FONT>            System.out.println("Oozie Pig action configuration");<a name="line.44"></a>
+<FONT color="green">045</FONT>            System.out.println("=================================================================");<a name="line.45"></a>
+<FONT color="green">046</FONT>    <a name="line.46"></a>
+<FONT color="green">047</FONT>            // loading action conf prepared by Oozie<a name="line.47"></a>
+<FONT color="green">048</FONT>            Configuration actionConf = new Configuration(false);<a name="line.48"></a>
+<FONT color="green">049</FONT>    <a name="line.49"></a>
+<FONT color="green">050</FONT>            String actionXml = System.getProperty("oozie.action.conf.xml");<a name="line.50"></a>
+<FONT color="green">051</FONT>    <a name="line.51"></a>
+<FONT color="green">052</FONT>            if (actionXml == null) {<a name="line.52"></a>
+<FONT color="green">053</FONT>                throw new RuntimeException("Missing Java System Property [oozie.action.conf.xml]");<a name="line.53"></a>
+<FONT color="green">054</FONT>            }<a name="line.54"></a>
+<FONT color="green">055</FONT>            if (!new File(actionXml).exists()) {<a name="line.55"></a>
+<FONT color="green">056</FONT>                throw new RuntimeException("Action Configuration XML file [" + actionXml + "] does not exist");<a name="line.56"></a>
+<FONT color="green">057</FONT>            }<a name="line.57"></a>
+<FONT color="green">058</FONT>    <a name="line.58"></a>
+<FONT color="green">059</FONT>            actionConf.addResource(new Path("file:///", actionXml));<a name="line.59"></a>
+<FONT color="green">060</FONT>    <a name="line.60"></a>
+<FONT color="green">061</FONT>            Properties pigProperties = new Properties();<a name="line.61"></a>
+<FONT color="green">062</FONT>            for (Map.Entry&lt;String, String&gt; entry : actionConf) {<a name="line.62"></a>
+<FONT color="green">063</FONT>                pigProperties.setProperty(entry.getKey(), entry.getValue());<a name="line.63"></a>
+<FONT color="green">064</FONT>            }<a name="line.64"></a>
+<FONT color="green">065</FONT>    <a name="line.65"></a>
+<FONT color="green">066</FONT>            //propagate delegation related props from launcher job to Pig job<a name="line.66"></a>
+<FONT color="green">067</FONT>            if (System.getenv("HADOOP_TOKEN_FILE_LOCATION") != null) {<a name="line.67"></a>
+<FONT color="green">068</FONT>                pigProperties.setProperty("mapreduce.job.credentials.binary", System.getenv("HADOOP_TOKEN_FILE_LOCATION"));<a name="line.68"></a>
+<FONT color="green">069</FONT>                System.out.println("------------------------");<a name="line.69"></a>
+<FONT color="green">070</FONT>                System.out.println("Setting env property for mapreduce.job.credentials.binary to:"<a name="line.70"></a>
+<FONT color="green">071</FONT>                        + System.getenv("HADOOP_TOKEN_FILE_LOCATION"));<a name="line.71"></a>
+<FONT color="green">072</FONT>                System.out.println("------------------------");<a name="line.72"></a>
+<FONT color="green">073</FONT>                System.setProperty("mapreduce.job.credentials.binary", System.getenv("HADOOP_TOKEN_FILE_LOCATION"));<a name="line.73"></a>
+<FONT color="green">074</FONT>            }<a name="line.74"></a>
+<FONT color="green">075</FONT>            else {<a name="line.75"></a>
+<FONT color="green">076</FONT>                System.out.println("Non-kerberoes execution");<a name="line.76"></a>
+<FONT color="green">077</FONT>            }<a name="line.77"></a>
+<FONT color="green">078</FONT>    <a name="line.78"></a>
+<FONT color="green">079</FONT>            OutputStream os = new FileOutputStream("pig.properties");<a name="line.79"></a>
+<FONT color="green">080</FONT>            pigProperties.store(os, "");<a name="line.80"></a>
+<FONT color="green">081</FONT>            os.close();<a name="line.81"></a>
+<FONT color="green">082</FONT>    <a name="line.82"></a>
+<FONT color="green">083</FONT>            System.out.println();<a name="line.83"></a>
+<FONT color="green">084</FONT>            System.out.println("pig.properties content:");<a name="line.84"></a>
+<FONT color="green">085</FONT>            System.out.println("------------------------");<a name="line.85"></a>
+<FONT color="green">086</FONT>            pigProperties.store(System.out, "");<a name="line.86"></a>
+<FONT color="green">087</FONT>            System.out.flush();<a name="line.87"></a>
+<FONT color="green">088</FONT>            System.out.println("------------------------");<a name="line.88"></a>
+<FONT color="green">089</FONT>            System.out.println();<a name="line.89"></a>
+<FONT color="green">090</FONT>    <a name="line.90"></a>
+<FONT color="green">091</FONT>            List&lt;String&gt; arguments = new ArrayList&lt;String&gt;();<a name="line.91"></a>
+<FONT color="green">092</FONT>            String script = actionConf.get("oozie.pig.script");<a name="line.92"></a>
+<FONT color="green">093</FONT>    <a name="line.93"></a>
+<FONT color="green">094</FONT>            if (script == null) {<a name="line.94"></a>
+<FONT color="green">095</FONT>                throw new RuntimeException("Action Configuration does not have [oozie.pig.script] property");<a name="line.95"></a>
+<FONT color="green">096</FONT>            }<a name="line.96"></a>
+<FONT color="green">097</FONT>    <a name="line.97"></a>
+<FONT color="green">098</FONT>            if (!new File(script).exists()) {<a name="line.98"></a>
+<FONT color="green">099</FONT>                throw new RuntimeException("Pig script file [" + script + "] does not exist");<a name="line.99"></a>
+<FONT color="green">100</FONT>            }<a name="line.100"></a>
+<FONT color="green">101</FONT>    <a name="line.101"></a>
+<FONT color="green">102</FONT>            System.out.println("Pig script [" + script + "] content: ");<a name="line.102"></a>
+<FONT color="green">103</FONT>            System.out.println("------------------------");<a name="line.103"></a>
+<FONT color="green">104</FONT>            BufferedReader br = new BufferedReader(new FileReader(script));<a name="line.104"></a>
+<FONT color="green">105</FONT>            String line = br.readLine();<a name="line.105"></a>
+<FONT color="green">106</FONT>            while (line != null) {<a name="line.106"></a>
+<FONT color="green">107</FONT>                System.out.println(line);<a name="line.107"></a>
+<FONT color="green">108</FONT>                line = br.readLine();<a name="line.108"></a>
+<FONT color="green">109</FONT>            }<a name="line.109"></a>
+<FONT color="green">110</FONT>            br.close();<a name="line.110"></a>
+<FONT color="green">111</FONT>            System.out.println("------------------------");<a name="line.111"></a>
+<FONT color="green">112</FONT>            System.out.println();<a name="line.112"></a>
+<FONT color="green">113</FONT>    <a name="line.113"></a>
+<FONT color="green">114</FONT>            arguments.add("-file");<a name="line.114"></a>
+<FONT color="green">115</FONT>            arguments.add(script);<a name="line.115"></a>
+<FONT color="green">116</FONT>            String[] params = MapReduceMain.getStrings(actionConf, "oozie.pig.params");<a name="line.116"></a>
+<FONT color="green">117</FONT>            for (String param : params) {<a name="line.117"></a>
+<FONT color="green">118</FONT>                arguments.add("-param");<a name="line.118"></a>
+<FONT color="green">119</FONT>                arguments.add(param);<a name="line.119"></a>
+<FONT color="green">120</FONT>            }<a name="line.120"></a>
+<FONT color="green">121</FONT>    <a name="line.121"></a>
+<FONT color="green">122</FONT>            String hadoopJobId = System.getProperty("oozie.launcher.job.id");<a name="line.122"></a>
+<FONT color="green">123</FONT>            if (hadoopJobId == null) {<a name="line.123"></a>
+<FONT color="green">124</FONT>                throw new RuntimeException("Launcher Hadoop Job ID system property not set");<a name="line.124"></a>
+<FONT color="green">125</FONT>            }<a name="line.125"></a>
+<FONT color="green">126</FONT>    <a name="line.126"></a>
+<FONT color="green">127</FONT>            String logFile = new File("pig-oozie-" + hadoopJobId + ".log").getAbsolutePath();<a name="line.127"></a>
+<FONT color="green">128</FONT>    <a name="line.128"></a>
+<FONT color="green">129</FONT>            URL log4jFile = Thread.currentThread().getContextClassLoader().getResource("log4j.properties");<a name="line.129"></a>
+<FONT color="green">130</FONT>            if (log4jFile != null) {<a name="line.130"></a>
+<FONT color="green">131</FONT>    <a name="line.131"></a>
+<FONT color="green">132</FONT>                String pigLogLevel = actionConf.get("oozie.pig.log.level", "INFO");<a name="line.132"></a>
+<FONT color="green">133</FONT>    <a name="line.133"></a>
+<FONT color="green">134</FONT>                // append required PIG properties to the default hadoop log4j file<a name="line.134"></a>
+<FONT color="green">135</FONT>                Properties hadoopProps = new Properties();<a name="line.135"></a>
+<FONT color="green">136</FONT>                hadoopProps.load(log4jFile.openStream());<a name="line.136"></a>
+<FONT color="green">137</FONT>                hadoopProps.setProperty("log4j.logger.org.apache.pig", pigLogLevel + ", A, B");<a name="line.137"></a>
+<FONT color="green">138</FONT>                hadoopProps.setProperty("log4j.appender.A", "org.apache.log4j.ConsoleAppender");<a name="line.138"></a>
+<FONT color="green">139</FONT>                hadoopProps.setProperty("log4j.appender.A.layout", "org.apache.log4j.PatternLayout");<a name="line.139"></a>
+<FONT color="green">140</FONT>                hadoopProps.setProperty("log4j.appender.A.layout.ConversionPattern", "%-4r [%t] %-5p %c %x - %m%n");<a name="line.140"></a>
+<FONT color="green">141</FONT>                hadoopProps.setProperty("log4j.appender.B", "org.apache.log4j.FileAppender");<a name="line.141"></a>
+<FONT color="green">142</FONT>                hadoopProps.setProperty("log4j.appender.B.file", logFile);<a name="line.142"></a>
+<FONT color="green">143</FONT>                hadoopProps.setProperty("log4j.appender.B.layout", "org.apache.log4j.PatternLayout");<a name="line.143"></a>
+<FONT color="green">144</FONT>                hadoopProps.setProperty("log4j.appender.B.layout.ConversionPattern", "%-4r [%t] %-5p %c %x - %m%n");<a name="line.144"></a>
+<FONT color="green">145</FONT>    <a name="line.145"></a>
+<FONT color="green">146</FONT>                String localProps = new File("piglog4j.properties").getAbsolutePath();<a name="line.146"></a>
+<FONT color="green">147</FONT>                OutputStream os1 = new FileOutputStream(localProps);<a name="line.147"></a>
+<FONT color="green">148</FONT>                hadoopProps.store(os1, "");<a name="line.148"></a>
+<FONT color="green">149</FONT>                os1.close();<a name="line.149"></a>
+<FONT color="green">150</FONT>    <a name="line.150"></a>
+<FONT color="green">151</FONT>                arguments.add("-log4jconf");<a name="line.151"></a>
+<FONT color="green">152</FONT>                arguments.add(localProps);<a name="line.152"></a>
+<FONT color="green">153</FONT>    <a name="line.153"></a>
+<FONT color="green">154</FONT>                // print out current directory<a name="line.154"></a>
+<FONT color="green">155</FONT>                File localDir = new File(localProps).getParentFile();<a name="line.155"></a>
+<FONT color="green">156</FONT>                System.out.println("Current (local) dir = " + localDir.getAbsolutePath());<a name="line.156"></a>
+<FONT color="green">157</FONT>            }<a name="line.157"></a>
+<FONT color="green">158</FONT>            else {<a name="line.158"></a>
+<FONT color="green">159</FONT>                System.out.println("log4jfile is null");<a name="line.159"></a>
+<FONT color="green">160</FONT>            }<a name="line.160"></a>
+<FONT color="green">161</FONT>    <a name="line.161"></a>
+<FONT color="green">162</FONT>            String pigLog = "pig-" + hadoopJobId + ".log";<a name="line.162"></a>
+<FONT color="green">163</FONT>            arguments.add("-logfile");<a name="line.163"></a>
+<FONT color="green">164</FONT>            arguments.add(pigLog);<a name="line.164"></a>
+<FONT color="green">165</FONT>    <a name="line.165"></a>
+<FONT color="green">166</FONT>            System.out.println("Pig command arguments :");<a name="line.166"></a>
+<FONT color="green">167</FONT>            for (String arg : arguments) {<a name="line.167"></a>
+<FONT color="green">168</FONT>                System.out.println("             " + arg);<a name="line.168"></a>
+<FONT color="green">169</FONT>            }<a name="line.169"></a>
+<FONT color="green">170</FONT>    <a name="line.170"></a>
+<FONT color="green">171</FONT>            System.out.println("=================================================================");<a name="line.171"></a>
+<FONT color="green">172</FONT>            System.out.println();<a name="line.172"></a>
+<FONT color="green">173</FONT>            System.out.println("&gt;&gt;&gt; Invoking Pig command line now &gt;&gt;&gt;");<a name="line.173"></a>
+<FONT color="green">174</FONT>            System.out.println();<a name="line.174"></a>
+<FONT color="green">175</FONT>            System.out.flush();<a name="line.175"></a>
+<FONT color="green">176</FONT>    <a name="line.176"></a>
+<FONT color="green">177</FONT>            String userName = System.getProperty("user.name");<a name="line.177"></a>
+<FONT color="green">178</FONT>            try {<a name="line.178"></a>
+<FONT color="green">179</FONT>                //TODO Pig should fix this<a name="line.179"></a>
+<FONT color="green">180</FONT>                //Pig somehow is taking user from Java SYS props, if task is running with cluster UNIX user this is<a name="line.180"></a>
+<FONT color="green">181</FONT>                //a problem, because of this we are setting here the user.name to the oozie job user.name<a name="line.181"></a>
+<FONT color="green">182</FONT>                System.setProperty("user.name", pigProperties.getProperty("user.name"));<a name="line.182"></a>
+<FONT color="green">183</FONT>                runPigJob(arguments.toArray(new String[arguments.size()]));<a name="line.183"></a>
+<FONT color="green">184</FONT>            }<a name="line.184"></a>
+<FONT color="green">185</FONT>            catch (SecurityException ex) {<a name="line.185"></a>
+<FONT color="green">186</FONT>                if (LauncherSecurityManager.getExitInvoked()) {<a name="line.186"></a>
+<FONT color="green">187</FONT>                    if (LauncherSecurityManager.getExitCode() != 0) {<a name="line.187"></a>
+<FONT color="green">188</FONT>                        System.err.println();<a name="line.188"></a>
+<FONT color="green">189</FONT>                        System.err.println("Pig logfile dump:");<a name="line.189"></a>
+<FONT color="green">190</FONT>                        System.err.println();<a name="line.190"></a>
+<FONT color="green">191</FONT>                        BufferedReader reader = new BufferedReader(new FileReader(pigLog));<a name="line.191"></a>
+<FONT color="green">192</FONT>                        line = reader.readLine();<a name="line.192"></a>
+<FONT color="green">193</FONT>                        while (line != null) {<a name="line.193"></a>
+<FONT color="green">194</FONT>                            System.err.println(line);<a name="line.194"></a>
+<FONT color="green">195</FONT>                            line = reader.readLine();<a name="line.195"></a>
+<FONT color="green">196</FONT>                        }<a name="line.196"></a>
+<FONT color="green">197</FONT>                        reader.close();<a name="line.197"></a>
+<FONT color="green">198</FONT>                        throw ex;<a name="line.198"></a>
+<FONT color="green">199</FONT>                    }<a name="line.199"></a>
+<FONT color="green">200</FONT>                }<a name="line.200"></a>
+<FONT color="green">201</FONT>            }<a name="line.201"></a>
+<FONT color="green">202</FONT>            finally {<a name="line.202"></a>
+<FONT color="green">203</FONT>                System.setProperty("user.name", userName);<a name="line.203"></a>
+<FONT color="green">204</FONT>            }<a name="line.204"></a>
+<FONT color="green">205</FONT>    <a name="line.205"></a>
+<FONT color="green">206</FONT>            System.out.println();<a name="line.206"></a>
+<FONT color="green">207</FONT>            System.out.println("&lt;&lt;&lt; Invocation of Pig command completed &lt;&lt;&lt;");<a name="line.207"></a>
+<FONT color="green">208</FONT>            System.out.println();<a name="line.208"></a>
+<FONT color="green">209</FONT>    <a name="line.209"></a>
+<FONT color="green">210</FONT>            // harvesting and recording Hadoop Job IDs<a name="line.210"></a>
+<FONT color="green">211</FONT>            Properties jobIds = getHadoopJobIds(logFile);<a name="line.211"></a>
+<FONT color="green">212</FONT>            File file = new File(System.getProperty("oozie.action.output.properties"));<a name="line.212"></a>
+<FONT color="green">213</FONT>            os = new FileOutputStream(file);<a name="line.213"></a>
+<FONT color="green">214</FONT>            jobIds.store(os, "");<a name="line.214"></a>
+<FONT color="green">215</FONT>            os.close();<a name="line.215"></a>
+<FONT color="green">216</FONT>            System.out.println(" Hadoop Job IDs executed by Pig: " + jobIds.getProperty("hadoopJobs"));<a name="line.216"></a>
+<FONT color="green">217</FONT>            System.out.println();<a name="line.217"></a>
+<FONT color="green">218</FONT>        }<a name="line.218"></a>
+<FONT color="green">219</FONT>    <a name="line.219"></a>
+<FONT color="green">220</FONT>        protected void runPigJob(String[] args) throws Exception {<a name="line.220"></a>
+<FONT color="green">221</FONT>            // running as from the command line<a name="line.221"></a>
+<FONT color="green">222</FONT>            Main.main(args);<a name="line.222"></a>
+<FONT color="green">223</FONT>        }<a name="line.223"></a>
+<FONT color="green">224</FONT>    <a name="line.224"></a>
+<FONT color="green">225</FONT>        public static void setPigScript(Configuration conf, String script, String[] params) {<a name="line.225"></a>
+<FONT color="green">226</FONT>            conf.set("oozie.pig.script", script);<a name="line.226"></a>
+<FONT color="green">227</FONT>            MapReduceMain.setStrings(conf, "oozie.pig.params", params);<a name="line.227"></a>
+<FONT color="green">228</FONT>        }<a name="line.228"></a>
+<FONT color="green">229</FONT>    <a name="line.229"></a>
+<FONT color="green">230</FONT>        private static final String JOB_ID_LOG_PREFIX = "HadoopJobId: ";<a name="line.230"></a>
+<FONT color="green">231</FONT>    <a name="line.231"></a>
+<FONT color="green">232</FONT>        protected Properties getHadoopJobIds(String logFile) throws IOException {<a name="line.232"></a>
+<FONT color="green">233</FONT>            int jobCount = 0;<a name="line.233"></a>
+<FONT color="green">234</FONT>            Properties props = new Properties();<a name="line.234"></a>
+<FONT color="green">235</FONT>            StringBuffer sb = new StringBuffer(100);<a name="line.235"></a>
+<FONT color="green">236</FONT>            BufferedReader br = new BufferedReader(new FileReader(logFile));<a name="line.236"></a>
+<FONT color="green">237</FONT>            String line = br.readLine();<a name="line.237"></a>
+<FONT color="green">238</FONT>            String separator = "";<a name="line.238"></a>
+<FONT color="green">239</FONT>            while (line != null) {<a name="line.239"></a>
+<FONT color="green">240</FONT>                if (line.contains(JOB_ID_LOG_PREFIX)) {<a name="line.240"></a>
+<FONT color="green">241</FONT>                    int jobIdStarts = line.indexOf(JOB_ID_LOG_PREFIX) + JOB_ID_LOG_PREFIX.length();<a name="line.241"></a>
+<FONT color="green">242</FONT>                    String jobId = line.substring(jobIdStarts);<a name="line.242"></a>
+<FONT color="green">243</FONT>                    int jobIdEnds = jobId.indexOf(" ");<a name="line.243"></a>
+<FONT color="green">244</FONT>                    if (jobIdEnds &gt; -1) {<a name="line.244"></a>
+<FONT color="green">245</FONT>                        jobId = jobId.substring(0, jobId.indexOf(" "));<a name="line.245"></a>
+<FONT color="green">246</FONT>                    }<a name="line.246"></a>
+<FONT color="green">247</FONT>                    sb.append(separator).append(jobId);<a name="line.247"></a>
+<FONT color="green">248</FONT>                    separator = ",";<a name="line.248"></a>
+<FONT color="green">249</FONT>                }<a name="line.249"></a>
+<FONT color="green">250</FONT>                line = br.readLine();<a name="line.250"></a>
+<FONT color="green">251</FONT>            }<a name="line.251"></a>
+<FONT color="green">252</FONT>            br.close();<a name="line.252"></a>
+<FONT color="green">253</FONT>            props.setProperty("hadoopJobs", sb.toString());<a name="line.253"></a>
+<FONT color="green">254</FONT>            return props;<a name="line.254"></a>
+<FONT color="green">255</FONT>        }<a name="line.255"></a>
+<FONT color="green">256</FONT>    <a name="line.256"></a>
+<FONT color="green">257</FONT>    }<a name="line.257"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

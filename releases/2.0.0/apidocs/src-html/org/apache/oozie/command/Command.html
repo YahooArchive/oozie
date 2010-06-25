@@ -1,0 +1,640 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one<a name="line.2"></a>
+<FONT color="green">003</FONT>     * or more contributor license agreements.  See the NOTICE file<a name="line.3"></a>
+<FONT color="green">004</FONT>     * distributed with this work for additional information<a name="line.4"></a>
+<FONT color="green">005</FONT>     * regarding copyright ownership.  The ASF licenses this file<a name="line.5"></a>
+<FONT color="green">006</FONT>     * to you under the Apache License, Version 2.0 (the<a name="line.6"></a>
+<FONT color="green">007</FONT>     * "License"); you may not use this file except in compliance<a name="line.7"></a>
+<FONT color="green">008</FONT>     * with the License.  You may obtain a copy of the License at<a name="line.8"></a>
+<FONT color="green">009</FONT>     *<a name="line.9"></a>
+<FONT color="green">010</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.10"></a>
+<FONT color="green">011</FONT>     *<a name="line.11"></a>
+<FONT color="green">012</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.12"></a>
+<FONT color="green">013</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.13"></a>
+<FONT color="green">014</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.14"></a>
+<FONT color="green">015</FONT>     * See the License for the specific language governing permissions and<a name="line.15"></a>
+<FONT color="green">016</FONT>     * limitations under the License.<a name="line.16"></a>
+<FONT color="green">017</FONT>     */<a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.oozie.command;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.util.ArrayList;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.util.List;<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    import org.apache.oozie.CoordinatorActionBean;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import org.apache.oozie.CoordinatorJobBean;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import org.apache.oozie.FaultInjection;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import org.apache.oozie.WorkflowActionBean;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import org.apache.oozie.WorkflowJobBean;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import org.apache.oozie.XException;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import org.apache.oozie.service.CallableQueueService;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import org.apache.oozie.service.DagXLogInfoService;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import org.apache.oozie.service.InstrumentationService;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import org.apache.oozie.service.MemoryLocksService;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import org.apache.oozie.service.Services;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import org.apache.oozie.service.StoreService;<a name="line.34"></a>
+<FONT color="green">035</FONT>    import org.apache.oozie.service.XLogService;<a name="line.35"></a>
+<FONT color="green">036</FONT>    import org.apache.oozie.store.Store;<a name="line.36"></a>
+<FONT color="green">037</FONT>    import org.apache.oozie.store.StoreException;<a name="line.37"></a>
+<FONT color="green">038</FONT>    import org.apache.oozie.store.WorkflowStore;<a name="line.38"></a>
+<FONT color="green">039</FONT>    import org.apache.oozie.util.Instrumentation;<a name="line.39"></a>
+<FONT color="green">040</FONT>    import org.apache.oozie.util.ParamChecker;<a name="line.40"></a>
+<FONT color="green">041</FONT>    import org.apache.oozie.util.XCallable;<a name="line.41"></a>
+<FONT color="green">042</FONT>    import org.apache.oozie.util.XLog;<a name="line.42"></a>
+<FONT color="green">043</FONT>    import org.apache.oozie.util.MemoryLocks.LockToken;<a name="line.43"></a>
+<FONT color="green">044</FONT>    <a name="line.44"></a>
+<FONT color="green">045</FONT>    /**<a name="line.45"></a>
+<FONT color="green">046</FONT>     * Base class for all synchronous and asynchronous DagEngine commands.<a name="line.46"></a>
+<FONT color="green">047</FONT>     */<a name="line.47"></a>
+<FONT color="green">048</FONT>    public abstract class Command&lt;T, S extends Store&gt; implements XCallable&lt;T&gt; {<a name="line.48"></a>
+<FONT color="green">049</FONT>        /**<a name="line.49"></a>
+<FONT color="green">050</FONT>         * The instrumentation group used for Commands.<a name="line.50"></a>
+<FONT color="green">051</FONT>         */<a name="line.51"></a>
+<FONT color="green">052</FONT>        private static final String INSTRUMENTATION_GROUP = "commands";<a name="line.52"></a>
+<FONT color="green">053</FONT>    <a name="line.53"></a>
+<FONT color="green">054</FONT>        private final long createdTime;<a name="line.54"></a>
+<FONT color="green">055</FONT>    <a name="line.55"></a>
+<FONT color="green">056</FONT>        /**<a name="line.56"></a>
+<FONT color="green">057</FONT>         * The instrumentation group used for Jobs.<a name="line.57"></a>
+<FONT color="green">058</FONT>         */<a name="line.58"></a>
+<FONT color="green">059</FONT>        private static final String INSTRUMENTATION_JOB_GROUP = "jobs";<a name="line.59"></a>
+<FONT color="green">060</FONT>    <a name="line.60"></a>
+<FONT color="green">061</FONT>        private static final long LOCK_TIMEOUT = 1000;<a name="line.61"></a>
+<FONT color="green">062</FONT>        protected static final long LOCK_FAILURE_REQUEUE_INTERVAL = 30000;<a name="line.62"></a>
+<FONT color="green">063</FONT>    <a name="line.63"></a>
+<FONT color="green">064</FONT>        protected Instrumentation instrumentation;<a name="line.64"></a>
+<FONT color="green">065</FONT>        private List&lt;XCallable&lt;Void&gt;&gt; callables;<a name="line.65"></a>
+<FONT color="green">066</FONT>        private List&lt;XCallable&lt;Void&gt;&gt; delayedCallables;<a name="line.66"></a>
+<FONT color="green">067</FONT>        private long delay = 0;<a name="line.67"></a>
+<FONT color="green">068</FONT>        private List&lt;XCallable&lt;Void&gt;&gt; exceptionCallables;<a name="line.68"></a>
+<FONT color="green">069</FONT>        private String name;<a name="line.69"></a>
+<FONT color="green">070</FONT>        private int priority;<a name="line.70"></a>
+<FONT color="green">071</FONT>        private int logMask;<a name="line.71"></a>
+<FONT color="green">072</FONT>        private boolean withStore;<a name="line.72"></a>
+<FONT color="green">073</FONT>        protected boolean dryrun = false;<a name="line.73"></a>
+<FONT color="green">074</FONT>        protected String type;<a name="line.74"></a>
+<FONT color="green">075</FONT>        private ArrayList&lt;LockToken&gt; locks = null;<a name="line.75"></a>
+<FONT color="green">076</FONT>    <a name="line.76"></a>
+<FONT color="green">077</FONT>        /**<a name="line.77"></a>
+<FONT color="green">078</FONT>         * This variable is package private for testing purposes only.<a name="line.78"></a>
+<FONT color="green">079</FONT>         */<a name="line.79"></a>
+<FONT color="green">080</FONT>        XLog.Info logInfo;<a name="line.80"></a>
+<FONT color="green">081</FONT>    <a name="line.81"></a>
+<FONT color="green">082</FONT>        /**<a name="line.82"></a>
+<FONT color="green">083</FONT>         * Create a command that uses a {@link WorkflowStore} instance. &lt;p/&gt; The current {@link XLog.Info} values are<a name="line.83"></a>
+<FONT color="green">084</FONT>         * captured for execution.<a name="line.84"></a>
+<FONT color="green">085</FONT>         *<a name="line.85"></a>
+<FONT color="green">086</FONT>         * @param name command name.<a name="line.86"></a>
+<FONT color="green">087</FONT>         * @param type command type.<a name="line.87"></a>
+<FONT color="green">088</FONT>         * @param priority priority of the command, used when queuing for asynchronous execution.<a name="line.88"></a>
+<FONT color="green">089</FONT>         * @param logMask log mask for the command logging calls.<a name="line.89"></a>
+<FONT color="green">090</FONT>         */<a name="line.90"></a>
+<FONT color="green">091</FONT>        public Command(String name, String type, int priority, int logMask) {<a name="line.91"></a>
+<FONT color="green">092</FONT>            this(name, type, priority, logMask, true);<a name="line.92"></a>
+<FONT color="green">093</FONT>        }<a name="line.93"></a>
+<FONT color="green">094</FONT>    <a name="line.94"></a>
+<FONT color="green">095</FONT>        /**<a name="line.95"></a>
+<FONT color="green">096</FONT>         * Create a command. &lt;p/&gt; The current {@link XLog.Info} values are captured for execution.<a name="line.96"></a>
+<FONT color="green">097</FONT>         *<a name="line.97"></a>
+<FONT color="green">098</FONT>         * @param name command name.<a name="line.98"></a>
+<FONT color="green">099</FONT>         * @param type command type.<a name="line.99"></a>
+<FONT color="green">100</FONT>         * @param priority priority of the command, used when queuing for asynchronous execution.<a name="line.100"></a>
+<FONT color="green">101</FONT>         * @param logMask log mask for the command logging calls.<a name="line.101"></a>
+<FONT color="green">102</FONT>         * @param withStore indicates if the command needs a {@link org.apache.oozie.store.WorkflowStore} instance or not.<a name="line.102"></a>
+<FONT color="green">103</FONT>         */<a name="line.103"></a>
+<FONT color="green">104</FONT>        public Command(String name, String type, int priority, int logMask, boolean withStore) {<a name="line.104"></a>
+<FONT color="green">105</FONT>            this.name = ParamChecker.notEmpty(name, "name");<a name="line.105"></a>
+<FONT color="green">106</FONT>            this.type = ParamChecker.notEmpty(type, "type");<a name="line.106"></a>
+<FONT color="green">107</FONT>            this.priority = priority;<a name="line.107"></a>
+<FONT color="green">108</FONT>            this.withStore = withStore;<a name="line.108"></a>
+<FONT color="green">109</FONT>            this.logMask = logMask;<a name="line.109"></a>
+<FONT color="green">110</FONT>            instrumentation = Services.get().get(InstrumentationService.class).get();<a name="line.110"></a>
+<FONT color="green">111</FONT>            logInfo = new XLog.Info(XLog.Info.get());<a name="line.111"></a>
+<FONT color="green">112</FONT>            createdTime = System.currentTimeMillis();<a name="line.112"></a>
+<FONT color="green">113</FONT>            locks = new ArrayList&lt;LockToken&gt;();<a name="line.113"></a>
+<FONT color="green">114</FONT>        }<a name="line.114"></a>
+<FONT color="green">115</FONT>    <a name="line.115"></a>
+<FONT color="green">116</FONT>        /**<a name="line.116"></a>
+<FONT color="green">117</FONT>         * Create a command. &lt;p/&gt; The current {@link XLog.Info} values are captured for execution.<a name="line.117"></a>
+<FONT color="green">118</FONT>         *<a name="line.118"></a>
+<FONT color="green">119</FONT>         * @param name command name.<a name="line.119"></a>
+<FONT color="green">120</FONT>         * @param type command type.<a name="line.120"></a>
+<FONT color="green">121</FONT>         * @param priority priority of the command, used when queuing for asynchronous execution.<a name="line.121"></a>
+<FONT color="green">122</FONT>         * @param logMask log mask for the command logging calls.<a name="line.122"></a>
+<FONT color="green">123</FONT>         * @param withStore indicates if the command needs a {@link org.apache.oozie.store.WorkflowStore} instance or not.<a name="line.123"></a>
+<FONT color="green">124</FONT>         * @param dryrun indicates if dryrun option is enabled. if enabled coordinator will show a diagnostic output without<a name="line.124"></a>
+<FONT color="green">125</FONT>         * really submitting the job<a name="line.125"></a>
+<FONT color="green">126</FONT>         */<a name="line.126"></a>
+<FONT color="green">127</FONT>        public Command(String name, String type, int priority, int logMask, boolean withStore, boolean dryrun) {<a name="line.127"></a>
+<FONT color="green">128</FONT>            this(name, type, priority, logMask, withStore);<a name="line.128"></a>
+<FONT color="green">129</FONT>            this.dryrun = dryrun;<a name="line.129"></a>
+<FONT color="green">130</FONT>        }<a name="line.130"></a>
+<FONT color="green">131</FONT>    <a name="line.131"></a>
+<FONT color="green">132</FONT>        /**<a name="line.132"></a>
+<FONT color="green">133</FONT>         * Return the name of the command.<a name="line.133"></a>
+<FONT color="green">134</FONT>         *<a name="line.134"></a>
+<FONT color="green">135</FONT>         * @return the name of the command.<a name="line.135"></a>
+<FONT color="green">136</FONT>         */<a name="line.136"></a>
+<FONT color="green">137</FONT>        public String getName() {<a name="line.137"></a>
+<FONT color="green">138</FONT>            return name;<a name="line.138"></a>
+<FONT color="green">139</FONT>        }<a name="line.139"></a>
+<FONT color="green">140</FONT>    <a name="line.140"></a>
+<FONT color="green">141</FONT>        /**<a name="line.141"></a>
+<FONT color="green">142</FONT>         * Return the callable type. &lt;p/&gt; The callable type is used for concurrency throttling in the {@link<a name="line.142"></a>
+<FONT color="green">143</FONT>         * org.apache.oozie.service.CallableQueueService}.<a name="line.143"></a>
+<FONT color="green">144</FONT>         *<a name="line.144"></a>
+<FONT color="green">145</FONT>         * @return the callable type.<a name="line.145"></a>
+<FONT color="green">146</FONT>         */<a name="line.146"></a>
+<FONT color="green">147</FONT>        public String getType() {<a name="line.147"></a>
+<FONT color="green">148</FONT>            return type;<a name="line.148"></a>
+<FONT color="green">149</FONT>        }<a name="line.149"></a>
+<FONT color="green">150</FONT>    <a name="line.150"></a>
+<FONT color="green">151</FONT>        /**<a name="line.151"></a>
+<FONT color="green">152</FONT>         * Return the priority of the command.<a name="line.152"></a>
+<FONT color="green">153</FONT>         *<a name="line.153"></a>
+<FONT color="green">154</FONT>         * @return the priority of the command.<a name="line.154"></a>
+<FONT color="green">155</FONT>         */<a name="line.155"></a>
+<FONT color="green">156</FONT>        public int getPriority() {<a name="line.156"></a>
+<FONT color="green">157</FONT>            return priority;<a name="line.157"></a>
+<FONT color="green">158</FONT>        }<a name="line.158"></a>
+<FONT color="green">159</FONT>    <a name="line.159"></a>
+<FONT color="green">160</FONT>        /**<a name="line.160"></a>
+<FONT color="green">161</FONT>         * Returns the createdTime of the callable in milliseconds<a name="line.161"></a>
+<FONT color="green">162</FONT>         *<a name="line.162"></a>
+<FONT color="green">163</FONT>         * @return the callable createdTime<a name="line.163"></a>
+<FONT color="green">164</FONT>         */<a name="line.164"></a>
+<FONT color="green">165</FONT>        public long getCreatedTime() {<a name="line.165"></a>
+<FONT color="green">166</FONT>            return createdTime;<a name="line.166"></a>
+<FONT color="green">167</FONT>        }<a name="line.167"></a>
+<FONT color="green">168</FONT>    <a name="line.168"></a>
+<FONT color="green">169</FONT>        /**<a name="line.169"></a>
+<FONT color="green">170</FONT>         * Execute the command {@link #call(WorkflowStore)} setting all the necessary context. &lt;p/&gt; The {@link XLog.Info} is<a name="line.170"></a>
+<FONT color="green">171</FONT>         * set to the values at instance creation time. &lt;p/&gt; The command execution is logged and instrumented. &lt;p/&gt; If a<a name="line.171"></a>
+<FONT color="green">172</FONT>         * {@link WorkflowStore} is used, a fresh instance will be passed and it will be commited after the {@link<a name="line.172"></a>
+<FONT color="green">173</FONT>         * #call(WorkflowStore)} execution. It will be closed without committing if an exception is thrown. &lt;p/&gt; Commands<a name="line.173"></a>
+<FONT color="green">174</FONT>         * queued via the DagCommand queue methods are queued for execution after the workflow store has been committed.<a name="line.174"></a>
+<FONT color="green">175</FONT>         * &lt;p/&gt; If an exception happends the queued commands will not be effectively queued for execution. Instead, the the<a name="line.175"></a>
+<FONT color="green">176</FONT>         * commands queued for exception will be effectively queued fro execution..<a name="line.176"></a>
+<FONT color="green">177</FONT>         *<a name="line.177"></a>
+<FONT color="green">178</FONT>         * @throws CommandException thrown if the command could not be executed successfully, the workflow store is closed<a name="line.178"></a>
+<FONT color="green">179</FONT>         * without committing, thus doing a rollback.<a name="line.179"></a>
+<FONT color="green">180</FONT>         */<a name="line.180"></a>
+<FONT color="green">181</FONT>        @SuppressWarnings({"ThrowFromFinallyBlock", "unchecked"})<a name="line.181"></a>
+<FONT color="green">182</FONT>        public final T call() throws CommandException {<a name="line.182"></a>
+<FONT color="green">183</FONT>            XLog.Info.get().setParameters(logInfo);<a name="line.183"></a>
+<FONT color="green">184</FONT>            XLog log = XLog.getLog(getClass());<a name="line.184"></a>
+<FONT color="green">185</FONT>            log.trace(logMask, "Start");<a name="line.185"></a>
+<FONT color="green">186</FONT>            Instrumentation.Cron cron = new Instrumentation.Cron();<a name="line.186"></a>
+<FONT color="green">187</FONT>            cron.start();<a name="line.187"></a>
+<FONT color="green">188</FONT>            callables = new ArrayList&lt;XCallable&lt;Void&gt;&gt;();<a name="line.188"></a>
+<FONT color="green">189</FONT>            delayedCallables = new ArrayList&lt;XCallable&lt;Void&gt;&gt;();<a name="line.189"></a>
+<FONT color="green">190</FONT>            exceptionCallables = new ArrayList&lt;XCallable&lt;Void&gt;&gt;();<a name="line.190"></a>
+<FONT color="green">191</FONT>            delay = 0;<a name="line.191"></a>
+<FONT color="green">192</FONT>            S store = null;<a name="line.192"></a>
+<FONT color="green">193</FONT>            boolean exception = false;<a name="line.193"></a>
+<FONT color="green">194</FONT>    <a name="line.194"></a>
+<FONT color="green">195</FONT>            try {<a name="line.195"></a>
+<FONT color="green">196</FONT>                if (withStore) {<a name="line.196"></a>
+<FONT color="green">197</FONT>                    store = (S) Services.get().get(StoreService.class).getStore(getStoreClass());<a name="line.197"></a>
+<FONT color="green">198</FONT>                    store.beginTrx();<a name="line.198"></a>
+<FONT color="green">199</FONT>                }<a name="line.199"></a>
+<FONT color="green">200</FONT>                T result = execute(store);<a name="line.200"></a>
+<FONT color="green">201</FONT>                /*<a name="line.201"></a>
+<FONT color="green">202</FONT>                 * <a name="line.202"></a>
+<FONT color="green">203</FONT>                 * if (store != null &amp;&amp; log != null) { log.info(XLog.STD,<a name="line.203"></a>
+<FONT color="green">204</FONT>                 * "connection log from store Flush Mode {0} ",<a name="line.204"></a>
+<FONT color="green">205</FONT>                 * store.getFlushMode()); }<a name="line.205"></a>
+<FONT color="green">206</FONT>                 */<a name="line.206"></a>
+<FONT color="green">207</FONT>                if (withStore) {<a name="line.207"></a>
+<FONT color="green">208</FONT>                    if (store == null) {<a name="line.208"></a>
+<FONT color="green">209</FONT>                        throw new IllegalStateException("WorkflowStore should not be null");<a name="line.209"></a>
+<FONT color="green">210</FONT>                    }<a name="line.210"></a>
+<FONT color="green">211</FONT>                    if (FaultInjection.isActive("org.apache.oozie.command.SkipCommitFaultInjection")) {<a name="line.211"></a>
+<FONT color="green">212</FONT>                        throw new RuntimeException("Skipping Commit for Failover Testing");<a name="line.212"></a>
+<FONT color="green">213</FONT>                    }<a name="line.213"></a>
+<FONT color="green">214</FONT>                    store.commitTrx();<a name="line.214"></a>
+<FONT color="green">215</FONT>                }<a name="line.215"></a>
+<FONT color="green">216</FONT>    <a name="line.216"></a>
+<FONT color="green">217</FONT>                // TODO figure out the reject due to concurrency problems and remove<a name="line.217"></a>
+<FONT color="green">218</FONT>                // the delayed queuing for callables.<a name="line.218"></a>
+<FONT color="green">219</FONT>                boolean ret = Services.get().get(CallableQueueService.class).queueSerial(callables, 10);<a name="line.219"></a>
+<FONT color="green">220</FONT>                if (ret == false) {<a name="line.220"></a>
+<FONT color="green">221</FONT>                    logQueueCallableFalse(callables);<a name="line.221"></a>
+<FONT color="green">222</FONT>                }<a name="line.222"></a>
+<FONT color="green">223</FONT>    <a name="line.223"></a>
+<FONT color="green">224</FONT>                ret = Services.get().get(CallableQueueService.class).queueSerial(delayedCallables, delay);<a name="line.224"></a>
+<FONT color="green">225</FONT>                if (ret == false) {<a name="line.225"></a>
+<FONT color="green">226</FONT>                    logQueueCallableFalse(delayedCallables);<a name="line.226"></a>
+<FONT color="green">227</FONT>                }<a name="line.227"></a>
+<FONT color="green">228</FONT>    <a name="line.228"></a>
+<FONT color="green">229</FONT>                return result;<a name="line.229"></a>
+<FONT color="green">230</FONT>            }<a name="line.230"></a>
+<FONT color="green">231</FONT>            catch (XException ex) {<a name="line.231"></a>
+<FONT color="green">232</FONT>                log.error(logMask | XLog.OPS, "XException, {0}", ex);<a name="line.232"></a>
+<FONT color="green">233</FONT>                if (store != null) {<a name="line.233"></a>
+<FONT color="green">234</FONT>                    log.info(XLog.STD, "XException - connection logs from store {0}, {1}", store.getConnection(), store<a name="line.234"></a>
+<FONT color="green">235</FONT>                            .isClosed());<a name="line.235"></a>
+<FONT color="green">236</FONT>                }<a name="line.236"></a>
+<FONT color="green">237</FONT>                exception = true;<a name="line.237"></a>
+<FONT color="green">238</FONT>                if (store != null &amp;&amp; store.isActive()) {<a name="line.238"></a>
+<FONT color="green">239</FONT>                    try {<a name="line.239"></a>
+<FONT color="green">240</FONT>                        store.rollbackTrx();<a name="line.240"></a>
+<FONT color="green">241</FONT>                    }<a name="line.241"></a>
+<FONT color="green">242</FONT>                    catch (RuntimeException rex) {<a name="line.242"></a>
+<FONT color="green">243</FONT>                        log.error(logMask | XLog.OPS, "openjpa error, {1}, {2}", name, rex.getMessage(), rex);<a name="line.243"></a>
+<FONT color="green">244</FONT>                    }<a name="line.244"></a>
+<FONT color="green">245</FONT>                }<a name="line.245"></a>
+<FONT color="green">246</FONT>    <a name="line.246"></a>
+<FONT color="green">247</FONT>                // TODO figure out the reject due to concurrency problems and remove<a name="line.247"></a>
+<FONT color="green">248</FONT>                // the delayed queuing for callables.<a name="line.248"></a>
+<FONT color="green">249</FONT>                boolean ret = Services.get().get(CallableQueueService.class).queueSerial(exceptionCallables, 10);<a name="line.249"></a>
+<FONT color="green">250</FONT>                if (ret == false) {<a name="line.250"></a>
+<FONT color="green">251</FONT>                    logQueueCallableFalse(exceptionCallables);<a name="line.251"></a>
+<FONT color="green">252</FONT>                }<a name="line.252"></a>
+<FONT color="green">253</FONT>                if (ex instanceof CommandException) {<a name="line.253"></a>
+<FONT color="green">254</FONT>                    throw (CommandException) ex;<a name="line.254"></a>
+<FONT color="green">255</FONT>                }<a name="line.255"></a>
+<FONT color="green">256</FONT>                else {<a name="line.256"></a>
+<FONT color="green">257</FONT>                    throw new CommandException(ex);<a name="line.257"></a>
+<FONT color="green">258</FONT>                }<a name="line.258"></a>
+<FONT color="green">259</FONT>            }<a name="line.259"></a>
+<FONT color="green">260</FONT>            catch (RuntimeException ex) {<a name="line.260"></a>
+<FONT color="green">261</FONT>                log.error(logMask | XLog.OPS, "Runtime exception, {0}", ex);<a name="line.261"></a>
+<FONT color="green">262</FONT>                exception = true;<a name="line.262"></a>
+<FONT color="green">263</FONT>                if (store != null &amp;&amp; store.isActive()) {<a name="line.263"></a>
+<FONT color="green">264</FONT>                    try {<a name="line.264"></a>
+<FONT color="green">265</FONT>                        store.rollbackTrx();<a name="line.265"></a>
+<FONT color="green">266</FONT>                    }<a name="line.266"></a>
+<FONT color="green">267</FONT>                    catch (RuntimeException rex) {<a name="line.267"></a>
+<FONT color="green">268</FONT>                        log.error(logMask | XLog.OPS, "openjpa error, {1}, {2}", name, rex.getMessage(), rex);<a name="line.268"></a>
+<FONT color="green">269</FONT>                    }<a name="line.269"></a>
+<FONT color="green">270</FONT>                }<a name="line.270"></a>
+<FONT color="green">271</FONT>                throw ex;<a name="line.271"></a>
+<FONT color="green">272</FONT>            }<a name="line.272"></a>
+<FONT color="green">273</FONT>            catch (Error er) {<a name="line.273"></a>
+<FONT color="green">274</FONT>                log.error(logMask | XLog.OPS, "Error, {0}", er);<a name="line.274"></a>
+<FONT color="green">275</FONT>                exception = true;<a name="line.275"></a>
+<FONT color="green">276</FONT>                if (store != null &amp;&amp; store.isActive()) {<a name="line.276"></a>
+<FONT color="green">277</FONT>                    try {<a name="line.277"></a>
+<FONT color="green">278</FONT>                        store.rollbackTrx();<a name="line.278"></a>
+<FONT color="green">279</FONT>                    }<a name="line.279"></a>
+<FONT color="green">280</FONT>                    catch (RuntimeException rex) {<a name="line.280"></a>
+<FONT color="green">281</FONT>                        log.error(logMask | XLog.OPS, "openjpa error, {1}, {2}", name, rex.getMessage(), rex);<a name="line.281"></a>
+<FONT color="green">282</FONT>                    }<a name="line.282"></a>
+<FONT color="green">283</FONT>                }<a name="line.283"></a>
+<FONT color="green">284</FONT>                throw er;<a name="line.284"></a>
+<FONT color="green">285</FONT>            }<a name="line.285"></a>
+<FONT color="green">286</FONT>            finally {<a name="line.286"></a>
+<FONT color="green">287</FONT>                FaultInjection.deactivate("org.apache.oozie.command.SkipCommitFaultInjection");<a name="line.287"></a>
+<FONT color="green">288</FONT>                cron.stop();<a name="line.288"></a>
+<FONT color="green">289</FONT>                instrumentation.addCron(INSTRUMENTATION_GROUP, name, cron);<a name="line.289"></a>
+<FONT color="green">290</FONT>                incrCommandCounter(1);<a name="line.290"></a>
+<FONT color="green">291</FONT>                log.trace(logMask, "End");<a name="line.291"></a>
+<FONT color="green">292</FONT>                if (locks != null) {<a name="line.292"></a>
+<FONT color="green">293</FONT>                    for (LockToken lock : locks) {<a name="line.293"></a>
+<FONT color="green">294</FONT>                        lock.release();<a name="line.294"></a>
+<FONT color="green">295</FONT>                    }<a name="line.295"></a>
+<FONT color="green">296</FONT>                    locks.clear();<a name="line.296"></a>
+<FONT color="green">297</FONT>                }<a name="line.297"></a>
+<FONT color="green">298</FONT>                if (store != null) {<a name="line.298"></a>
+<FONT color="green">299</FONT>                    if (!store.isActive()) {<a name="line.299"></a>
+<FONT color="green">300</FONT>                        try {<a name="line.300"></a>
+<FONT color="green">301</FONT>                            store.closeTrx();<a name="line.301"></a>
+<FONT color="green">302</FONT>                        }<a name="line.302"></a>
+<FONT color="green">303</FONT>                        catch (RuntimeException rex) {<a name="line.303"></a>
+<FONT color="green">304</FONT>                            if (exception) {<a name="line.304"></a>
+<FONT color="green">305</FONT>                                log.error(logMask | XLog.OPS, "openjpa error, {1}, {2}", name, rex.getMessage(), rex);<a name="line.305"></a>
+<FONT color="green">306</FONT>                            }<a name="line.306"></a>
+<FONT color="green">307</FONT>                            else {<a name="line.307"></a>
+<FONT color="green">308</FONT>                                throw rex;<a name="line.308"></a>
+<FONT color="green">309</FONT>                            }<a name="line.309"></a>
+<FONT color="green">310</FONT>                        }<a name="line.310"></a>
+<FONT color="green">311</FONT>                    }<a name="line.311"></a>
+<FONT color="green">312</FONT>                    else {<a name="line.312"></a>
+<FONT color="green">313</FONT>                        log.warn(logMask | XLog.OPS, "transaction is not committed or rolled back before closing entitymanager.");<a name="line.313"></a>
+<FONT color="green">314</FONT>                    }<a name="line.314"></a>
+<FONT color="green">315</FONT>                }<a name="line.315"></a>
+<FONT color="green">316</FONT>            }<a name="line.316"></a>
+<FONT color="green">317</FONT>        }<a name="line.317"></a>
+<FONT color="green">318</FONT>    <a name="line.318"></a>
+<FONT color="green">319</FONT>        /**<a name="line.319"></a>
+<FONT color="green">320</FONT>         * Queue a callable for execution after the current callable call invocation completes and the {@link WorkflowStore}<a name="line.320"></a>
+<FONT color="green">321</FONT>         * transaction commits. &lt;p/&gt; All queued callables, regardless of the number of queue invocations, are queued for a<a name="line.321"></a>
+<FONT color="green">322</FONT>         * single serial execution. &lt;p/&gt; If the call invocation throws an exception all queued callables are discarded, they<a name="line.322"></a>
+<FONT color="green">323</FONT>         * are not queued for execution.<a name="line.323"></a>
+<FONT color="green">324</FONT>         *<a name="line.324"></a>
+<FONT color="green">325</FONT>         * @param callable callable to queue for execution.<a name="line.325"></a>
+<FONT color="green">326</FONT>         */<a name="line.326"></a>
+<FONT color="green">327</FONT>        protected void queueCallable(XCallable&lt;Void&gt; callable) {<a name="line.327"></a>
+<FONT color="green">328</FONT>            callables.add(callable);<a name="line.328"></a>
+<FONT color="green">329</FONT>        }<a name="line.329"></a>
+<FONT color="green">330</FONT>    <a name="line.330"></a>
+<FONT color="green">331</FONT>        /**<a name="line.331"></a>
+<FONT color="green">332</FONT>         * Queue a list of callables for execution after the current callable call invocation completes and the {@link<a name="line.332"></a>
+<FONT color="green">333</FONT>         * WorkflowStore} transaction commits. &lt;p/&gt; All queued callables, regardless of the number of queue invocations, are<a name="line.333"></a>
+<FONT color="green">334</FONT>         * queued for a single serial execution. &lt;p/&gt; If the call invocation throws an exception all queued callables are<a name="line.334"></a>
+<FONT color="green">335</FONT>         * discarded, they are not queued for execution.<a name="line.335"></a>
+<FONT color="green">336</FONT>         *<a name="line.336"></a>
+<FONT color="green">337</FONT>         * @param callables list of callables to queue for execution.<a name="line.337"></a>
+<FONT color="green">338</FONT>         */<a name="line.338"></a>
+<FONT color="green">339</FONT>        protected void queueCallable(List&lt;? extends XCallable&lt;Void&gt;&gt; callables) {<a name="line.339"></a>
+<FONT color="green">340</FONT>            this.callables.addAll(callables);<a name="line.340"></a>
+<FONT color="green">341</FONT>        }<a name="line.341"></a>
+<FONT color="green">342</FONT>    <a name="line.342"></a>
+<FONT color="green">343</FONT>        /**<a name="line.343"></a>
+<FONT color="green">344</FONT>         * Queue a callable for delayed execution after the current callable call invocation completes and the {@link<a name="line.344"></a>
+<FONT color="green">345</FONT>         * WorkflowStore} transaction commits. &lt;p/&gt; All queued delayed callables, regardless of the number of delay queue<a name="line.345"></a>
+<FONT color="green">346</FONT>         * invocations, are queued for a single serial delayed execution with the highest delay of all queued callables.<a name="line.346"></a>
+<FONT color="green">347</FONT>         * &lt;p/&gt; If the call invocation throws an exception all queued callables are discarded, they are not queued for<a name="line.347"></a>
+<FONT color="green">348</FONT>         * execution.<a name="line.348"></a>
+<FONT color="green">349</FONT>         *<a name="line.349"></a>
+<FONT color="green">350</FONT>         * @param callable callable to queue for delayed execution.<a name="line.350"></a>
+<FONT color="green">351</FONT>         * @param delay the queue delay in milliseconds<a name="line.351"></a>
+<FONT color="green">352</FONT>         */<a name="line.352"></a>
+<FONT color="green">353</FONT>        protected void queueCallable(XCallable&lt;Void&gt; callable, long delay) {<a name="line.353"></a>
+<FONT color="green">354</FONT>            this.delayedCallables.add(callable);<a name="line.354"></a>
+<FONT color="green">355</FONT>            this.delay = Math.max(this.delay, delay);<a name="line.355"></a>
+<FONT color="green">356</FONT>        }<a name="line.356"></a>
+<FONT color="green">357</FONT>    <a name="line.357"></a>
+<FONT color="green">358</FONT>        /**<a name="line.358"></a>
+<FONT color="green">359</FONT>         * Queue a callable for execution only in the event of an exception being thrown during the call invocation. &lt;p/&gt; If<a name="line.359"></a>
+<FONT color="green">360</FONT>         * an exception does not happen, all the callables queued by this method are discarded, they are not queued for<a name="line.360"></a>
+<FONT color="green">361</FONT>         * execution. &lt;p/&gt; All queued callables, regardless of the number of queue invocations, are queued for a single<a name="line.361"></a>
+<FONT color="green">362</FONT>         * serial execution.<a name="line.362"></a>
+<FONT color="green">363</FONT>         *<a name="line.363"></a>
+<FONT color="green">364</FONT>         * @param callable callable to queue for execution in the case of an exception.<a name="line.364"></a>
+<FONT color="green">365</FONT>         */<a name="line.365"></a>
+<FONT color="green">366</FONT>        protected void queueCallableForException(XCallable&lt;Void&gt; callable) {<a name="line.366"></a>
+<FONT color="green">367</FONT>            exceptionCallables.add(callable);<a name="line.367"></a>
+<FONT color="green">368</FONT>        }<a name="line.368"></a>
+<FONT color="green">369</FONT>    <a name="line.369"></a>
+<FONT color="green">370</FONT>        /**<a name="line.370"></a>
+<FONT color="green">371</FONT>         * Logging the info if failed to queue the callables.<a name="line.371"></a>
+<FONT color="green">372</FONT>         *<a name="line.372"></a>
+<FONT color="green">373</FONT>         * @param callables<a name="line.373"></a>
+<FONT color="green">374</FONT>         */<a name="line.374"></a>
+<FONT color="green">375</FONT>        protected void logQueueCallableFalse(List&lt;? extends XCallable&lt;Void&gt;&gt; callables) {<a name="line.375"></a>
+<FONT color="green">376</FONT>            StringBuilder sb = new StringBuilder(<a name="line.376"></a>
+<FONT color="green">377</FONT>                    "Unable to queue the callables, delayedQueue is full or system is in SAFEMODE - failed to queue:[");<a name="line.377"></a>
+<FONT color="green">378</FONT>            int size = callables.size();<a name="line.378"></a>
+<FONT color="green">379</FONT>            for (int i = 0; i &lt; size; i++) {<a name="line.379"></a>
+<FONT color="green">380</FONT>                XCallable&lt;Void&gt; callable = callables.get(i);<a name="line.380"></a>
+<FONT color="green">381</FONT>                sb.append(callable.getName());<a name="line.381"></a>
+<FONT color="green">382</FONT>                if (i &lt; size - 1) {<a name="line.382"></a>
+<FONT color="green">383</FONT>                    sb.append(", ");<a name="line.383"></a>
+<FONT color="green">384</FONT>                }<a name="line.384"></a>
+<FONT color="green">385</FONT>                else {<a name="line.385"></a>
+<FONT color="green">386</FONT>                    sb.append("]");<a name="line.386"></a>
+<FONT color="green">387</FONT>                }<a name="line.387"></a>
+<FONT color="green">388</FONT>            }<a name="line.388"></a>
+<FONT color="green">389</FONT>            XLog.getLog(getClass()).warn(sb.toString());<a name="line.389"></a>
+<FONT color="green">390</FONT>        }<a name="line.390"></a>
+<FONT color="green">391</FONT>    <a name="line.391"></a>
+<FONT color="green">392</FONT>        /**<a name="line.392"></a>
+<FONT color="green">393</FONT>         * DagCallable subclasses must implement this method to perform their task. &lt;p/&gt; The workflow store works in<a name="line.393"></a>
+<FONT color="green">394</FONT>         * transactional mode. The transaction is committed only if this method ends successfully. Otherwise the transaction<a name="line.394"></a>
+<FONT color="green">395</FONT>         * is rolledback.<a name="line.395"></a>
+<FONT color="green">396</FONT>         *<a name="line.396"></a>
+<FONT color="green">397</FONT>         * @param store the workflow store instance for the callable, &lt;code&gt;null&lt;/code&gt; if the callable does not use a<a name="line.397"></a>
+<FONT color="green">398</FONT>         * store.<a name="line.398"></a>
+<FONT color="green">399</FONT>         * @return the return value of the callable.<a name="line.399"></a>
+<FONT color="green">400</FONT>         * @throws StoreException thrown if the workflow store could not perform an operation.<a name="line.400"></a>
+<FONT color="green">401</FONT>         * @throws CommandException thrown if the command could not perform its operation.<a name="line.401"></a>
+<FONT color="green">402</FONT>         */<a name="line.402"></a>
+<FONT color="green">403</FONT>        protected abstract T call(S store) throws StoreException, CommandException;<a name="line.403"></a>
+<FONT color="green">404</FONT>    <a name="line.404"></a>
+<FONT color="green">405</FONT>        // to do<a name="line.405"></a>
+<FONT color="green">406</FONT>        // need to implement on all sub commands and break down the transactions<a name="line.406"></a>
+<FONT color="green">407</FONT>    <a name="line.407"></a>
+<FONT color="green">408</FONT>        // protected abstract T execute(String id) throws CommandException;<a name="line.408"></a>
+<FONT color="green">409</FONT>    <a name="line.409"></a>
+<FONT color="green">410</FONT>        /**<a name="line.410"></a>
+<FONT color="green">411</FONT>         * Command subclasses must implement this method correct Store can be passed to call(store);<a name="line.411"></a>
+<FONT color="green">412</FONT>         *<a name="line.412"></a>
+<FONT color="green">413</FONT>         * @return the Store class for use by Callable<a name="line.413"></a>
+<FONT color="green">414</FONT>         * @throws CommandException thrown if the command could not perform its operation.<a name="line.414"></a>
+<FONT color="green">415</FONT>         */<a name="line.415"></a>
+<FONT color="green">416</FONT>        protected abstract Class&lt;? extends Store&gt; getStoreClass();<a name="line.416"></a>
+<FONT color="green">417</FONT>    <a name="line.417"></a>
+<FONT color="green">418</FONT>        /**<a name="line.418"></a>
+<FONT color="green">419</FONT>         * Set the log info with the context of the given coordinator bean.<a name="line.419"></a>
+<FONT color="green">420</FONT>         *<a name="line.420"></a>
+<FONT color="green">421</FONT>         * @param cBean coordinator bean.<a name="line.421"></a>
+<FONT color="green">422</FONT>         */<a name="line.422"></a>
+<FONT color="green">423</FONT>        protected void setLogInfo(CoordinatorJobBean cBean) {<a name="line.423"></a>
+<FONT color="green">424</FONT>            if (logInfo.getParameter(XLogService.GROUP) == null) {<a name="line.424"></a>
+<FONT color="green">425</FONT>                logInfo.setParameter(XLogService.GROUP, cBean.getGroup());<a name="line.425"></a>
+<FONT color="green">426</FONT>            }<a name="line.426"></a>
+<FONT color="green">427</FONT>            if (logInfo.getParameter(XLogService.USER) == null) {<a name="line.427"></a>
+<FONT color="green">428</FONT>                logInfo.setParameter(XLogService.USER, cBean.getUser());<a name="line.428"></a>
+<FONT color="green">429</FONT>            }<a name="line.429"></a>
+<FONT color="green">430</FONT>            logInfo.setParameter(DagXLogInfoService.JOB, cBean.getId());<a name="line.430"></a>
+<FONT color="green">431</FONT>            logInfo.setParameter(DagXLogInfoService.TOKEN, "");<a name="line.431"></a>
+<FONT color="green">432</FONT>            logInfo.setParameter(DagXLogInfoService.APP, cBean.getAppName());<a name="line.432"></a>
+<FONT color="green">433</FONT>            XLog.Info.get().setParameters(logInfo);<a name="line.433"></a>
+<FONT color="green">434</FONT>        }<a name="line.434"></a>
+<FONT color="green">435</FONT>    <a name="line.435"></a>
+<FONT color="green">436</FONT>        /**<a name="line.436"></a>
+<FONT color="green">437</FONT>         * Set the log info with the context of the given coordinator action bean.<a name="line.437"></a>
+<FONT color="green">438</FONT>         *<a name="line.438"></a>
+<FONT color="green">439</FONT>         * @param action action bean.<a name="line.439"></a>
+<FONT color="green">440</FONT>         */<a name="line.440"></a>
+<FONT color="green">441</FONT>        protected void setLogInfo(CoordinatorActionBean action) {<a name="line.441"></a>
+<FONT color="green">442</FONT>            logInfo.setParameter(DagXLogInfoService.JOB, action.getJobId());<a name="line.442"></a>
+<FONT color="green">443</FONT>            // logInfo.setParameter(DagXLogInfoService.TOKEN, action.getLogToken());<a name="line.443"></a>
+<FONT color="green">444</FONT>            logInfo.setParameter(DagXLogInfoService.ACTION, action.getId());<a name="line.444"></a>
+<FONT color="green">445</FONT>            XLog.Info.get().setParameters(logInfo);<a name="line.445"></a>
+<FONT color="green">446</FONT>        }<a name="line.446"></a>
+<FONT color="green">447</FONT>    <a name="line.447"></a>
+<FONT color="green">448</FONT>        /**<a name="line.448"></a>
+<FONT color="green">449</FONT>         * Set the log info with the context of the given workflow bean.<a name="line.449"></a>
+<FONT color="green">450</FONT>         *<a name="line.450"></a>
+<FONT color="green">451</FONT>         * @param workflow workflow bean.<a name="line.451"></a>
+<FONT color="green">452</FONT>         */<a name="line.452"></a>
+<FONT color="green">453</FONT>        protected void setLogInfo(WorkflowJobBean workflow) {<a name="line.453"></a>
+<FONT color="green">454</FONT>            if (logInfo.getParameter(XLogService.GROUP) == null) {<a name="line.454"></a>
+<FONT color="green">455</FONT>                logInfo.setParameter(XLogService.GROUP, workflow.getGroup());<a name="line.455"></a>
+<FONT color="green">456</FONT>            }<a name="line.456"></a>
+<FONT color="green">457</FONT>            if (logInfo.getParameter(XLogService.USER) == null) {<a name="line.457"></a>
+<FONT color="green">458</FONT>                logInfo.setParameter(XLogService.USER, workflow.getUser());<a name="line.458"></a>
+<FONT color="green">459</FONT>            }<a name="line.459"></a>
+<FONT color="green">460</FONT>            logInfo.setParameter(DagXLogInfoService.JOB, workflow.getId());<a name="line.460"></a>
+<FONT color="green">461</FONT>            logInfo.setParameter(DagXLogInfoService.TOKEN, workflow.getLogToken());<a name="line.461"></a>
+<FONT color="green">462</FONT>            logInfo.setParameter(DagXLogInfoService.APP, workflow.getAppName());<a name="line.462"></a>
+<FONT color="green">463</FONT>            XLog.Info.get().setParameters(logInfo);<a name="line.463"></a>
+<FONT color="green">464</FONT>        }<a name="line.464"></a>
+<FONT color="green">465</FONT>    <a name="line.465"></a>
+<FONT color="green">466</FONT>        /**<a name="line.466"></a>
+<FONT color="green">467</FONT>         * Set the log info with the context of the given action bean.<a name="line.467"></a>
+<FONT color="green">468</FONT>         *<a name="line.468"></a>
+<FONT color="green">469</FONT>         * @param action action bean.<a name="line.469"></a>
+<FONT color="green">470</FONT>         */<a name="line.470"></a>
+<FONT color="green">471</FONT>        protected void setLogInfo(WorkflowActionBean action) {<a name="line.471"></a>
+<FONT color="green">472</FONT>            logInfo.setParameter(DagXLogInfoService.JOB, action.getJobId());<a name="line.472"></a>
+<FONT color="green">473</FONT>            logInfo.setParameter(DagXLogInfoService.TOKEN, action.getLogToken());<a name="line.473"></a>
+<FONT color="green">474</FONT>            logInfo.setParameter(DagXLogInfoService.ACTION, action.getId());<a name="line.474"></a>
+<FONT color="green">475</FONT>            XLog.Info.get().setParameters(logInfo);<a name="line.475"></a>
+<FONT color="green">476</FONT>        }<a name="line.476"></a>
+<FONT color="green">477</FONT>    <a name="line.477"></a>
+<FONT color="green">478</FONT>        /**<a name="line.478"></a>
+<FONT color="green">479</FONT>         * Reset the action bean information from the log info.<a name="line.479"></a>
+<FONT color="green">480</FONT>         */<a name="line.480"></a>
+<FONT color="green">481</FONT>        // TODO check if they are used, else delete<a name="line.481"></a>
+<FONT color="green">482</FONT>        protected void resetLogInfoAction() {<a name="line.482"></a>
+<FONT color="green">483</FONT>            logInfo.clearParameter(DagXLogInfoService.ACTION);<a name="line.483"></a>
+<FONT color="green">484</FONT>            XLog.Info.get().clearParameter(DagXLogInfoService.ACTION);<a name="line.484"></a>
+<FONT color="green">485</FONT>        }<a name="line.485"></a>
+<FONT color="green">486</FONT>    <a name="line.486"></a>
+<FONT color="green">487</FONT>        /**<a name="line.487"></a>
+<FONT color="green">488</FONT>         * Reset the workflow bean information from the log info.<a name="line.488"></a>
+<FONT color="green">489</FONT>         */<a name="line.489"></a>
+<FONT color="green">490</FONT>        // TODO check if they are used, else delete<a name="line.490"></a>
+<FONT color="green">491</FONT>        protected void resetLogInfoWorkflow() {<a name="line.491"></a>
+<FONT color="green">492</FONT>            logInfo.clearParameter(DagXLogInfoService.JOB);<a name="line.492"></a>
+<FONT color="green">493</FONT>            logInfo.clearParameter(DagXLogInfoService.APP);<a name="line.493"></a>
+<FONT color="green">494</FONT>            logInfo.clearParameter(DagXLogInfoService.TOKEN);<a name="line.494"></a>
+<FONT color="green">495</FONT>            XLog.Info.get().clearParameter(DagXLogInfoService.JOB);<a name="line.495"></a>
+<FONT color="green">496</FONT>            XLog.Info.get().clearParameter(DagXLogInfoService.APP);<a name="line.496"></a>
+<FONT color="green">497</FONT>            XLog.Info.get().clearParameter(DagXLogInfoService.TOKEN);<a name="line.497"></a>
+<FONT color="green">498</FONT>        }<a name="line.498"></a>
+<FONT color="green">499</FONT>    <a name="line.499"></a>
+<FONT color="green">500</FONT>        /**<a name="line.500"></a>
+<FONT color="green">501</FONT>         * Convenience method to increment counters.<a name="line.501"></a>
+<FONT color="green">502</FONT>         *<a name="line.502"></a>
+<FONT color="green">503</FONT>         * @param group the group name.<a name="line.503"></a>
+<FONT color="green">504</FONT>         * @param name the counter name.<a name="line.504"></a>
+<FONT color="green">505</FONT>         * @param count increment count.<a name="line.505"></a>
+<FONT color="green">506</FONT>         */<a name="line.506"></a>
+<FONT color="green">507</FONT>        private void incrCounter(String group, String name, int count) {<a name="line.507"></a>
+<FONT color="green">508</FONT>            if (instrumentation != null) {<a name="line.508"></a>
+<FONT color="green">509</FONT>                instrumentation.incr(group, name, count);<a name="line.509"></a>
+<FONT color="green">510</FONT>            }<a name="line.510"></a>
+<FONT color="green">511</FONT>        }<a name="line.511"></a>
+<FONT color="green">512</FONT>    <a name="line.512"></a>
+<FONT color="green">513</FONT>        /**<a name="line.513"></a>
+<FONT color="green">514</FONT>         * Used to increment command counters.<a name="line.514"></a>
+<FONT color="green">515</FONT>         *<a name="line.515"></a>
+<FONT color="green">516</FONT>         * @param count the increment count.<a name="line.516"></a>
+<FONT color="green">517</FONT>         */<a name="line.517"></a>
+<FONT color="green">518</FONT>        protected void incrCommandCounter(int count) {<a name="line.518"></a>
+<FONT color="green">519</FONT>            incrCounter(INSTRUMENTATION_GROUP, name, count);<a name="line.519"></a>
+<FONT color="green">520</FONT>        }<a name="line.520"></a>
+<FONT color="green">521</FONT>    <a name="line.521"></a>
+<FONT color="green">522</FONT>        /**<a name="line.522"></a>
+<FONT color="green">523</FONT>         * Used to increment job counters. The counter name s the same as the command name.<a name="line.523"></a>
+<FONT color="green">524</FONT>         *<a name="line.524"></a>
+<FONT color="green">525</FONT>         * @param count the increment count.<a name="line.525"></a>
+<FONT color="green">526</FONT>         */<a name="line.526"></a>
+<FONT color="green">527</FONT>        protected void incrJobCounter(int count) {<a name="line.527"></a>
+<FONT color="green">528</FONT>            incrJobCounter(name, count);<a name="line.528"></a>
+<FONT color="green">529</FONT>        }<a name="line.529"></a>
+<FONT color="green">530</FONT>    <a name="line.530"></a>
+<FONT color="green">531</FONT>        /**<a name="line.531"></a>
+<FONT color="green">532</FONT>         * Used to increment job counters.<a name="line.532"></a>
+<FONT color="green">533</FONT>         *<a name="line.533"></a>
+<FONT color="green">534</FONT>         * @param name the job name.<a name="line.534"></a>
+<FONT color="green">535</FONT>         * @param count the increment count.<a name="line.535"></a>
+<FONT color="green">536</FONT>         */<a name="line.536"></a>
+<FONT color="green">537</FONT>        protected void incrJobCounter(String name, int count) {<a name="line.537"></a>
+<FONT color="green">538</FONT>            incrCounter(INSTRUMENTATION_JOB_GROUP, name, count);<a name="line.538"></a>
+<FONT color="green">539</FONT>        }<a name="line.539"></a>
+<FONT color="green">540</FONT>    <a name="line.540"></a>
+<FONT color="green">541</FONT>        /**<a name="line.541"></a>
+<FONT color="green">542</FONT>         * Return the {@link Instrumentation} instance in use.<a name="line.542"></a>
+<FONT color="green">543</FONT>         *<a name="line.543"></a>
+<FONT color="green">544</FONT>         * @return the {@link Instrumentation} instance in use.<a name="line.544"></a>
+<FONT color="green">545</FONT>         */<a name="line.545"></a>
+<FONT color="green">546</FONT>        protected Instrumentation getInstrumentation() {<a name="line.546"></a>
+<FONT color="green">547</FONT>            return instrumentation;<a name="line.547"></a>
+<FONT color="green">548</FONT>        }<a name="line.548"></a>
+<FONT color="green">549</FONT>    <a name="line.549"></a>
+<FONT color="green">550</FONT>        protected boolean lock(String id) throws InterruptedException {<a name="line.550"></a>
+<FONT color="green">551</FONT>            if (id == null || id.length() == 0) {<a name="line.551"></a>
+<FONT color="green">552</FONT>                XLog.getLog(getClass()).warn("lock(): Id is null or empty :" + id + ":");<a name="line.552"></a>
+<FONT color="green">553</FONT>                return false;<a name="line.553"></a>
+<FONT color="green">554</FONT>            }<a name="line.554"></a>
+<FONT color="green">555</FONT>            LockToken token = Services.get().get(MemoryLocksService.class).getWriteLock(id, LOCK_TIMEOUT);<a name="line.555"></a>
+<FONT color="green">556</FONT>            if (token != null) {<a name="line.556"></a>
+<FONT color="green">557</FONT>                locks.add(token);<a name="line.557"></a>
+<FONT color="green">558</FONT>                return true;<a name="line.558"></a>
+<FONT color="green">559</FONT>            }<a name="line.559"></a>
+<FONT color="green">560</FONT>            else {<a name="line.560"></a>
+<FONT color="green">561</FONT>                return false;<a name="line.561"></a>
+<FONT color="green">562</FONT>            }<a name="line.562"></a>
+<FONT color="green">563</FONT>        }<a name="line.563"></a>
+<FONT color="green">564</FONT>    <a name="line.564"></a>
+<FONT color="green">565</FONT>        /*<a name="line.565"></a>
+<FONT color="green">566</FONT>         * TODO - remove store coupling to EM. Store will only contain queries<a name="line.566"></a>
+<FONT color="green">567</FONT>         * protected EntityManager getEntityManager() { return<a name="line.567"></a>
+<FONT color="green">568</FONT>         * store.getEntityManager(); }<a name="line.568"></a>
+<FONT color="green">569</FONT>         */<a name="line.569"></a>
+<FONT color="green">570</FONT>        protected T execute(S store) throws CommandException, StoreException {<a name="line.570"></a>
+<FONT color="green">571</FONT>            T result = call(store);<a name="line.571"></a>
+<FONT color="green">572</FONT>            return result;<a name="line.572"></a>
+<FONT color="green">573</FONT>        }<a name="line.573"></a>
+<FONT color="green">574</FONT>    }<a name="line.574"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

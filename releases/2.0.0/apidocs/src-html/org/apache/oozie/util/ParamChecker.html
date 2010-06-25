@@ -1,0 +1,317 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one<a name="line.2"></a>
+<FONT color="green">003</FONT>     * or more contributor license agreements.  See the NOTICE file<a name="line.3"></a>
+<FONT color="green">004</FONT>     * distributed with this work for additional information<a name="line.4"></a>
+<FONT color="green">005</FONT>     * regarding copyright ownership.  The ASF licenses this file<a name="line.5"></a>
+<FONT color="green">006</FONT>     * to you under the Apache License, Version 2.0 (the<a name="line.6"></a>
+<FONT color="green">007</FONT>     * "License"); you may not use this file except in compliance<a name="line.7"></a>
+<FONT color="green">008</FONT>     * with the License.  You may obtain a copy of the License at<a name="line.8"></a>
+<FONT color="green">009</FONT>     *<a name="line.9"></a>
+<FONT color="green">010</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.10"></a>
+<FONT color="green">011</FONT>     *<a name="line.11"></a>
+<FONT color="green">012</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.12"></a>
+<FONT color="green">013</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.13"></a>
+<FONT color="green">014</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.14"></a>
+<FONT color="green">015</FONT>     * See the License for the specific language governing permissions and<a name="line.15"></a>
+<FONT color="green">016</FONT>     * limitations under the License.<a name="line.16"></a>
+<FONT color="green">017</FONT>     */<a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.oozie.util;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.util.Date;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.util.List;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import java.util.TimeZone;<a name="line.22"></a>
+<FONT color="green">023</FONT>    <a name="line.23"></a>
+<FONT color="green">024</FONT>    /**<a name="line.24"></a>
+<FONT color="green">025</FONT>     * Utility class to check common parameter preconditions.<a name="line.25"></a>
+<FONT color="green">026</FONT>     */<a name="line.26"></a>
+<FONT color="green">027</FONT>    public class ParamChecker {<a name="line.27"></a>
+<FONT color="green">028</FONT>    <a name="line.28"></a>
+<FONT color="green">029</FONT>        /**<a name="line.29"></a>
+<FONT color="green">030</FONT>         * Check that a value is not null. If null throws an IllegalArgumentException.<a name="line.30"></a>
+<FONT color="green">031</FONT>         *<a name="line.31"></a>
+<FONT color="green">032</FONT>         * @param obj value.<a name="line.32"></a>
+<FONT color="green">033</FONT>         * @param name parameter name for the exception message.<a name="line.33"></a>
+<FONT color="green">034</FONT>         * @return the given value.<a name="line.34"></a>
+<FONT color="green">035</FONT>         */<a name="line.35"></a>
+<FONT color="green">036</FONT>        public static &lt;T&gt; T notNull(T obj, String name) {<a name="line.36"></a>
+<FONT color="green">037</FONT>            if (obj == null) {<a name="line.37"></a>
+<FONT color="green">038</FONT>                throw new IllegalArgumentException(name + " cannot be null");<a name="line.38"></a>
+<FONT color="green">039</FONT>            }<a name="line.39"></a>
+<FONT color="green">040</FONT>            return obj;<a name="line.40"></a>
+<FONT color="green">041</FONT>        }<a name="line.41"></a>
+<FONT color="green">042</FONT>    <a name="line.42"></a>
+<FONT color="green">043</FONT>        /**<a name="line.43"></a>
+<FONT color="green">044</FONT>         * Check that a list is not null and that none of its elements is null. If null or if the list has emtpy elements<a name="line.44"></a>
+<FONT color="green">045</FONT>         * throws an IllegalArgumentException.<a name="line.45"></a>
+<FONT color="green">046</FONT>         *<a name="line.46"></a>
+<FONT color="green">047</FONT>         * @param list the list of strings.<a name="line.47"></a>
+<FONT color="green">048</FONT>         * @param name parameter name for the exception message.<a name="line.48"></a>
+<FONT color="green">049</FONT>         * @return the given list.<a name="line.49"></a>
+<FONT color="green">050</FONT>         */<a name="line.50"></a>
+<FONT color="green">051</FONT>        public static &lt;T&gt; List&lt;T&gt; notNullElements(List&lt;T&gt; list, String name) {<a name="line.51"></a>
+<FONT color="green">052</FONT>            notNull(list, name);<a name="line.52"></a>
+<FONT color="green">053</FONT>            for (int i = 0; i &lt; list.size(); i++) {<a name="line.53"></a>
+<FONT color="green">054</FONT>                notNull(list.get(i), XLog.format("list [{0}] element [{1}]", name, i));<a name="line.54"></a>
+<FONT color="green">055</FONT>            }<a name="line.55"></a>
+<FONT color="green">056</FONT>            return list;<a name="line.56"></a>
+<FONT color="green">057</FONT>        }<a name="line.57"></a>
+<FONT color="green">058</FONT>    <a name="line.58"></a>
+<FONT color="green">059</FONT>        /**<a name="line.59"></a>
+<FONT color="green">060</FONT>         * Check that a string is not null and not empty. If null or emtpy throws an IllegalArgumentException.<a name="line.60"></a>
+<FONT color="green">061</FONT>         *<a name="line.61"></a>
+<FONT color="green">062</FONT>         * @param str value.<a name="line.62"></a>
+<FONT color="green">063</FONT>         * @param name parameter name for the exception message.<a name="line.63"></a>
+<FONT color="green">064</FONT>         * @return the given value.<a name="line.64"></a>
+<FONT color="green">065</FONT>         */<a name="line.65"></a>
+<FONT color="green">066</FONT>        public static String notEmpty(String str, String name) {<a name="line.66"></a>
+<FONT color="green">067</FONT>            if (str == null) {<a name="line.67"></a>
+<FONT color="green">068</FONT>                throw new IllegalArgumentException(name + " cannot be null");<a name="line.68"></a>
+<FONT color="green">069</FONT>            }<a name="line.69"></a>
+<FONT color="green">070</FONT>            if (str.length() == 0) {<a name="line.70"></a>
+<FONT color="green">071</FONT>                throw new IllegalArgumentException(name + " cannot be empty");<a name="line.71"></a>
+<FONT color="green">072</FONT>            }<a name="line.72"></a>
+<FONT color="green">073</FONT>            return str;<a name="line.73"></a>
+<FONT color="green">074</FONT>        }<a name="line.74"></a>
+<FONT color="green">075</FONT>    <a name="line.75"></a>
+<FONT color="green">076</FONT>        /**<a name="line.76"></a>
+<FONT color="green">077</FONT>         * Check that a list is not null and that none of its elements is null. If null or if the list has emtpy elements<a name="line.77"></a>
+<FONT color="green">078</FONT>         * throws an IllegalArgumentException.<a name="line.78"></a>
+<FONT color="green">079</FONT>         *<a name="line.79"></a>
+<FONT color="green">080</FONT>         * @param list the list of strings.<a name="line.80"></a>
+<FONT color="green">081</FONT>         * @param name parameter name for the exception message.<a name="line.81"></a>
+<FONT color="green">082</FONT>         * @return the given list.<a name="line.82"></a>
+<FONT color="green">083</FONT>         */<a name="line.83"></a>
+<FONT color="green">084</FONT>        public static List&lt;String&gt; notEmptyElements(List&lt;String&gt; list, String name) {<a name="line.84"></a>
+<FONT color="green">085</FONT>            notNull(list, name);<a name="line.85"></a>
+<FONT color="green">086</FONT>            for (int i = 0; i &lt; list.size(); i++) {<a name="line.86"></a>
+<FONT color="green">087</FONT>                notEmpty(list.get(i), XLog.format("list [{0}] element [{1}]", name, i));<a name="line.87"></a>
+<FONT color="green">088</FONT>            }<a name="line.88"></a>
+<FONT color="green">089</FONT>            return list;<a name="line.89"></a>
+<FONT color="green">090</FONT>        }<a name="line.90"></a>
+<FONT color="green">091</FONT>    <a name="line.91"></a>
+<FONT color="green">092</FONT>        private static final int MAX_NODE_NAME_LEN = 50;<a name="line.92"></a>
+<FONT color="green">093</FONT>    <a name="line.93"></a>
+<FONT color="green">094</FONT>        /**<a name="line.94"></a>
+<FONT color="green">095</FONT>         * Check that the given string is a valid action name [a-zA-Z_][0-9a-zA-Z_\-]* and not longer than 50 chars.<a name="line.95"></a>
+<FONT color="green">096</FONT>         *<a name="line.96"></a>
+<FONT color="green">097</FONT>         * @param actionName string to validate is a token.<a name="line.97"></a>
+<FONT color="green">098</FONT>         * @return the given string.<a name="line.98"></a>
+<FONT color="green">099</FONT>         */<a name="line.99"></a>
+<FONT color="green">100</FONT>        public static String validateActionName(String actionName) {<a name="line.100"></a>
+<FONT color="green">101</FONT>            ParamChecker.notEmpty(actionName, "action name");<a name="line.101"></a>
+<FONT color="green">102</FONT>            if (actionName.length() &gt; MAX_NODE_NAME_LEN) {<a name="line.102"></a>
+<FONT color="green">103</FONT>                throw new IllegalArgumentException(XLog.format("name [{0}] must be {1} chars or less", actionName,<a name="line.103"></a>
+<FONT color="green">104</FONT>                                                               MAX_NODE_NAME_LEN));<a name="line.104"></a>
+<FONT color="green">105</FONT>            }<a name="line.105"></a>
+<FONT color="green">106</FONT>    <a name="line.106"></a>
+<FONT color="green">107</FONT>            char c = actionName.charAt(0);<a name="line.107"></a>
+<FONT color="green">108</FONT>            if (!(c &gt;= 'A' &amp;&amp; c &lt;= 'Z') &amp;&amp; !(c &gt;= 'a' &amp;&amp; c &lt;= 'z') &amp;&amp; !(c == '_')) {<a name="line.108"></a>
+<FONT color="green">109</FONT>                throw new IllegalArgumentException(XLog.format("name [{0}], must start with [A-Za-z_]", actionName));<a name="line.109"></a>
+<FONT color="green">110</FONT>            }<a name="line.110"></a>
+<FONT color="green">111</FONT>            for (int i = 1; i &lt; actionName.length(); i++) {<a name="line.111"></a>
+<FONT color="green">112</FONT>                c = actionName.charAt(i);<a name="line.112"></a>
+<FONT color="green">113</FONT>                if (!(c &gt;= '0' &amp;&amp; c &lt;= '9') &amp;&amp; !(c &gt;= 'A' &amp;&amp; c &lt;= 'Z') &amp;&amp; !(c &gt;= 'a' &amp;&amp; c &lt;= 'z')<a name="line.113"></a>
+<FONT color="green">114</FONT>                        &amp;&amp; !(c == '_' || c == '-')) {<a name="line.114"></a>
+<FONT color="green">115</FONT>                    throw new IllegalArgumentException(XLog.format("name [{0}] must be [A-Za-z_][0-9A-Za-z_]*", actionName));<a name="line.115"></a>
+<FONT color="green">116</FONT>                }<a name="line.116"></a>
+<FONT color="green">117</FONT>            }<a name="line.117"></a>
+<FONT color="green">118</FONT>            return actionName;<a name="line.118"></a>
+<FONT color="green">119</FONT>        }<a name="line.119"></a>
+<FONT color="green">120</FONT>    <a name="line.120"></a>
+<FONT color="green">121</FONT>        /**<a name="line.121"></a>
+<FONT color="green">122</FONT>         * Return if the specified token is a valid Java identifier.<a name="line.122"></a>
+<FONT color="green">123</FONT>         *<a name="line.123"></a>
+<FONT color="green">124</FONT>         * @param token string to validate if it is a valid Java identifier.<a name="line.124"></a>
+<FONT color="green">125</FONT>         * @return if the specified token is a valid Java identifier.<a name="line.125"></a>
+<FONT color="green">126</FONT>         */<a name="line.126"></a>
+<FONT color="green">127</FONT>        public static boolean isValidIdentifier(String token) {<a name="line.127"></a>
+<FONT color="green">128</FONT>            ParamChecker.notEmpty(token, "identifier");<a name="line.128"></a>
+<FONT color="green">129</FONT>            for (int i = 0; i &lt; token.length(); i++) {<a name="line.129"></a>
+<FONT color="green">130</FONT>                char c = token.charAt(i);<a name="line.130"></a>
+<FONT color="green">131</FONT>                if (!(c &gt;= '0' &amp;&amp; c &lt;= '9') &amp;&amp; !(c &gt;= 'A' &amp;&amp; c &lt;= 'Z') &amp;&amp; !(c &gt;= 'a' &amp;&amp; c &lt;= 'z') &amp;&amp; !(c == '_')) {<a name="line.131"></a>
+<FONT color="green">132</FONT>                    return false;<a name="line.132"></a>
+<FONT color="green">133</FONT>                }<a name="line.133"></a>
+<FONT color="green">134</FONT>                if (i == 0 &amp;&amp; (c &gt;= '0' &amp;&amp; c &lt;= '9')) {<a name="line.134"></a>
+<FONT color="green">135</FONT>                    return false;<a name="line.135"></a>
+<FONT color="green">136</FONT>                }<a name="line.136"></a>
+<FONT color="green">137</FONT>            }<a name="line.137"></a>
+<FONT color="green">138</FONT>            return true;<a name="line.138"></a>
+<FONT color="green">139</FONT>        }<a name="line.139"></a>
+<FONT color="green">140</FONT>    <a name="line.140"></a>
+<FONT color="green">141</FONT>        /**<a name="line.141"></a>
+<FONT color="green">142</FONT>         * Check whether the value is greater than or equals 0.<a name="line.142"></a>
+<FONT color="green">143</FONT>         *<a name="line.143"></a>
+<FONT color="green">144</FONT>         * @param value : value to test<a name="line.144"></a>
+<FONT color="green">145</FONT>         * @param name : Name of the parameter<a name="line.145"></a>
+<FONT color="green">146</FONT>         * @return If the value is &gt; 0, return the value. Otherwise throw IllegalArgumentException<a name="line.146"></a>
+<FONT color="green">147</FONT>         */<a name="line.147"></a>
+<FONT color="green">148</FONT>        public static int checkGTZero(int value, String name) {<a name="line.148"></a>
+<FONT color="green">149</FONT>            if (value &lt;= 0) {<a name="line.149"></a>
+<FONT color="green">150</FONT>                throw new IllegalArgumentException(XLog.format("parameter [{0}] = [{1}] must be greater than zero", name,<a name="line.150"></a>
+<FONT color="green">151</FONT>                                                               value));<a name="line.151"></a>
+<FONT color="green">152</FONT>            }<a name="line.152"></a>
+<FONT color="green">153</FONT>            return value;<a name="line.153"></a>
+<FONT color="green">154</FONT>        }<a name="line.154"></a>
+<FONT color="green">155</FONT>    <a name="line.155"></a>
+<FONT color="green">156</FONT>        /**<a name="line.156"></a>
+<FONT color="green">157</FONT>         * Check whether the value is greater than or equals to 0.<a name="line.157"></a>
+<FONT color="green">158</FONT>         *<a name="line.158"></a>
+<FONT color="green">159</FONT>         * @param value : value to test<a name="line.159"></a>
+<FONT color="green">160</FONT>         * @param name : Name of the parameter<a name="line.160"></a>
+<FONT color="green">161</FONT>         * @return If the value is &gt;= 0, return the value. Otherwise throw IllegalArgumentException<a name="line.161"></a>
+<FONT color="green">162</FONT>         */<a name="line.162"></a>
+<FONT color="green">163</FONT>        public static int checkGEZero(int value, String name) {<a name="line.163"></a>
+<FONT color="green">164</FONT>            if (value &lt; 0) {<a name="line.164"></a>
+<FONT color="green">165</FONT>                throw new IllegalArgumentException(XLog.format(<a name="line.165"></a>
+<FONT color="green">166</FONT>                        "parameter [{0}] = [{1}] must be greater than or equals zero", name, value));<a name="line.166"></a>
+<FONT color="green">167</FONT>            }<a name="line.167"></a>
+<FONT color="green">168</FONT>            return value;<a name="line.168"></a>
+<FONT color="green">169</FONT>        }<a name="line.169"></a>
+<FONT color="green">170</FONT>    <a name="line.170"></a>
+<FONT color="green">171</FONT>        /**<a name="line.171"></a>
+<FONT color="green">172</FONT>         * Check whether the value is Integer.<a name="line.172"></a>
+<FONT color="green">173</FONT>         *<a name="line.173"></a>
+<FONT color="green">174</FONT>         * @param value : value to test<a name="line.174"></a>
+<FONT color="green">175</FONT>         * @param name : Name of the parameter<a name="line.175"></a>
+<FONT color="green">176</FONT>         * @return If the value is integer, return the value. Otherwise throw IllegalArgumentException<a name="line.176"></a>
+<FONT color="green">177</FONT>         */<a name="line.177"></a>
+<FONT color="green">178</FONT>        public static int checkInteger(String val, String name) {<a name="line.178"></a>
+<FONT color="green">179</FONT>            int ret;<a name="line.179"></a>
+<FONT color="green">180</FONT>            try {<a name="line.180"></a>
+<FONT color="green">181</FONT>                ret = Integer.parseInt(val);<a name="line.181"></a>
+<FONT color="green">182</FONT>            }<a name="line.182"></a>
+<FONT color="green">183</FONT>            catch (NumberFormatException nex) {<a name="line.183"></a>
+<FONT color="green">184</FONT>                throw new IllegalArgumentException(XLog.format(<a name="line.184"></a>
+<FONT color="green">185</FONT>                        "parameter [{0}] = [{1}]  must be an integer. Parsing error {2}", name, val, nex));<a name="line.185"></a>
+<FONT color="green">186</FONT>            }<a name="line.186"></a>
+<FONT color="green">187</FONT>            return ret;<a name="line.187"></a>
+<FONT color="green">188</FONT>        }<a name="line.188"></a>
+<FONT color="green">189</FONT>    <a name="line.189"></a>
+<FONT color="green">190</FONT>        /**<a name="line.190"></a>
+<FONT color="green">191</FONT>         * Check whether the value is UTC data format.<a name="line.191"></a>
+<FONT color="green">192</FONT>         *<a name="line.192"></a>
+<FONT color="green">193</FONT>         * @param value : value to test<a name="line.193"></a>
+<FONT color="green">194</FONT>         * @param name : Name of the parameter<a name="line.194"></a>
+<FONT color="green">195</FONT>         * @return If the value is in UTC date format, return the value. Otherwise throw IllegalArgumentException<a name="line.195"></a>
+<FONT color="green">196</FONT>         */<a name="line.196"></a>
+<FONT color="green">197</FONT>        public static Date checkUTC(String date, String name) {<a name="line.197"></a>
+<FONT color="green">198</FONT>            Date ret;<a name="line.198"></a>
+<FONT color="green">199</FONT>            try {<a name="line.199"></a>
+<FONT color="green">200</FONT>                ret = DateUtils.parseDateUTC(date);<a name="line.200"></a>
+<FONT color="green">201</FONT>            }<a name="line.201"></a>
+<FONT color="green">202</FONT>            catch (Exception ex) {<a name="line.202"></a>
+<FONT color="green">203</FONT>                throw new IllegalArgumentException(XLog.format(<a name="line.203"></a>
+<FONT color="green">204</FONT>                        "parameter [{0}] = [{1}] must be Date in UTC format (yyyy-MM-dd'T'HH:mm'Z')."<a name="line.204"></a>
+<FONT color="green">205</FONT>                                + " Parsing error {2}", name, date, ex));<a name="line.205"></a>
+<FONT color="green">206</FONT>            }<a name="line.206"></a>
+<FONT color="green">207</FONT>            return ret;<a name="line.207"></a>
+<FONT color="green">208</FONT>        }<a name="line.208"></a>
+<FONT color="green">209</FONT>    <a name="line.209"></a>
+<FONT color="green">210</FONT>        /**<a name="line.210"></a>
+<FONT color="green">211</FONT>         * Check whether the value mention correct Timezone.<a name="line.211"></a>
+<FONT color="green">212</FONT>         *<a name="line.212"></a>
+<FONT color="green">213</FONT>         * @param value : value to test<a name="line.213"></a>
+<FONT color="green">214</FONT>         * @param name : Name of the parameter<a name="line.214"></a>
+<FONT color="green">215</FONT>         * @return If the value is correct TZ return the value. Otherwise throw IllegalArgumentException<a name="line.215"></a>
+<FONT color="green">216</FONT>         */<a name="line.216"></a>
+<FONT color="green">217</FONT>        public static TimeZone checkTimeZone(String tzStr, String name) {<a name="line.217"></a>
+<FONT color="green">218</FONT>            TimeZone tz;<a name="line.218"></a>
+<FONT color="green">219</FONT>            try {<a name="line.219"></a>
+<FONT color="green">220</FONT>                tz = DateUtils.getTimeZone(tzStr);<a name="line.220"></a>
+<FONT color="green">221</FONT>            }<a name="line.221"></a>
+<FONT color="green">222</FONT>            catch (Exception ex) {<a name="line.222"></a>
+<FONT color="green">223</FONT>                throw new IllegalArgumentException(XLog.format("parameter [{0}] = [{1}] must be a valid TZ."<a name="line.223"></a>
+<FONT color="green">224</FONT>                        + " Parsing error {2}", name, tzStr, ex));<a name="line.224"></a>
+<FONT color="green">225</FONT>            }<a name="line.225"></a>
+<FONT color="green">226</FONT>            return tz;<a name="line.226"></a>
+<FONT color="green">227</FONT>        }<a name="line.227"></a>
+<FONT color="green">228</FONT>    <a name="line.228"></a>
+<FONT color="green">229</FONT>        /**<a name="line.229"></a>
+<FONT color="green">230</FONT>         * Check whether an item is a member of an array of string<a name="line.230"></a>
+<FONT color="green">231</FONT>         *<a name="line.231"></a>
+<FONT color="green">232</FONT>         * @param item : item to test<a name="line.232"></a>
+<FONT color="green">233</FONT>         * @param members : List of items in string<a name="line.233"></a>
+<FONT color="green">234</FONT>         * @param name : Name of the parameter<a name="line.234"></a>
+<FONT color="green">235</FONT>         * @return If the item is in the member return true. Otherwise throw IllegalArgumentException<a name="line.235"></a>
+<FONT color="green">236</FONT>         */<a name="line.236"></a>
+<FONT color="green">237</FONT>        public static boolean isMember(String item, String[] members, String name) {<a name="line.237"></a>
+<FONT color="green">238</FONT>            for (int i = 0; i &lt; members.length; i++) {<a name="line.238"></a>
+<FONT color="green">239</FONT>                if (members[i].equals(item)) {<a name="line.239"></a>
+<FONT color="green">240</FONT>                    return true;<a name="line.240"></a>
+<FONT color="green">241</FONT>                }<a name="line.241"></a>
+<FONT color="green">242</FONT>            }<a name="line.242"></a>
+<FONT color="green">243</FONT>            // Error case<a name="line.243"></a>
+<FONT color="green">244</FONT>            StringBuilder buff = new StringBuilder();<a name="line.244"></a>
+<FONT color="green">245</FONT>            for (int i = 0; i &lt; members.length; i++) {<a name="line.245"></a>
+<FONT color="green">246</FONT>                buff.append(members[i]).append(", ");<a name="line.246"></a>
+<FONT color="green">247</FONT>            }<a name="line.247"></a>
+<FONT color="green">248</FONT>            throw new IllegalArgumentException(XLog.format("parameter [{0}] = [{1}] " + "must be in the list {2}", name,<a name="line.248"></a>
+<FONT color="green">249</FONT>                                                           item, buff.toString()));<a name="line.249"></a>
+<FONT color="green">250</FONT>        }<a name="line.250"></a>
+<FONT color="green">251</FONT>    }<a name="line.251"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

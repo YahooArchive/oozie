@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-05-21
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Troubleshooting"></a>
+<div class="section"><h2> Troubleshooting</h2>
+<p><ul><ul><li><a href="#For_Oozie_Developers">For Oozie Developers</a>
+<ul><li><a href="#Hadoop_streaming_jobs.">Hadoop streaming jobs.</a>
+</li>
+</ul>
+</li>
+<li><a href="#For_Oozie_Administrators">For Oozie Administrators</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="For_Oozie_Developers"></a>
+<div class="section"><h3>For Oozie Developers</h3>
+<p><ul><li>I copied my workflow application onto hdfs but when i fire a job on oozie, it says</li>
+</ul>
+&quot;Error: WF:E1310 : could not read the workflow definition, Cannot open filename...&quot;<ul><li><ul><li>This can happen if you are pointing oozie to a different namenode while you are copying</li>
+</ul>
+</li>
+</ul>
+your application onto a different namenode. Make sure namenode value passed to oozie match from
+those in your <tt>${HADOOP_CONF_DIR}</tt>
+ settings <tt>core-site.xml</tt>
+ (for Hadoop 20).
+  * How can I access main workflow configuration parameters in a sub wokflow?<ul><li><ul><li>By default, oozie won't propagate configurations which are used in EL evaluation. To get this, use <tt><propagate-configuration /></tt>
+ tag just before <tt><configuration /></tt>
+ inside <tt><sub-workflow /></tt>
+ action node.</li>
+</ul>
+</li>
+</ul>
+</p>
+<a name="Hadoop_streaming_jobs."></a>
+<div class="section"><h4>Hadoop streaming jobs.</h4>
+<p><ul><li>I started a workflow having hadoop streaming job. Then workflow failed.<ul><li>Just check the jobtracker console url for the submitted hadoop streaming job status. If the job is in completed jobs list then there is some problem</li>
+</ul>
+</li>
+</ul>
+from the oozie side. Check the oozie logs. If the hadoop job status is failed on jobtracker url then check the failed mapper/reducer logs for the cause.<ul><li>I started a workflow having hadoop streaming job.Workflow failed.I have used <tt><file></tt>
+ tag option for specifying application binary files. Mapper/reducer logs shows that binary file is not found.<ul><li>Change your workflow to specify binary files as sym links(e.g <tt><file>sourceFile#target</tt>
+) and try again.If it still fails check the mapper/reducer logs.</li>
+</ul>
+</li>
+<li>I started a workflow having streaming job.Workflow failed.Jobtracker mapper/reducer logs shows an exception like <tt>java.lang.IllegalArgumentException: URLDecoder: Illegal hex characters in escape (%) pattern</tt>
+.<ul><li>This can happen if your mapper/reducer commands are not encoded. Fix the encoding in the workflow xml.e.g '%' should be specified as '%25'</li>
+</ul>
+</li>
+</ul>
+</p>
+<a name="For_Oozie_Administrators"></a>
+</div>
+</div>
+<div class="section"><h3>For Oozie Administrators</h3>
+<p><ul><li>TBD</li>
+</ul>
+</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

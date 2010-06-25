@@ -1,0 +1,169 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one<a name="line.2"></a>
+<FONT color="green">003</FONT>     * or more contributor license agreements.  See the NOTICE file<a name="line.3"></a>
+<FONT color="green">004</FONT>     * distributed with this work for additional information<a name="line.4"></a>
+<FONT color="green">005</FONT>     * regarding copyright ownership.  The ASF licenses this file<a name="line.5"></a>
+<FONT color="green">006</FONT>     * to you under the Apache License, Version 2.0 (the<a name="line.6"></a>
+<FONT color="green">007</FONT>     * "License"); you may not use this file except in compliance<a name="line.7"></a>
+<FONT color="green">008</FONT>     * with the License.  You may obtain a copy of the License at<a name="line.8"></a>
+<FONT color="green">009</FONT>     *<a name="line.9"></a>
+<FONT color="green">010</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.10"></a>
+<FONT color="green">011</FONT>     *<a name="line.11"></a>
+<FONT color="green">012</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.12"></a>
+<FONT color="green">013</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.13"></a>
+<FONT color="green">014</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.14"></a>
+<FONT color="green">015</FONT>     * See the License for the specific language governing permissions and<a name="line.15"></a>
+<FONT color="green">016</FONT>     * limitations under the License.<a name="line.16"></a>
+<FONT color="green">017</FONT>     */<a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.oozie.util;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import org.apache.hadoop.io.Writable;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import org.apache.hadoop.util.ReflectionUtils;<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    import java.io.ByteArrayInputStream;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import java.io.ByteArrayOutputStream;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.io.DataInputStream;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.io.DataOutputStream;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.io.IOException;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.io.DataOutput;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import java.io.DataInput;<a name="line.29"></a>
+<FONT color="green">030</FONT>    <a name="line.30"></a>
+<FONT color="green">031</FONT>    /**<a name="line.31"></a>
+<FONT color="green">032</FONT>     * Utility class to write/read Hadoop writables to/from a byte array.<a name="line.32"></a>
+<FONT color="green">033</FONT>     */<a name="line.33"></a>
+<FONT color="green">034</FONT>    public class WritableUtils {<a name="line.34"></a>
+<FONT color="green">035</FONT>    <a name="line.35"></a>
+<FONT color="green">036</FONT>        /**<a name="line.36"></a>
+<FONT color="green">037</FONT>         * Write a writable to a byte array.<a name="line.37"></a>
+<FONT color="green">038</FONT>         *<a name="line.38"></a>
+<FONT color="green">039</FONT>         * @param writable writable to write.<a name="line.39"></a>
+<FONT color="green">040</FONT>         * @return array containing the serialized writable.<a name="line.40"></a>
+<FONT color="green">041</FONT>         */<a name="line.41"></a>
+<FONT color="green">042</FONT>        public static byte[] toByteArray(Writable writable) {<a name="line.42"></a>
+<FONT color="green">043</FONT>            try {<a name="line.43"></a>
+<FONT color="green">044</FONT>                ByteArrayOutputStream baos = new ByteArrayOutputStream();<a name="line.44"></a>
+<FONT color="green">045</FONT>                DataOutputStream daos = new DataOutputStream(baos);<a name="line.45"></a>
+<FONT color="green">046</FONT>                writable.write(daos);<a name="line.46"></a>
+<FONT color="green">047</FONT>                daos.close();<a name="line.47"></a>
+<FONT color="green">048</FONT>                return baos.toByteArray();<a name="line.48"></a>
+<FONT color="green">049</FONT>            }<a name="line.49"></a>
+<FONT color="green">050</FONT>            catch (IOException ex) {<a name="line.50"></a>
+<FONT color="green">051</FONT>                throw new RuntimeException(ex);<a name="line.51"></a>
+<FONT color="green">052</FONT>            }<a name="line.52"></a>
+<FONT color="green">053</FONT>        }<a name="line.53"></a>
+<FONT color="green">054</FONT>    <a name="line.54"></a>
+<FONT color="green">055</FONT>        /**<a name="line.55"></a>
+<FONT color="green">056</FONT>         * Read a writable from a byte array.<a name="line.56"></a>
+<FONT color="green">057</FONT>         *<a name="line.57"></a>
+<FONT color="green">058</FONT>         * @param array byte array with the serialized writable.<a name="line.58"></a>
+<FONT color="green">059</FONT>         * @param clazz writable class.<a name="line.59"></a>
+<FONT color="green">060</FONT>         * @return writable deserialized from the byte array.<a name="line.60"></a>
+<FONT color="green">061</FONT>         */<a name="line.61"></a>
+<FONT color="green">062</FONT>        @SuppressWarnings("unchecked")<a name="line.62"></a>
+<FONT color="green">063</FONT>        public static &lt;T extends Writable&gt; T fromByteArray(byte[] array, Class&lt;T&gt; clazz) {<a name="line.63"></a>
+<FONT color="green">064</FONT>            try {<a name="line.64"></a>
+<FONT color="green">065</FONT>                T o = (T) ReflectionUtils.newInstance(clazz, null);<a name="line.65"></a>
+<FONT color="green">066</FONT>                o.readFields(new DataInputStream(new ByteArrayInputStream(array)));<a name="line.66"></a>
+<FONT color="green">067</FONT>                return o;<a name="line.67"></a>
+<FONT color="green">068</FONT>            }<a name="line.68"></a>
+<FONT color="green">069</FONT>            catch (IOException ex) {<a name="line.69"></a>
+<FONT color="green">070</FONT>                throw new RuntimeException(ex);<a name="line.70"></a>
+<FONT color="green">071</FONT>            }<a name="line.71"></a>
+<FONT color="green">072</FONT>        }<a name="line.72"></a>
+<FONT color="green">073</FONT>    <a name="line.73"></a>
+<FONT color="green">074</FONT>        private static final String NULL = "||";<a name="line.74"></a>
+<FONT color="green">075</FONT>    <a name="line.75"></a>
+<FONT color="green">076</FONT>        /**<a name="line.76"></a>
+<FONT color="green">077</FONT>         * Write a string to a data output supporting &lt;code&gt;null&lt;/code&gt; values.<a name="line.77"></a>
+<FONT color="green">078</FONT>         * &lt;p/&gt;<a name="line.78"></a>
+<FONT color="green">079</FONT>         * It uses the '||' token to represent &lt;code&gt;null&lt;/code&gt;.<a name="line.79"></a>
+<FONT color="green">080</FONT>         *<a name="line.80"></a>
+<FONT color="green">081</FONT>         * @param dataOutput data output.<a name="line.81"></a>
+<FONT color="green">082</FONT>         * @param str string to write.<a name="line.82"></a>
+<FONT color="green">083</FONT>         * @throws IOException thrown if the string could not be written.<a name="line.83"></a>
+<FONT color="green">084</FONT>         */<a name="line.84"></a>
+<FONT color="green">085</FONT>        public static void writeStr(DataOutput dataOutput, String str) throws IOException {<a name="line.85"></a>
+<FONT color="green">086</FONT>            str = (str != null) ? str : NULL;<a name="line.86"></a>
+<FONT color="green">087</FONT>            dataOutput.writeUTF(str);<a name="line.87"></a>
+<FONT color="green">088</FONT>        }<a name="line.88"></a>
+<FONT color="green">089</FONT>    <a name="line.89"></a>
+<FONT color="green">090</FONT>        /**<a name="line.90"></a>
+<FONT color="green">091</FONT>         * Read a string from a data input supporting &lt;code&gt;null&lt;/code&gt; values.<a name="line.91"></a>
+<FONT color="green">092</FONT>         * &lt;p/&gt;<a name="line.92"></a>
+<FONT color="green">093</FONT>         * It uses the '||' token to represent &lt;code&gt;null&lt;/code&gt;.<a name="line.93"></a>
+<FONT color="green">094</FONT>         *<a name="line.94"></a>
+<FONT color="green">095</FONT>         * @param dataInput data input.<a name="line.95"></a>
+<FONT color="green">096</FONT>         * @return read string, &lt;code&gt;null&lt;/code&gt; if the '||' token was read.<a name="line.96"></a>
+<FONT color="green">097</FONT>         * @throws IOException thrown if the string could not be read.<a name="line.97"></a>
+<FONT color="green">098</FONT>         */<a name="line.98"></a>
+<FONT color="green">099</FONT>        public static String readStr(DataInput dataInput) throws IOException {<a name="line.99"></a>
+<FONT color="green">100</FONT>            String str = dataInput.readUTF();<a name="line.100"></a>
+<FONT color="green">101</FONT>            return (str.equals(NULL)) ? null : str;<a name="line.101"></a>
+<FONT color="green">102</FONT>        }<a name="line.102"></a>
+<FONT color="green">103</FONT>    }<a name="line.103"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

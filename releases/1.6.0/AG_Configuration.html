@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-05-21
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Configuration"></a>
+<div class="section"><h2> Oozie Configuration</h2>
+<p><ul><ul><li><a href="#Introduction">Introduction</a>
+</li>
+<li><a href="#Variable_Resolution">Variable Resolution</a>
+</li>
+<li><a href="#Overriding_Variables_at_Oozie_Startup_Time">Overriding Variables at Oozie Startup Time</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Introduction"></a>
+<div class="section"><h3>Introduction</h3>
+<p>How Oozie configuration is read it is explained in <a href="./AG_ConfigurationFiles.html">Oozie Configuration Files</a>
+.</p>
+<p>This document explains in detail how to configure an Oozie installation.</p>
+<p>The default Oozie configuration values are defined in the <a href="./oozie-default.xml.txt">oozie-default.xml</a>
+ file.</p>
+<a name="Variable_Resolution"></a>
+</div>
+<div class="section"><h3>Variable Resolution</h3>
+<p>Oozie configuration is handled using Hadoop <tt>Configuration</tt>
+ class.</p>
+<p>Among other features, Hadoop <tt>Configuration</tt>
+ supports references to other configuration properties from property values
+and support references to Java System Properties. For example:</p>
+<p><pre>
+&lt;configuration&gt;
+    ...
+    &lt;property&gt;
+        &lt;name&gt;oozie.base.url&lt;/name&gt;
+        &lt;value&gt;http://localhost:8080/oozie&lt;/value&gt;
+        &lt;description&gt;
+             Base Oozie URL.
+        &lt;/description&gt;
+    &lt;/property&gt;
+.
+    &lt;property&gt;
+        &lt;name&gt;oozie.system.id&lt;/name&gt;
+        &lt;value&gt;oozie-${user.name}&lt;/value&gt;
+        &lt;description&gt;
+            The Oozie system ID.
+        &lt;/description&gt;
+    &lt;/property&gt;
+.
+    &lt;property&gt;
+        &lt;name&gt;oozie.service.CallbackService.base.url&lt;/name&gt;
+        &lt;value&gt;${oozie.base.url}/v0/callback&lt;/value&gt;
+        &lt;description&gt;
+             Base callback URL used by ActionExecutors.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    ....
+</pre></p>
+<p>The value of the property <tt>oozie.system.id</tt>
+ is resolved using the Java System Properties 'user.name' which is the OS
+user running the JVM process.</p>
+<p>The value of the property <tt>oozie.service.CallbackService.base.url</tt>
+ is resolved using the value of the property
+ <tt>oozie.base.url</tt>
+ defined in the configuration file itself.</p>
+<a name="Overriding_Variables_at_Oozie_Startup_Time"></a>
+</div>
+<div class="section"><h3>Overriding Variables at Oozie Startup Time</h3>
+<p>Oozie configuration variables can be overriden at start up time by setting them as Java System Properties when starting
+the servlet container.</p>
+<p>This is useful when needing to do a one off start of Oozie with a configuration property in a non usual value. For
+example to force the DB schema creation with the <tt>oozie.db.schema.create=true<c/ode>.</p>
+<p><b>NOTE:</b>
+ In Tomcat, Java System Properties must be set in the <tt>CATALINA_OPTS</tt>
+ environment variable in the shell from
+where Tomcat is started. For example: <tt>export CATALINA_OPTS=&quot;-Doozie.system.id=oozie-foo&quot;</tt>
+.</p>
+<p>To reduce the risk of mistakes Java System Properties overriding can be disabled for specified configuration properties.</p>
+<p>Configuration properties specified in the <tt>oozie.ConfigurationService.ignore.system.properties</tt>
+ property cannot be 
+overriden via Java System Properties.</p>
+<p>The default setting for this property is:</p>
+<p><pre>
+    &lt;property&gt;
+        &lt;name&gt;oozie.ConfigurationService.ignore.system.properties&lt;/name&gt;
+        &lt;value&gt;
+            oozie.service.AuthorizationService.security.enabled
+        &lt;/value&gt;
+    &lt;/property&gt;
+</pre></p>
+<p>The <tt>oozie.ConfigurationService.ignore.system.properties</tt>
+ property cannot be overriden via Java System Properties.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

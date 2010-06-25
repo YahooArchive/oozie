@@ -1,0 +1,326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-06-25
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<a name="Oozie_a_Hadoop_Workflow_System"></a>
+<div class="section"><h2> Oozie, a Hadoop Workflow System</h2>
+<p>Oozie v2 is a server based <i>Coordinator Engine</i>
+ specialized in running workflows based on time and data triggers.
+It can continuously run workflows based on time (e.g. run it every hour), and data availability 
+(e.g. wait for my input data to exist before running my workflow).</p>
+<p>Oozie v1 is a server based <i>Workflow Engine</i>
+ specialized in running workflow jobs with actions that 
+execute Hadoop Map/Reduce and Pig jobs.</p>
+<p><ul><ul><li><a href="#Distribution_Contents">Distribution Contents</a>
+</li>
+<li><a href="#Quick_Start">Quick Start</a>
+</li>
+<li><a href="#Developer_Documentation">Developer Documentation</a>
+</li>
+<li><a href="#Administrator_Documentation">Administrator Documentation</a>
+</li>
+<li><a href="#Licensing_Information">Licensing Information</a>
+</li>
+<li><a href="#Engineering_Documentation">Engineering Documentation</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Distribution_Contents"></a>
+<div class="section"><h3>Distribution Contents</h3>
+<p>Oozie distribution consists of a single 'tar.gz' file containing:</p>
+<p><ul><li>Readme and license: <tt>README.txt</tt>
+ and <tt>LICENSE.txt</tt>
+ files.</li>
+<li>Oozie Server web application: <tt>wars/oozie.war</tt>
+ file.</li>
+<li>Oozie Documentation web application: <tt>wars/ooziedocs.war</tt>
+ file.</li>
+<li>Server configuration: <tt>conf/</tt>
+ directory.</li>
+<li>Client: expanded, <tt>bin/</tt>
+ and <tt>lib/</tt>
+ directories, and archived, <tt>oozie-client.tar.gz</tt>
+ file.</li>
+<li>Examples: <tt>oozie-examples.tar.gz</tt>
+ file.</li>
+<li>Oozie <a href="./oozie-release.log.txt">Release log</a>
+</li>
+</ul>
+</p>
+<a name="Quick_Start"></a>
+</div>
+<div class="section"><h3>Quick Start</h3>
+<p>Enough reading already? Follow the steps in <a href="./DG_QuickStart.html">Oozie Quick Start</a>
+ to get Oozie up and running.</p>
+<a name="Developer_Documentation"></a>
+</div>
+<div class="section"><h3>Developer Documentation</h3>
+<p><ul><li><a href="./DG_Overview.html">Overview</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./DG_QuickStart.html">Oozie Quick Start</a>
+</li>
+<li><a href="./DG_Examples.html">Running the Examples</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./CoordinatorFunctionalSpec.html">Coordinator Functional Specification</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./WorkflowFunctionalSpec.html">Workflow Functional Specification</a>
+</li>
+<li>Specification Shortcuts<ul><li><a href="./WorkflowFunctionalSpec.html#WorkflowDefinition">Workflow Definition (WF Spec #2)</a>
+<ul><li><a href="./WorkflowFunctionalSpec.html#StartNode">Start Node (WF Spec #3.1.1)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#EndNode">End Node (WF Spec #3.1.2)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#KillNode">Kill Node (WF Spec #3.1.3)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#DecisionNode">Decision Node (WF Spec #3.1.4)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#ForkJoinNodes">Fork and Join Nodes (WF Spec #3.1.5)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#ActionNodes">Actions Nodes (WF Spec #3.2)</a>
+<ul><li><a href="./WorkflowFunctionalSpec.html#MapReduceAction">Map Reduce (WF Spec #3.2.2)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#StreamingMapReduceAction">Streaming Map Reduce (WF Spec #3.2.2.2)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#PigAction">Pig Action (WF Spec #3.2.3)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#FsAction">Fs (HDFS) Action (WF Spec #3.2.4)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#SshAction">Ssh Action (WF Spec #3.2.5)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#SubWorkflowAction">Sub-workflow (Oozie) Action (WF Spec #3.2.6)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#JavaAction">Java Action (WF Spec #3.2.7)</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#WorkflowParameterization">Workflow Parameterization (WF Spec #4)</a>
+<ul><li><a href="./WorkflowFunctionalSpec.html#WorkflowProperties">Job Properties (WF Spec #4.1)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#WorkflowELSupport">Expression Language Support (WF Spec #4.2)</a>
+</li>
+</ul>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#WorkflowNotifications">Workflow and Actions Notifications (WF Spec #5)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#UserPropagation">User Propagation (WF Spec #6)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#AppDeployment">Application Deployment (WF Spec #7)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#JobLifecycle">Workflow Job Lifecycle (WF Spec #9)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#JobReRun">Rerunning Workflow Jobs (WF Sepc #10)</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html#OozieWSAPI">Oozie Web Services API (WF Spec #11)</a>
+</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="http://java.sun.com/j2ee/1.4/docs/tutorial/doc/JSPIntro7.html#wp77280" class="externalLink">EL Expression Language Quick Reference</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./DG_CommandLineTool.html">Command Line Tool</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./DG_WorkflowReRun.html">Workflow Re-runs Explained</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./DG_CustomActionExecutor.html">Writing a Custom Action Executor</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./apidocs/index.html">Oozie Javadocs</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./DG_UsingHadoopKerberos.html">Using a Hadoop cluster with Kerberos Authentication</a>
+</li>
+</ul>
+</p>
+<a name="Administrator_Documentation"></a>
+</div>
+<div class="section"><h3>Administrator Documentation</h3>
+<p><ul><li><a href="./AG_Install.html">Oozie Install</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./AG_ConfigurationFiles.html">Oozie Configuration Files</a>
+</li>
+<li><a href="./AG_Configuration.html">Oozie Configuration</a>
+</li>
+<li><a href="./AG_Security.html">Oozie Security</a>
+</li>
+<li><a href="./AG_Logging.html">Oozie Logging</a>
+</li>
+<li><a href="./AG_HadoopKerberos.html">Setup Oozie with Hadoop Kerberos Authentication</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./AG_StartStop.html">Oozie Start &amp; Stop</a>
+</li>
+<li><a href="./AG_Monitoring.html">Oozie Monitoring</a>
+</li>
+<li><a href="./DG_CommandLineTool.html">Command Line Tool</a>
+</li>
+</ul>
+</p>
+<p><a name="LicenseInfo"></a>
+</p>
+<a name="Licensing_Information"></a>
+</div>
+<div class="section"><h3>Licensing Information</h3>
+<p>Oozie is distributed under <a href="http://www.apache.org/licenses/LICENSE-2.0" class="externalLink">Apache License 2.0</a>
+.</p>
+<p>For details on the license of the dependent components, refer to the
+<a href="./dependencies.html#Licenses">Dependencies Report, Licenses section</a>
+.</p>
+<p>Some of the components in the dependencies report don't mention their license in the published POM. They are:</p>
+<p><ul><li>JDOM: <a href="http://www.jdom.org/docs/faq.html#a0030" class="externalLink">JDOM License</a>
+ (Apache style).</li>
+<li>Oro: <a href="http://www.apache.org/licenses/LICENSE-2.0" class="externalLink">Apache License 2.0</a>
+.</li>
+</ul>
+</p>
+<p>MySQL JDBC driver, <a href="http://www.gnu.org/licenses/gpl-2.0.html" class="externalLink">GNU General Public License, Version 2</a>
+, is included in
+the Oozie distribution only if a MySQL Oozie distribution is created.</p>
+<p>The Oozie web console uses <a href="http://extjs.com/products/extjs/" class="externalLink">Ext JS 2.2</a>
+ which is available with a GNU GPL version
+3.0 with an <a href="http://extjs.com/products/floss-exception.php" class="externalLink">Open Source License Exception for Applications</a>
+ which
+covers projects using Apache License.</p>
+<p>Oozie uses a modified version of the Apache Doxia core and twiki plugins to generate Oozie documentation.</p>
+<a name="Engineering_Documentation"></a>
+</div>
+<div class="section"><h3>Engineering Documentation</h3>
+<p><ul><li><a href="./ENG_Building.html">Building Oozie</a>
+</li>
+<li><a href="./ENG_HadoopQuickInstall.html">Hadoop Quick Install</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./dependencies.html">Dependencies Report</a>
+</li>
+</ul>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

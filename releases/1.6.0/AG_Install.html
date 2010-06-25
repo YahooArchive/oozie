@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-05-21
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Install"></a>
+<div class="section"><h2> Oozie Install</h2>
+<p><ul><ul><li><a href="#System_Requirements">System Requirements</a>
+</li>
+<li><a href="#Unix_Setup">Unix Setup</a>
+</li>
+<li><a href="#SSH_Setup">SSH Setup</a>
+</li>
+<li><a href="#MySQL_Setup">MySQL Setup</a>
+</li>
+<li><a href="#Tomcat_Setup">Tomcat Setup</a>
+</li>
+<li><a href="#Oozie_Distro_Setup">Oozie Distro Setup</a>
+</li>
+<li><a href="#Oozie_Server_and_Documentation_Setup">Oozie Server and Documentation Setup</a>
+</li>
+<li><a href="#Oozie_Configuration">Oozie Configuration</a>
+<ul><li><a href="#Oozie_Database_Configuration">Oozie Database Configuration</a>
+</li>
+<li><a href="#Oozie_System_ID_Configuration">Oozie System ID Configuration</a>
+</li>
+<li><a href="#Oozie_URL_Configuration">Oozie URL Configuration</a>
+</li>
+<li><a href="#Oozie_Security_Configuration">Oozie Security Configuration</a>
+</li>
+<li><a href="#Oozie_Logging_Configuration">Oozie Logging Configuration</a>
+</li>
+</ul>
+</li>
+<li><a href="#Oozie_Database_Creation">Oozie Database Creation</a>
+</li>
+<li><a href="#Normal_Oozie_System_Startup">Normal Oozie System Startup</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="System_Requirements"></a>
+<div class="section"><h3>System Requirements</h3>
+<p><ul><li>Unix (tested with  RHEL4, RHEL5 and Mac OS X)</li>
+<li>Java JRE 1.6+</li>
+<li><a href="http://tomcat.apache.org" class="externalLink">Tomcat 6.x</a>
+ (tested with 6.0.18)</li>
+<li><a href="http://www.mysql.com" class="externalLink">MySQL 5.1.*</a>
+ (tested with 5.1.24.6)</li>
+</ul>
+</p>
+<a name="Unix_Setup"></a>
+</div>
+<div class="section"><h3>Unix Setup</h3>
+<p>Create a Unix user account, referred as <tt><OOZIE_USER></tt>
+ in this documentation, that will be used to run
+Oozie's Tomcat.</p>
+<p>Configure the shell of the <tt><OOZIE_USER></tt>
+ account to have Java JRE 1.6+ in the <tt>PATH</tt>
+.</p>
+<p>Test that the Java version, 1.6+, is available with the <tt>java -version</tt>
+ command.</p>
+<a name="SSH_Setup"></a>
+</div>
+<div class="section"><h3>SSH Setup</h3>
+<p>Create SSH keys for the <tt><OOZIE_USER></tt>
+ account.</p>
+<p><pre>
+$ ssh-keygen -t dsa
+</pre></p>
+<p>If the SSH keys has been generated with a non-empty passphrase make sure the <tt>ssh-agent</tt>
+ is always running for the
+<tt><OOZIE_USER></tt>
+ account.</p>
+<p>The SSH public key <tt><OOZIE_USER>/.ssh/id_dsa.pub</tt>
+ has to be made available to be installed in boxes that
+will execute remote SSH actions from workflow jobs in the <tt>~/.ssh/authorized_keys2</tt>
+ of the remote Unix box
+that will execute the SSH command.</p>
+<p>Test installing the SSH public key in a remote, perform a SSH login from the Oozie to the remote box using the user
+under which the SSH public keys have been installed. A password should not be asked.</p>
+<a name="MySQL_Setup"></a>
+</div>
+<div class="section"><h3>MySQL Setup</h3>
+<p>Install MySQL and create a MySQL account, referred as <tt><DB_OOZIE_USER></tt>
+. Give permissions to create schemas
+plus all SQL permissions.</p>
+<p>For example:</p>
+<p><pre>
+$ mysql -u root
+.
+mysql&gt; grant all privileges on oozie.* to 'oozie'@'localhost' identified by 'oozie';
+Query OK, 0 rows affected (0.03 sec)
+.
+mysql&gt; exit
+Bye
+</pre></p>
+<p><b>IMPORTANT:</b>
+ If the Oozie distro does not include the MSQL JDBC driver (the Apache distro does not), the <tt>oozie.war</tt>
+
+web application must be patched with it. Otherwise, the MySQL JDBC driver will not be present and Oozie will fail to
+work.</p>
+<a name="Tomcat_Setup"></a>
+</div>
+<div class="section"><h3>Tomcat Setup</h3>
+<p>Install Tomcat and configure it to run under the <tt><OOZIE_USER></tt>
+ Unix account.</p>
+<p>Tomcat must run using Java JRE 1.6+.</p>
+<p>Start Tomcat and test it is working by accessing its root page.</p>
+<a name="Oozie_Distro_Setup"></a>
+</div>
+<div class="section"><h3>Oozie Distro Setup</h3>
+<p>Get the Oozie MySQL distro for the Hadoop cluster version.</p>
+<p><b>IMPORTANT:</b>
+ The Oozie distro being installed must be for the exact same version of Hadoop cluster that Oozie will be
+working with. This is because the Hadoop RPC protocol requires the exact same version on the client side.</p>
+<p>Expand the distro in the <tt><OOZIE_USER></tt>
+'s home directory. Soft link the expanded directory to <tt>oozie</tt>
+.</p>
+<p>Add <tt>~/oozie/bin</tt>
+ to the <tt>PATH</tt>
+ of the shell.</p>
+<a name="Oozie_Server_and_Documentation_Setup"></a>
+</div>
+<div class="section"><h3>Oozie Server and Documentation Setup</h3>
+<p>If present, delete the old <tt>oozie.war</tt>
+ and <tt>ooziedocs.war</tt>
+ files, and <tt>oozie</tt>
+ and <tt>ooziedocs</tt>
+ directories from
+Tomcat's <tt>webapps/</tt>
+ directory.</p>
+<p>Copy the <tt>~/oozie/wars/oozie.war</tt>
+ and the <tt>~/oozie/wars/ooziedocs.war</tt>
+ files to Tomcat's <tt>webapps/</tt>
+ directory.</p>
+<a name="Oozie_Configuration"></a>
+</div>
+<div class="section"><h3>Oozie Configuration</h3>
+<p>In most cases, for a production setup Oozie configuration will read from a configuration directory instead of the
+classpath, refer to the <a href="./AG_ConfigurationFiles.html">Oozie configuration files</a>
+ document for detail on how to setup Oozie
+to read its configuration from a directory.</p>
+<a name="Oozie_Database_Configuration"></a>
+<div class="section"><h4>Oozie Database Configuration</h4>
+<p>Configuration file: <tt>~/oozie/conf/oozie-site.xml</tt>
+</p>
+<p>Default JDBC driver class, JDBC URL, DB user name and DB user password are for HSQL.</p>
+<p>To use MySQL set the following properties:</p>
+<p><pre>
+    ...
+   &lt;property&gt;
+        &lt;name&gt;oozie.service.DataSourceService.jdbc.driver&lt;/name&gt;
+        &lt;value&gt;com.mysql.jdbc.Driver&lt;/value&gt;
+        &lt;description&gt;
+            JDBC driver class.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;oozie.service.DataSourceService.jdbc.url&lt;/name&gt;
+        &lt;value&gt;jdbc:mysql://localhost:3306&lt;/value&gt;
+        &lt;description&gt;
+            JDBC URL.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;oozie.service.DataSourceService.jdbc.username&lt;/name&gt;
+        &lt;value&gt;oozie&lt;/value&gt;
+        &lt;description&gt;
+            DB user name.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;oozie.service.DataSourceService.jdbc.password&lt;/name&gt;
+        &lt;value&gt;oozie&lt;/value&gt;
+        &lt;description&gt;
+            DB user password.
+            IMPORTANT: if password is emtpy leave a 1 space string, the service trims the value, if empty Configuration
+                       assumes it is NULL.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    ...
+</pre></p>
+<p>If for security reasons the database user password cannot be written in the configurationf file. Set the following
+configuration property to <tt>true</tt>
+ (default value is <tt>false</tt>
+ ):</p>
+<p><pre>
+    ...
+    &lt;property&gt;
+        &lt;name&gt;oozie.service.DataSourcePasswordService.password.from.console&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+        &lt;description&gt;
+            Indicates if the password for the datasource has to be asked interactively in the console starting the
+            servlet container at Oozie start up time.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    ...
+</pre></p>
+<p>Then, the <tt>oozie.service.DataSourceService.jdbc.password</tt>
+ property in the configuration file will be ignored and the
+DB user password will be asked from the shell Oozie server (Tomcat) is started.</p>
+<a name="Oozie_System_ID_Configuration"></a>
+</div>
+<div class="section"><h4>Oozie System ID Configuration</h4>
+<p>Configuration file: <tt>~/oozie/conf/oozie-site.xml</tt>
+</p>
+<p>Oozie has a system ID that is is used to generate the Oozie temporary runtime directory, the workflow job IDs, and the
+workflow action IDs.</p>
+<p>Two Oozie systems running with the same ID will not have any conflict but in case of troubleshooting it will be easier
+to identify resources created/used by the different Oozie systems if they have different system IDs.</p>
+<p>The default value for the Oozie system ID is:</p>
+<p><pre>
+    ...
+    &lt;property&gt;
+        &lt;name&gt;oozie.system.id&lt;/name&gt;
+        &lt;value&gt;oozie-${user.name}&lt;/value&gt;
+        &lt;description&gt;
+            The Oozie system ID.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    ...
+</pre></p>
+<a name="Oozie_URL_Configuration"></a>
+</div>
+<div class="section"><h4>Oozie URL Configuration</h4>
+<p>Oozie needs to know its public base URL <tt>SCHEME ://HOST:PORT/CONTEXT</tt>
+. This base URL is used to
+create callback URLs for actions and the console URL for Oozie workflow jobs. As Oozie could be running behind a load
+balancer or dynamic DNS it is important that this property is set to the public host name and port number.</p>
+<p><pre>
+    ...
+    &lt;property&gt;
+        &lt;name&gt;oozie.base.url&lt;/name&gt;
+        &lt;value&gt;http://localhost:8080/oozie&lt;/value&gt;
+        &lt;description&gt;
+             Base Oozie URL.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    ...
+</pre></p>
+<a name="Oozie_Security_Configuration"></a>
+</div>
+<div class="section"><h4>Oozie Security Configuration</h4>
+<p>Configuration files: <tt>~/oozie/conf/oozie-site.xml</tt>
+ and <tt>~/oozie/conf/oozie-log4j.properties</tt>
+</p>
+<p>Oozie Security is explained in <a href="./AG_Security.html">Oozie Security</a>
+.</p>
+<p>To enable security set the following property:</p>
+<p><pre>
+    ...
+    &lt;property&gt;
+        &lt;name&gt;oozie.service.AuthorizationService.security.enabled&lt;/name&gt;
+        &lt;value&gt;true&lt;/value&gt;
+        &lt;description&gt;
+            Specifies whether security is to be disabled while running Ooozie.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    ...
+</pre></p>
+<p>Note that by default this property is disabled.</p>
+<p>Add to the <tt>~/oozie/conf/adminusers.txt</tt>
+ file all the users that will have admin privileges in Oozie. One user name per
+line. Empty lines and lines starting with '#' are ignored.</p>
+<a name="Oozie_Logging_Configuration"></a>
+</div>
+<div class="section"><h4>Oozie Logging Configuration</h4>
+<p>Configuration file: <tt>~/oozie/conf/oozie-log4j.properties</tt>
+</p>
+<p>Oozie logs to different log files, this is explained in <a href="./AG_Logging.html">Oozie Logging</a>
+.</p>
+<p>Set the desired Logging levels to the different logger categories.</p>
+<p><b>IMPORTANT:</b>
+ The logger category <tt>oozie</tt>
+ must use the <tt>DailyRollingFileAppender</tt>
+ appender and it must be configured
+for daily or hourly (default and recommended) rolling.</p>
+<a name="Oozie_Database_Creation"></a>
+</div>
+</div>
+<div class="section"><h3>Oozie Database Creation</h3>
+<p>Oozie server can be started with an option to create the Oozie database if it does not exist.</p>
+<p>This is done by starting Oozie server (Tomcat) with the Java System property <tt>oozie.db.schema.create=true</tt>
+.</p>
+<p>This property can also be set in Oozie configuration file.</p>
+<p><pre>
+    ...
+    &lt;property&gt;
+        &lt;name&gt;oozie.db.schema.create&lt;/name&gt;
+        &lt;value&gt;false&lt;/value&gt;
+        &lt;description&gt;
+            Creates Oozie DB.
+            If set to true, it creates the DB schema if it does not exist. If the DB schema exists is a NOP.
+            If set to false, it does not create the DB schema. If the DB schema does not exist it fails start up.
+        &lt;/description&gt;
+    &lt;/property&gt;
+    ...
+</pre></p>
+<p>However, in a production system, it is recommended to disable automatic DB creation not to miss a database lost.</p>
+<p>If automatic DB creation is disabled, the steps to create it are:</p>
+<p><pre>
+$ export CATALINA_OPTS=&quot;-Doozie.config.dir=/home/&lt;OOZIE_USER&gt;/oozie/conf -Doozie.db.schema.create=true&quot;
+$ catalina.sh run
+</pre></p>
+<p><b>IMPORTANT:</b>
+ Do not start Tomcat with the <tt>start</tt>
+ command. Tomcat must be started with the <tt>run</tt>
+ command if the
+database password is configured to be asked on the console. After the database password is set, Tomcat will go on
+background mode itself.</p>
+<p><b>IMPORTANT:</b>
+ The &quot;-Doozie.config.dir=&quot; Java system property must be set to the Oozie configuration directory, the
+ <tt>~/oozie/conf/</tt>
+ directory for the <tt><OOZIE_USER></tt>
+.</p>
+<p>Check the Oozie log file <tt>oozie.log</tt>
+ to ensure Oozie started successfully and the database was created.</p>
+<p>Stop Tomcat from another terminal using the command:</p>
+<p><pre>
+$ catalina.sh stop
+</pre></p>
+<a name="Normal_Oozie_System_Startup"></a>
+</div>
+<div class="section"><h3>Normal Oozie System Startup</h3>
+<p>Follow the instructions at <a href="./AG_StartStop.html">Oozie Start and Stop</a>
+.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

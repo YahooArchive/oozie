@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-06-25
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Setup_Oozie_with_Hadoop_Kerberos_Authentication"></a>
+<div class="section"><h2> Setup Oozie with Hadoop Kerberos Authentication</h2>
+<p><ul><ul><li><a href="#Introduction">Introduction</a>
+</li>
+<li><a href="#How_Does_Oozie_and_Hadoop_with_Kerberos_Authentication_Work">How Does Oozie and Hadoop with Kerberos Authentication Work?</a>
+</li>
+<li><a href="#Oozie_Configuration_Properties_for_Hadoop_Kerberos_Authentication">Oozie Configuration Properties for Hadoop Kerberos Authentication</a>
+</li>
+<li><a href="#Configuration_in_Hadoop_with_Kerberos_Authentication">Configuration in Hadoop with Kerberos Authentication</a>
+</li>
+<li><a href="#Important_Considerations">Important Considerations</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Introduction"></a>
+<div class="section"><h3>Introduction</h3>
+<p>How Oozie configuration is read it is explained in <a href="./AG_ConfigurationFiles.html">Oozie Configuration Files</a>
+.</p>
+<p>This document explains how to setup Oozie to work with a Hadoop cluster with Kerberos authentication.</p>
+<a name="How_Does_Oozie_and_Hadoop_with_Kerberos_Authentication_Work"></a>
+</div>
+<div class="section"><h3>How Does Oozie and Hadoop with Kerberos Authentication Work?</h3>
+<p>As with Hadoop with no authentication, Oozie submit jobs to Hadoop using the same user name that submitted the workflow
+job to Oozie.</p>
+<p>Oozie is configured in Hadoop as a proxy user. A proxy user is a user that is allowed to submit jobs on behalf of
+another user.</p>
+<p>Hadoop authenticates Oozie with Oozie's credentials.</p>
+<p>Oozie is allowed to submit jobs for any user belonging to a specified Unix group (this is allows to control the users
+Oozie can impersonate).</p>
+<a name="Oozie_Configuration_Properties_for_Hadoop_Kerberos_Authentication"></a>
+</div>
+<div class="section"><h3>Oozie Configuration Properties for Hadoop Kerberos Authentication</h3>
+<p>The following 3 configuration properties (default values shown) configure Oozie to work with a Hadoop
+cluster with Kerberos authentication.</p>
+<p><pre>
+    &lt;property&gt;
+        &lt;name&gt;oozie.service.HadoopAccessorService.kerberos.enabled&lt;/name&gt;
+        &lt;value&gt;false&lt;/value&gt;
+        &lt;description&gt;
+            Indicates if Oozie is configured to use Kerberos.
+        &lt;/description&gt;
+    &lt;/property&gt;
+.
+    &lt;property&gt;
+        &lt;name&gt;oozie.service.HadoopAccessorService.keytab.file&lt;/name&gt;
+        &lt;value&gt;${user.home}/oozie.keytab&lt;/value&gt;
+        &lt;description&gt;
+            Location of the Oozie user keytab file.
+        &lt;/description&gt;
+    &lt;/property&gt;
+.
+    &lt;property&gt;
+        &lt;name&gt;oozie.service.HadoopAccessorService.kerberos.principal&lt;/name&gt;
+        &lt;value&gt;${user.name}/localhost@LOCALHOST&lt;/value&gt;
+        &lt;description&gt;
+            Kerberos principal for Oozie service.
+        &lt;/description&gt;
+    &lt;/property&gt;
+</pre></p>
+<p>The <tt>oozie.service.HadoopAccessorService.kerberos.enabled</tt>
+ property indicates if Hadoop Kerberos authentication should
+initialized and used. If set to <tt>true</tt>
+ a Kerberos KDC must be available and configured to be accessible from the Unix
+box where Oozie is running.</p>
+<p>The <tt>oozie.service.HadoopAccessorService.keytab.file</tt>
+ indicates the location of the Keytab file containing the keytab
+for Oozie's Kerberos principal.</p>
+<p>The <tt>oozie.service.HadoopAccessorService.kerberos.principal</tt>
+ indicates the fully qualified Kerberos principal name used
+by Oozie.</p>
+<p>Note that the <tt>${user.name}</tt>
+ and <tt>${user.home}</tt>
+ values are resolved to the Unix user name and the home directory of the
+running Oozie server.</p>
+<a name="Configuration_in_Hadoop_with_Kerberos_Authentication"></a>
+</div>
+<div class="section"><h3>Configuration in Hadoop with Kerberos Authentication</h3>
+<p>The Hadoop cluster must be configured with Kerberos Authentication enabled.</p>
+<p>The following properties must be added to the Hadoop configuration <tt>core-site.xml</tt>
+ file:</p>
+<p><pre>
+  &lt;property&gt;
+    &lt;name&gt;hadoop.proxyuser.#OOZIE_KERBEROS_NAME#.hosts&lt;/name&gt;
+    &lt;value&gt;#OOZIE_HOST#&lt;/value&gt;
+  &lt;/property&gt;
+.
+  &lt;property&gt;
+    &lt;name&gt;hadoop.proxyuser.#OOZIE_KERBEROS_NAME#.groups&lt;/name&gt;
+    &lt;value&gt;#GROUP#&lt;/value&gt;
+  &lt;/property&gt;
+</pre></p>
+<p>The <tt>#OOZIE_KERBEROS_NAME#</tt>
+ is the short name from the Kerberos principal name used by Oozie. For example if the
+Kerberos principal name is <tt>oozie/bluesky@FOO.BAR</tt>
+ the short name is <tt>oozie</tt>
+.</p>
+<p>The <tt>#OOZIE_HOST#</tt>
+ is the hostname or IP address of the host running Oozie.</p>
+<p>The <tt>#GROUP#</tt>
+ is the Unix group for users that allow Oozie to run jobs in the Hadoop cluster on their behalf.</p>
+<a name="Important_Considerations"></a>
+</div>
+<div class="section"><h3>Important Considerations</h3>
+<p>Unix users and Kerberos principals are not required to be identical.</p>
+<p>However, to ensure Oozie and Hadoop work correctly the following rules must be followed:</p>
+<p><ul><li>The Unix user running the Oozie server must be the short name of the Kerberos principal name for Oozie.</li>
+<li>The Unix user and the Kerberos principal for user submitting jobs to Oozie must match.</li>
+<li>Oozie users must be added to the Unix group configured in the Hadoop <tt>hadoop.proxyuser.#OOZIE_KERBEROS_NAME#.users</tt>
+ property.</li>
+</ul>
+</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

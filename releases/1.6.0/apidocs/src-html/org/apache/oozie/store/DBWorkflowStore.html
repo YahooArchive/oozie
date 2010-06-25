@@ -1,0 +1,1023 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one<a name="line.2"></a>
+<FONT color="green">003</FONT>     * or more contributor license agreements.  See the NOTICE file<a name="line.3"></a>
+<FONT color="green">004</FONT>     * distributed with this work for additional information<a name="line.4"></a>
+<FONT color="green">005</FONT>     * regarding copyright ownership.  The ASF licenses this file<a name="line.5"></a>
+<FONT color="green">006</FONT>     * to you under the Apache License, Version 2.0 (the<a name="line.6"></a>
+<FONT color="green">007</FONT>     * "License"); you may not use this file except in compliance<a name="line.7"></a>
+<FONT color="green">008</FONT>     * with the License.  You may obtain a copy of the License at<a name="line.8"></a>
+<FONT color="green">009</FONT>     *<a name="line.9"></a>
+<FONT color="green">010</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.10"></a>
+<FONT color="green">011</FONT>     *<a name="line.11"></a>
+<FONT color="green">012</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.12"></a>
+<FONT color="green">013</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.13"></a>
+<FONT color="green">014</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.14"></a>
+<FONT color="green">015</FONT>     * See the License for the specific language governing permissions and<a name="line.15"></a>
+<FONT color="green">016</FONT>     * limitations under the License.<a name="line.16"></a>
+<FONT color="green">017</FONT>     */<a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.oozie.store;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import static org.apache.oozie.util.db.SqlStatement.*;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import static org.apache.oozie.store.OozieSchema.OozieTable.*;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import static org.apache.oozie.store.OozieSchema.OozieColumn.*;<a name="line.22"></a>
+<FONT color="green">023</FONT>    <a name="line.23"></a>
+<FONT color="green">024</FONT>    import org.apache.oozie.util.MemoryLocks.LockToken;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import org.apache.oozie.service.MemoryLocksService;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.sql.Connection;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.sql.PreparedStatement;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.sql.ResultSet;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import java.sql.SQLException;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import java.sql.Timestamp;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import java.util.ArrayList;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import java.util.Date;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import java.util.HashMap;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import java.util.List;<a name="line.34"></a>
+<FONT color="green">035</FONT>    import java.util.Map;<a name="line.35"></a>
+<FONT color="green">036</FONT>    import java.util.concurrent.Callable;<a name="line.36"></a>
+<FONT color="green">037</FONT>    <a name="line.37"></a>
+<FONT color="green">038</FONT>    import org.apache.oozie.client.WorkflowAction;<a name="line.38"></a>
+<FONT color="green">039</FONT>    import org.apache.oozie.client.WorkflowJob;<a name="line.39"></a>
+<FONT color="green">040</FONT>    import org.apache.oozie.client.OozieClient;<a name="line.40"></a>
+<FONT color="green">041</FONT>    import org.apache.oozie.WorkflowActionBean;<a name="line.41"></a>
+<FONT color="green">042</FONT>    import org.apache.oozie.WorkflowJobBean;<a name="line.42"></a>
+<FONT color="green">043</FONT>    import org.apache.oozie.WorkflowsInfo;<a name="line.43"></a>
+<FONT color="green">044</FONT>    import org.apache.oozie.ErrorCode;<a name="line.44"></a>
+<FONT color="green">045</FONT>    import org.apache.oozie.store.OozieSchema.OozieColumn;<a name="line.45"></a>
+<FONT color="green">046</FONT>    import org.apache.oozie.workflow.WorkflowException;<a name="line.46"></a>
+<FONT color="green">047</FONT>    import org.apache.oozie.workflow.WorkflowInstance;<a name="line.47"></a>
+<FONT color="green">048</FONT>    import org.apache.oozie.workflow.WorkflowLib;<a name="line.48"></a>
+<FONT color="green">049</FONT>    import org.apache.oozie.service.InstrumentationService;<a name="line.49"></a>
+<FONT color="green">050</FONT>    import org.apache.oozie.service.Services;<a name="line.50"></a>
+<FONT color="green">051</FONT>    import org.apache.oozie.util.Instrumentation;<a name="line.51"></a>
+<FONT color="green">052</FONT>    import org.apache.oozie.util.ParamChecker;<a name="line.52"></a>
+<FONT color="green">053</FONT>    import org.apache.oozie.util.db.SqlStatement;<a name="line.53"></a>
+<FONT color="green">054</FONT>    import org.apache.oozie.util.db.SqlStatement.Condition;<a name="line.54"></a>
+<FONT color="green">055</FONT>    import org.apache.oozie.util.db.SqlStatement.ResultSetReader;<a name="line.55"></a>
+<FONT color="green">056</FONT>    import org.apache.oozie.util.db.SqlStatement.Select;<a name="line.56"></a>
+<FONT color="green">057</FONT>    <a name="line.57"></a>
+<FONT color="green">058</FONT>    /**<a name="line.58"></a>
+<FONT color="green">059</FONT>     * DB Implementation of Workflow Store<a name="line.59"></a>
+<FONT color="green">060</FONT>     */<a name="line.60"></a>
+<FONT color="green">061</FONT>    public class DBWorkflowStore implements WorkflowStore {<a name="line.61"></a>
+<FONT color="green">062</FONT>        private Connection conn;<a name="line.62"></a>
+<FONT color="green">063</FONT>        private WorkflowLib workflowLib;<a name="line.63"></a>
+<FONT color="green">064</FONT>        private boolean selectForUpdate;<a name="line.64"></a>
+<FONT color="green">065</FONT>        private List&lt;LockToken&gt; locks = null;<a name="line.65"></a>
+<FONT color="green">066</FONT>        private static final String INSTR_GROUP = "db";<a name="line.66"></a>
+<FONT color="green">067</FONT>        public static final int LOCK_TIMEOUT = 1000;<a name="line.67"></a>
+<FONT color="green">068</FONT>    <a name="line.68"></a>
+<FONT color="green">069</FONT>        // Following statements(INSERT_WORKFLOW, UPDATE_WORKFLOW)<a name="line.69"></a>
+<FONT color="green">070</FONT>        // follow the same numbering for place holders and<a name="line.70"></a>
+<FONT color="green">071</FONT>        // uses same function getJobValueMapfromBean for setting the values. So The<a name="line.71"></a>
+<FONT color="green">072</FONT>        // numbering is to be maintained if any change is made.<a name="line.72"></a>
+<FONT color="green">073</FONT>        private static final SqlStatement INSERT_WORKFLOW = insertInto(WORKFLOWS).value(WF_id, "1").value(WF_appName, "2")<a name="line.73"></a>
+<FONT color="green">074</FONT>                .value(WF_appPath, "3").value(WF_conf, "4").value(WF_protoActionConf, "5").value(WF_logToken, "6").value(<a name="line.74"></a>
+<FONT color="green">075</FONT>                        WF_status, "7").value(WF_run, "8").value(WF_createdTime, "9").value(WF_startTime, "10").value(<a name="line.75"></a>
+<FONT color="green">076</FONT>                        WF_endTime, "11").value(WF_user, "12").value(WF_groupName, "13").value(WF_authToken, "14").value(<a name="line.76"></a>
+<FONT color="green">077</FONT>                        WF_externalId, "15").value(WF_lastModTime, "16");<a name="line.77"></a>
+<FONT color="green">078</FONT>    <a name="line.78"></a>
+<FONT color="green">079</FONT>        private static final SqlStatement UPDATE_WORKFLOW = update(WORKFLOWS).set(WF_appName, "2").set(WF_appPath, "3")<a name="line.79"></a>
+<FONT color="green">080</FONT>                .set(WF_conf, "4").set(WF_protoActionConf, "5").set(WF_logToken, "6").set(WF_status, "7").set(WF_run, "8")<a name="line.80"></a>
+<FONT color="green">081</FONT>                .set(WF_createdTime, "9").set(WF_startTime, "10").set(WF_endTime, "11").set(WF_user, "12").set(<a name="line.81"></a>
+<FONT color="green">082</FONT>                        WF_groupName, "13").set(WF_authToken, "14").set(WF_externalId, "15").set(WF_lastModTime, "16")<a name="line.82"></a>
+<FONT color="green">083</FONT>                .where(isEqual(WF_id, "1"));<a name="line.83"></a>
+<FONT color="green">084</FONT>    <a name="line.84"></a>
+<FONT color="green">085</FONT>        private static final SqlStatement DELETE_WORKFLOW = deleteFrom(WORKFLOWS).where(isEqual(WF_id, "1"));<a name="line.85"></a>
+<FONT color="green">086</FONT>    <a name="line.86"></a>
+<FONT color="green">087</FONT>        private static final SqlStatement GET_WORKFLOWS = selectColumns(WF_id, WF_appName, WF_appPath, WF_conf,<a name="line.87"></a>
+<FONT color="green">088</FONT>                WF_protoActionConf, WF_logToken, WF_status, WF_run, WF_lastModTime, WF_createdTime, WF_startTime,<a name="line.88"></a>
+<FONT color="green">089</FONT>                WF_endTime, WF_user, WF_groupName, WF_authToken, WF_externalId);<a name="line.89"></a>
+<FONT color="green">090</FONT>    <a name="line.90"></a>
+<FONT color="green">091</FONT>        private static final SqlStatement GET_WORKFLOWS_COUNT = getCount(WORKFLOWS);<a name="line.91"></a>
+<FONT color="green">092</FONT>    <a name="line.92"></a>
+<FONT color="green">093</FONT>        private static final SqlStatement GET_COMPLETED_WORKFLOWS_OLDER_THAN = ((Select) GET_WORKFLOWS).where(lessThan(<a name="line.93"></a>
+<FONT color="green">094</FONT>                WF_endTime, "1"));<a name="line.94"></a>
+<FONT color="green">095</FONT>    <a name="line.95"></a>
+<FONT color="green">096</FONT>        private static final SqlStatement GET_WORKFLOW = ((Select) GET_WORKFLOWS).where(isEqual(WF_id, "1"));<a name="line.96"></a>
+<FONT color="green">097</FONT>    <a name="line.97"></a>
+<FONT color="green">098</FONT>        private static final SqlStatement GET_WORKFLOW_FOR_UPDATE = ((Select) GET_WORKFLOW).forUpdate();<a name="line.98"></a>
+<FONT color="green">099</FONT>    <a name="line.99"></a>
+<FONT color="green">100</FONT>        private static final SqlStatement GET_WORKFLOW_ID_FOR_EXTERNAL_ID = selectColumns(WF_id).where(<a name="line.100"></a>
+<FONT color="green">101</FONT>                isEqual(WF_externalId, "1"));<a name="line.101"></a>
+<FONT color="green">102</FONT>    <a name="line.102"></a>
+<FONT color="green">103</FONT>        private static final SqlStatement GET_WORKFLOWS_COUNT_WITH_STATUS = ((Select) GET_WORKFLOWS_COUNT).where(isEqual(<a name="line.103"></a>
+<FONT color="green">104</FONT>                WF_status, "1"));<a name="line.104"></a>
+<FONT color="green">105</FONT>    <a name="line.105"></a>
+<FONT color="green">106</FONT>        private static final SqlStatement GET_WORKFLOWS_COUNT_WITH_STATUS_IN_LAST_N_SECS = ((Select) GET_WORKFLOWS_COUNT).where(<a name="line.106"></a>
+<FONT color="green">107</FONT>                and(isEqual(WF_status, "1"), greaterThan(WF_lastModTime, "2")));<a name="line.107"></a>
+<FONT color="green">108</FONT>    <a name="line.108"></a>
+<FONT color="green">109</FONT>        // Following statements(INSERT_ACTION, UPDATE_ACTION) follow the same<a name="line.109"></a>
+<FONT color="green">110</FONT>        // numbering for place holders and uses same function<a name="line.110"></a>
+<FONT color="green">111</FONT>        // getActionValueMapFromBean for setting the values. So The numbering is to<a name="line.111"></a>
+<FONT color="green">112</FONT>        // be maintained if any change is made.<a name="line.112"></a>
+<FONT color="green">113</FONT>        private static final SqlStatement INSERT_ACTION = insertInto(ACTIONS).value(ACTIONS_id, "1").value(ACTIONS_name,<a name="line.113"></a>
+<FONT color="green">114</FONT>                "2").value(ACTIONS_type, "3").value(ACTIONS_wfId, "4").value(ACTIONS_conf, "5").value(ACTIONS_status, "6")<a name="line.114"></a>
+<FONT color="green">115</FONT>                .value(ACTIONS_externalStatus, "7").value(ACTIONS_transition, "8").value(ACTIONS_retries, "9").value(<a name="line.115"></a>
+<FONT color="green">116</FONT>                        ACTIONS_startTime, "10").value(ACTIONS_data, "11").value(ACTIONS_externalId, "12").value(<a name="line.116"></a>
+<FONT color="green">117</FONT>                        ACTIONS_trackerUri, "13").value(ACTIONS_consoleUrl, "14").value(ACTIONS_executionPath, "15").value(<a name="line.117"></a>
+<FONT color="green">118</FONT>                        ACTIONS_pending, "16").value(ACTIONS_pendingAge, "17").value(ACTIONS_signalValue, "18").value(<a name="line.118"></a>
+<FONT color="green">119</FONT>                        ACTIONS_logToken, "19").value(ACTIONS_errorCode, "20").value(ACTIONS_errorMessage, "21").value(<a name="line.119"></a>
+<FONT color="green">120</FONT>                        ACTIONS_endTime, "22").value(ACTIONS_lastCheckTime, "23");<a name="line.120"></a>
+<FONT color="green">121</FONT>    <a name="line.121"></a>
+<FONT color="green">122</FONT>        private static final SqlStatement UPDATE_ACTION = update(ACTIONS).set(ACTIONS_name, "2").set(ACTIONS_type, "3")<a name="line.122"></a>
+<FONT color="green">123</FONT>                .set(ACTIONS_wfId, "4").set(ACTIONS_conf, "5").set(ACTIONS_status, "6").set(ACTIONS_externalStatus, "7")<a name="line.123"></a>
+<FONT color="green">124</FONT>                .set(ACTIONS_transition, "8").set(ACTIONS_retries, "9").set(ACTIONS_startTime, "10")<a name="line.124"></a>
+<FONT color="green">125</FONT>                .set(ACTIONS_data, "11").set(ACTIONS_externalId, "12").set(ACTIONS_trackerUri, "13").set(<a name="line.125"></a>
+<FONT color="green">126</FONT>                        ACTIONS_consoleUrl, "14").set(ACTIONS_executionPath, "15").set(ACTIONS_pending, "16").set(<a name="line.126"></a>
+<FONT color="green">127</FONT>                        ACTIONS_pendingAge, "17").set(ACTIONS_signalValue, "18").set(ACTIONS_logToken, "19").set(<a name="line.127"></a>
+<FONT color="green">128</FONT>                        ACTIONS_errorCode, "20").set(ACTIONS_errorMessage, "21").set(ACTIONS_endTime, "22").set(<a name="line.128"></a>
+<FONT color="green">129</FONT>                        ACTIONS_lastCheckTime, "23").where(isEqual(ACTIONS_id, "1"));<a name="line.129"></a>
+<FONT color="green">130</FONT>    <a name="line.130"></a>
+<FONT color="green">131</FONT>        private static final SqlStatement DELETE_ACTION = deleteFrom(ACTIONS).where(isEqual(ACTIONS_id, "1"));<a name="line.131"></a>
+<FONT color="green">132</FONT>    <a name="line.132"></a>
+<FONT color="green">133</FONT>        private static final SqlStatement DELETE_ACTIONS_FOR_WORKFLOW = deleteFrom(ACTIONS).where(<a name="line.133"></a>
+<FONT color="green">134</FONT>                isEqual(ACTIONS_wfId, "1"));<a name="line.134"></a>
+<FONT color="green">135</FONT>    <a name="line.135"></a>
+<FONT color="green">136</FONT>        private static final SqlStatement GET_ACTIONS = selectColumns(ACTIONS_id, ACTIONS_name, ACTIONS_type, ACTIONS_wfId,<a name="line.136"></a>
+<FONT color="green">137</FONT>                ACTIONS_conf, ACTIONS_status, ACTIONS_externalStatus, ACTIONS_transition, ACTIONS_errorCode,<a name="line.137"></a>
+<FONT color="green">138</FONT>                ACTIONS_errorMessage, ACTIONS_retries, ACTIONS_startTime, ACTIONS_data, ACTIONS_externalId,<a name="line.138"></a>
+<FONT color="green">139</FONT>                ACTIONS_trackerUri, ACTIONS_consoleUrl, ACTIONS_executionPath, ACTIONS_pending, ACTIONS_pendingAge,<a name="line.139"></a>
+<FONT color="green">140</FONT>                ACTIONS_signalValue, ACTIONS_logToken, ACTIONS_endTime, ACTIONS_lastCheckTime);<a name="line.140"></a>
+<FONT color="green">141</FONT>    <a name="line.141"></a>
+<FONT color="green">142</FONT>        private static final SqlStatement GET_ACTION = ((Select) GET_ACTIONS).where(isEqual(ACTIONS_id, "1"));<a name="line.142"></a>
+<FONT color="green">143</FONT>    <a name="line.143"></a>
+<FONT color="green">144</FONT>        private static final SqlStatement GET_ACTION_FOR_UPDATE = ((Select) GET_ACTION).forUpdate();<a name="line.144"></a>
+<FONT color="green">145</FONT>    <a name="line.145"></a>
+<FONT color="green">146</FONT>        private static final SqlStatement GET_ACTIONS_FOR_WORKFLOW = ((Select) GET_ACTIONS).where(<a name="line.146"></a>
+<FONT color="green">147</FONT>                isEqual(ACTIONS_wfId, "1")).orderBy(ACTIONS_startTime, false);<a name="line.147"></a>
+<FONT color="green">148</FONT>    <a name="line.148"></a>
+<FONT color="green">149</FONT>        private static final SqlStatement GET_ACTIONS_OF_WORKFLOW_FOR_UPDATE = ((Select) GET_ACTIONS_FOR_WORKFLOW)<a name="line.149"></a>
+<FONT color="green">150</FONT>                .forUpdate();<a name="line.150"></a>
+<FONT color="green">151</FONT>    <a name="line.151"></a>
+<FONT color="green">152</FONT>        private static final SqlStatement GET_PENDING_ACTIONS = ((Select) GET_ACTIONS).where(and(isEqual(ACTIONS_pending,<a name="line.152"></a>
+<FONT color="green">153</FONT>                true), lessThan(ACTIONS_pendingAge, "1")));<a name="line.153"></a>
+<FONT color="green">154</FONT>    <a name="line.154"></a>
+<FONT color="green">155</FONT>        private static final SqlStatement GET_RUNNING_ACTIONS = ((Select) GET_ACTIONS).where(and(isEqual(ACTIONS_pending,<a name="line.155"></a>
+<FONT color="green">156</FONT>                true), isEqual(ACTIONS_status, WorkflowActionBean.Status.RUNNING.toString()), lessThan(ACTIONS_lastCheckTime, "1")));<a name="line.156"></a>
+<FONT color="green">157</FONT>        <a name="line.157"></a>
+<FONT color="green">158</FONT>        private PreparedStatement prepInsertWorkflow;<a name="line.158"></a>
+<FONT color="green">159</FONT>        private PreparedStatement prepUpdateWorkflow;<a name="line.159"></a>
+<FONT color="green">160</FONT>        private PreparedStatement prepDeleteWorkflow;<a name="line.160"></a>
+<FONT color="green">161</FONT>        private PreparedStatement prepGetWorkflow;<a name="line.161"></a>
+<FONT color="green">162</FONT>        private PreparedStatement prepGetWorkflowForUpdate;<a name="line.162"></a>
+<FONT color="green">163</FONT>        private PreparedStatement prepGetCompletedWorkflowsOlderThan;<a name="line.163"></a>
+<FONT color="green">164</FONT>        private PreparedStatement prepGetWorkflowIdForExtId;<a name="line.164"></a>
+<FONT color="green">165</FONT>        private PreparedStatement prepGetWorkflowsCountWithStatus;<a name="line.165"></a>
+<FONT color="green">166</FONT>        private PreparedStatement prepGetWorkflowsCountWithStatusInLastNSecs;<a name="line.166"></a>
+<FONT color="green">167</FONT>    <a name="line.167"></a>
+<FONT color="green">168</FONT>        private PreparedStatement prepInsertAction;<a name="line.168"></a>
+<FONT color="green">169</FONT>        private PreparedStatement prepUpdateAction;<a name="line.169"></a>
+<FONT color="green">170</FONT>        private PreparedStatement prepDeleteAction;<a name="line.170"></a>
+<FONT color="green">171</FONT>        private PreparedStatement prepDeleteActionsForWorkflow;<a name="line.171"></a>
+<FONT color="green">172</FONT>        private PreparedStatement prepGetAction;<a name="line.172"></a>
+<FONT color="green">173</FONT>        private PreparedStatement prepGetActionForUpdate;<a name="line.173"></a>
+<FONT color="green">174</FONT>        private PreparedStatement prepGetActionsForWorkflow;<a name="line.174"></a>
+<FONT color="green">175</FONT>        private PreparedStatement prepGetActionsForWorkflowForUpdate;<a name="line.175"></a>
+<FONT color="green">176</FONT>        private PreparedStatement prepGetPendingActions;<a name="line.176"></a>
+<FONT color="green">177</FONT>        private PreparedStatement prepGetRunningActions;<a name="line.177"></a>
+<FONT color="green">178</FONT>    <a name="line.178"></a>
+<FONT color="green">179</FONT>        public DBWorkflowStore(Connection connection, WorkflowLib wfLib, boolean selectForUpdate) throws StoreException {<a name="line.179"></a>
+<FONT color="green">180</FONT>            conn = ParamChecker.notNull(connection, "conn");<a name="line.180"></a>
+<FONT color="green">181</FONT>            workflowLib = wfLib;<a name="line.181"></a>
+<FONT color="green">182</FONT>            this.selectForUpdate = selectForUpdate;<a name="line.182"></a>
+<FONT color="green">183</FONT>            if (!selectForUpdate) {<a name="line.183"></a>
+<FONT color="green">184</FONT>                locks = new ArrayList&lt;LockToken&gt;();<a name="line.184"></a>
+<FONT color="green">185</FONT>            }<a name="line.185"></a>
+<FONT color="green">186</FONT>        }<a name="line.186"></a>
+<FONT color="green">187</FONT>    <a name="line.187"></a>
+<FONT color="green">188</FONT>        /**<a name="line.188"></a>
+<FONT color="green">189</FONT>         * Create a Workflow and return a WorkflowBean. It also creates the process<a name="line.189"></a>
+<FONT color="green">190</FONT>         * instance for the job.<a name="line.190"></a>
+<FONT color="green">191</FONT>         * <a name="line.191"></a>
+<FONT color="green">192</FONT>         * @param workflow workflow bean<a name="line.192"></a>
+<FONT color="green">193</FONT>         * @throws StoreException<a name="line.193"></a>
+<FONT color="green">194</FONT>         */<a name="line.194"></a>
+<FONT color="green">195</FONT>        public void insertWorkflow(final WorkflowJobBean workflow) throws StoreException {<a name="line.195"></a>
+<FONT color="green">196</FONT>            ParamChecker.notNull(workflow, "workflow");<a name="line.196"></a>
+<FONT color="green">197</FONT>    <a name="line.197"></a>
+<FONT color="green">198</FONT>            doOperation("insertWorkflow", new Callable&lt;Void&gt;() {<a name="line.198"></a>
+<FONT color="green">199</FONT>                        public Void call() throws SQLException, StoreException, WorkflowException {<a name="line.199"></a>
+<FONT color="green">200</FONT>                            if (prepInsertWorkflow == null) {<a name="line.200"></a>
+<FONT color="green">201</FONT>                                prepInsertWorkflow = INSERT_WORKFLOW.prepare(conn);<a name="line.201"></a>
+<FONT color="green">202</FONT>                            }<a name="line.202"></a>
+<FONT color="green">203</FONT>                            INSERT_WORKFLOW.getNewStatementWithValues(getJobValueMapfromBean(workflow)).prepare(<a name="line.203"></a>
+<FONT color="green">204</FONT>                                    prepInsertWorkflow).executeUpdate();<a name="line.204"></a>
+<FONT color="green">205</FONT>                            workflowLib.insert(workflow.getWorkflowInstance());<a name="line.205"></a>
+<FONT color="green">206</FONT>                            return null;<a name="line.206"></a>
+<FONT color="green">207</FONT>                        }<a name="line.207"></a>
+<FONT color="green">208</FONT>                    });<a name="line.208"></a>
+<FONT color="green">209</FONT>        }<a name="line.209"></a>
+<FONT color="green">210</FONT>    <a name="line.210"></a>
+<FONT color="green">211</FONT>        /**<a name="line.211"></a>
+<FONT color="green">212</FONT>         * Load the Workflow into a Bean and return it. Also load the Workflow<a name="line.212"></a>
+<FONT color="green">213</FONT>         * Instance into the bean. And lock the Workflow depending on the locking<a name="line.213"></a>
+<FONT color="green">214</FONT>         * parameter.<a name="line.214"></a>
+<FONT color="green">215</FONT>         * <a name="line.215"></a>
+<FONT color="green">216</FONT>         * @param id Workflow ID<a name="line.216"></a>
+<FONT color="green">217</FONT>         * @param locking true if Workflow is to be locked<a name="line.217"></a>
+<FONT color="green">218</FONT>         * @return<a name="line.218"></a>
+<FONT color="green">219</FONT>         * @throws StoreException<a name="line.219"></a>
+<FONT color="green">220</FONT>         */<a name="line.220"></a>
+<FONT color="green">221</FONT>        public WorkflowJobBean getWorkflow(final String id, final boolean locking) throws StoreException {<a name="line.221"></a>
+<FONT color="green">222</FONT>            ParamChecker.notEmpty(id, "WorkflowID");<a name="line.222"></a>
+<FONT color="green">223</FONT>            WorkflowJobBean wfBean = doOperation("getWorkflow", new Callable&lt;WorkflowJobBean&gt;() {<a name="line.223"></a>
+<FONT color="green">224</FONT>                        public WorkflowJobBean call() throws SQLException, StoreException, WorkflowException,<a name="line.224"></a>
+<FONT color="green">225</FONT>                                InterruptedException {<a name="line.225"></a>
+<FONT color="green">226</FONT>                            WorkflowJobBean wfBean = null;<a name="line.226"></a>
+<FONT color="green">227</FONT>                            wfBean = getWorkflowOnly(id, locking);<a name="line.227"></a>
+<FONT color="green">228</FONT>                            if (wfBean == null) {<a name="line.228"></a>
+<FONT color="green">229</FONT>                                throw new StoreException(ErrorCode.E0604, id);<a name="line.229"></a>
+<FONT color="green">230</FONT>                            }<a name="line.230"></a>
+<FONT color="green">231</FONT>                            WorkflowInstance wfInstance;<a name="line.231"></a>
+<FONT color="green">232</FONT>                            wfInstance = workflowLib.get(id);<a name="line.232"></a>
+<FONT color="green">233</FONT>                            wfBean.setWorkflowInstance(wfInstance);<a name="line.233"></a>
+<FONT color="green">234</FONT>                            return wfBean;<a name="line.234"></a>
+<FONT color="green">235</FONT>                        }<a name="line.235"></a>
+<FONT color="green">236</FONT>                    });<a name="line.236"></a>
+<FONT color="green">237</FONT>            return wfBean;<a name="line.237"></a>
+<FONT color="green">238</FONT>        }<a name="line.238"></a>
+<FONT color="green">239</FONT>    <a name="line.239"></a>
+<FONT color="green">240</FONT>        /**<a name="line.240"></a>
+<FONT color="green">241</FONT>         * Get the number of Workflows with the given status.<a name="line.241"></a>
+<FONT color="green">242</FONT>         * <a name="line.242"></a>
+<FONT color="green">243</FONT>         * @param status Workflow Status.<a name="line.243"></a>
+<FONT color="green">244</FONT>         * @return number of Workflows with given status.<a name="line.244"></a>
+<FONT color="green">245</FONT>         * @throws StoreException<a name="line.245"></a>
+<FONT color="green">246</FONT>         */<a name="line.246"></a>
+<FONT color="green">247</FONT>        @Override<a name="line.247"></a>
+<FONT color="green">248</FONT>        public int getWorkflowCountWithStatus(final String status) throws StoreException {<a name="line.248"></a>
+<FONT color="green">249</FONT>            ParamChecker.notEmpty(status, "status");<a name="line.249"></a>
+<FONT color="green">250</FONT>            Integer cnt = doOperation("getWorkflowCountWithStatus", new Callable&lt;Integer&gt;() {<a name="line.250"></a>
+<FONT color="green">251</FONT>                public Integer call() throws SQLException {<a name="line.251"></a>
+<FONT color="green">252</FONT>                    if (prepGetWorkflowsCountWithStatus == null) {<a name="line.252"></a>
+<FONT color="green">253</FONT>                        prepGetWorkflowsCountWithStatus = GET_WORKFLOWS_COUNT_WITH_STATUS.prepare(conn);<a name="line.253"></a>
+<FONT color="green">254</FONT>                    }<a name="line.254"></a>
+<FONT color="green">255</FONT>                    Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.255"></a>
+<FONT color="green">256</FONT>                    values.put("1", status);<a name="line.256"></a>
+<FONT color="green">257</FONT>                    ResultSet rsCount = GET_WORKFLOWS_COUNT_WITH_STATUS.getNewStatementWithValues(values).prepare(<a name="line.257"></a>
+<FONT color="green">258</FONT>                            prepGetWorkflowsCountWithStatus).executeQuery();<a name="line.258"></a>
+<FONT color="green">259</FONT>                    if (rsCount.next()) {<a name="line.259"></a>
+<FONT color="green">260</FONT>                        return rsCount.getInt(1);<a name="line.260"></a>
+<FONT color="green">261</FONT>                    }<a name="line.261"></a>
+<FONT color="green">262</FONT>                    return 0;<a name="line.262"></a>
+<FONT color="green">263</FONT>                }<a name="line.263"></a>
+<FONT color="green">264</FONT>            });<a name="line.264"></a>
+<FONT color="green">265</FONT>            return cnt.intValue();<a name="line.265"></a>
+<FONT color="green">266</FONT>        }<a name="line.266"></a>
+<FONT color="green">267</FONT>    <a name="line.267"></a>
+<FONT color="green">268</FONT>        /**<a name="line.268"></a>
+<FONT color="green">269</FONT>         * Get the number of Workflows with the given status which was modified in given time limit.<a name="line.269"></a>
+<FONT color="green">270</FONT>         * <a name="line.270"></a>
+<FONT color="green">271</FONT>         * @param status Workflow Status.<a name="line.271"></a>
+<FONT color="green">272</FONT>         * @param secs No. of seconds within which the workflow got modified.<a name="line.272"></a>
+<FONT color="green">273</FONT>         * @return number of Workflows modified within given time with given status.<a name="line.273"></a>
+<FONT color="green">274</FONT>         * @throws StoreException<a name="line.274"></a>
+<FONT color="green">275</FONT>         */<a name="line.275"></a>
+<FONT color="green">276</FONT>        @Override<a name="line.276"></a>
+<FONT color="green">277</FONT>        public int getWorkflowCountWithStatusInLastNSeconds(final String status, final int secs) throws StoreException {<a name="line.277"></a>
+<FONT color="green">278</FONT>            ParamChecker.notEmpty(status, "status");<a name="line.278"></a>
+<FONT color="green">279</FONT>            ParamChecker.notEmpty(status, "secs");<a name="line.279"></a>
+<FONT color="green">280</FONT>            Integer cnt = doOperation("getWorkflowCountWithStatusInLastNSecs", new Callable&lt;Integer&gt;() {<a name="line.280"></a>
+<FONT color="green">281</FONT>                public Integer call() throws SQLException {<a name="line.281"></a>
+<FONT color="green">282</FONT>                    if (prepGetWorkflowsCountWithStatusInLastNSecs == null) {<a name="line.282"></a>
+<FONT color="green">283</FONT>                        prepGetWorkflowsCountWithStatusInLastNSecs = GET_WORKFLOWS_COUNT_WITH_STATUS_IN_LAST_N_SECS<a name="line.283"></a>
+<FONT color="green">284</FONT>                                .prepare(conn);<a name="line.284"></a>
+<FONT color="green">285</FONT>                    }<a name="line.285"></a>
+<FONT color="green">286</FONT>                    Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.286"></a>
+<FONT color="green">287</FONT>                    values.put("1", status);<a name="line.287"></a>
+<FONT color="green">288</FONT>                    values.put("2", new Timestamp(System.currentTimeMillis() - (secs * 1000)));<a name="line.288"></a>
+<FONT color="green">289</FONT>                    ResultSet rsCount = GET_WORKFLOWS_COUNT_WITH_STATUS_IN_LAST_N_SECS.getNewStatementWithValues(values)<a name="line.289"></a>
+<FONT color="green">290</FONT>                            .prepare(prepGetWorkflowsCountWithStatusInLastNSecs).executeQuery();<a name="line.290"></a>
+<FONT color="green">291</FONT>                    if (rsCount.next()) {<a name="line.291"></a>
+<FONT color="green">292</FONT>                        return rsCount.getInt(1);<a name="line.292"></a>
+<FONT color="green">293</FONT>                    }<a name="line.293"></a>
+<FONT color="green">294</FONT>                    return 0;<a name="line.294"></a>
+<FONT color="green">295</FONT>                }<a name="line.295"></a>
+<FONT color="green">296</FONT>            });<a name="line.296"></a>
+<FONT color="green">297</FONT>            return cnt.intValue();<a name="line.297"></a>
+<FONT color="green">298</FONT>        }<a name="line.298"></a>
+<FONT color="green">299</FONT>    <a name="line.299"></a>
+<FONT color="green">300</FONT>        /**<a name="line.300"></a>
+<FONT color="green">301</FONT>         * Update the data from Workflow Bean to DB along with the workflow instance<a name="line.301"></a>
+<FONT color="green">302</FONT>         * data. Action table is not updated<a name="line.302"></a>
+<FONT color="green">303</FONT>         * <a name="line.303"></a>
+<FONT color="green">304</FONT>         * @param wfBean Workflow Bean<a name="line.304"></a>
+<FONT color="green">305</FONT>         * @throws StoreException If Workflow doesn't exist<a name="line.305"></a>
+<FONT color="green">306</FONT>         */<a name="line.306"></a>
+<FONT color="green">307</FONT>        public void updateWorkflow(final WorkflowJobBean wfBean) throws StoreException {<a name="line.307"></a>
+<FONT color="green">308</FONT>            ParamChecker.notNull(wfBean, "wfBean");<a name="line.308"></a>
+<FONT color="green">309</FONT>            doOperation("updateWorkflow", new Callable&lt;Void&gt;() {<a name="line.309"></a>
+<FONT color="green">310</FONT>                public Void call() throws SQLException, StoreException, WorkflowException {<a name="line.310"></a>
+<FONT color="green">311</FONT>                    if (prepUpdateWorkflow == null) {<a name="line.311"></a>
+<FONT color="green">312</FONT>                        prepUpdateWorkflow = UPDATE_WORKFLOW.prepare(conn);<a name="line.312"></a>
+<FONT color="green">313</FONT>                    }<a name="line.313"></a>
+<FONT color="green">314</FONT>                    if (UPDATE_WORKFLOW.getNewStatementWithValues(getJobValueMapfromBean(wfBean)).prepare(<a name="line.314"></a>
+<FONT color="green">315</FONT>                            prepUpdateWorkflow).executeUpdate() != 1) {<a name="line.315"></a>
+<FONT color="green">316</FONT>                        throw new StoreException(ErrorCode.E0604, wfBean.getId());<a name="line.316"></a>
+<FONT color="green">317</FONT>                    }<a name="line.317"></a>
+<FONT color="green">318</FONT>                    workflowLib.update(wfBean.getWorkflowInstance());<a name="line.318"></a>
+<FONT color="green">319</FONT>                    return null;<a name="line.319"></a>
+<FONT color="green">320</FONT>                }<a name="line.320"></a>
+<FONT color="green">321</FONT>            });<a name="line.321"></a>
+<FONT color="green">322</FONT>        }<a name="line.322"></a>
+<FONT color="green">323</FONT>    <a name="line.323"></a>
+<FONT color="green">324</FONT>        /**<a name="line.324"></a>
+<FONT color="green">325</FONT>         * Create a new Action record in the ACTIONS table with the given Bean.<a name="line.325"></a>
+<FONT color="green">326</FONT>         * <a name="line.326"></a>
+<FONT color="green">327</FONT>         * @param action ActionBean<a name="line.327"></a>
+<FONT color="green">328</FONT>         * @throws StoreException If the action is already present<a name="line.328"></a>
+<FONT color="green">329</FONT>         */<a name="line.329"></a>
+<FONT color="green">330</FONT>        public void insertAction(final WorkflowActionBean action) throws StoreException {<a name="line.330"></a>
+<FONT color="green">331</FONT>            ParamChecker.notNull(action, "WorkflowActionBean");<a name="line.331"></a>
+<FONT color="green">332</FONT>            doOperation("insertAction", new Callable&lt;Void&gt;() {<a name="line.332"></a>
+<FONT color="green">333</FONT>                public Void call() throws SQLException, StoreException, WorkflowException {<a name="line.333"></a>
+<FONT color="green">334</FONT>                    if (prepInsertAction == null) {<a name="line.334"></a>
+<FONT color="green">335</FONT>                        prepInsertAction = INSERT_ACTION.prepare(conn);<a name="line.335"></a>
+<FONT color="green">336</FONT>                    }<a name="line.336"></a>
+<FONT color="green">337</FONT>                    INSERT_ACTION.getNewStatementWithValues(getActionValueMapFromBean(action)).prepare(prepInsertAction)<a name="line.337"></a>
+<FONT color="green">338</FONT>                            .executeUpdate();<a name="line.338"></a>
+<FONT color="green">339</FONT>                    return null;<a name="line.339"></a>
+<FONT color="green">340</FONT>                }<a name="line.340"></a>
+<FONT color="green">341</FONT>            });<a name="line.341"></a>
+<FONT color="green">342</FONT>        }<a name="line.342"></a>
+<FONT color="green">343</FONT>    <a name="line.343"></a>
+<FONT color="green">344</FONT>        /**<a name="line.344"></a>
+<FONT color="green">345</FONT>         * Load the action data and returns a bean.<a name="line.345"></a>
+<FONT color="green">346</FONT>         * <a name="line.346"></a>
+<FONT color="green">347</FONT>         * @param id Action Id<a name="line.347"></a>
+<FONT color="green">348</FONT>         * @param locking true if the action is to be locked<a name="line.348"></a>
+<FONT color="green">349</FONT>         * @return Action Bean<a name="line.349"></a>
+<FONT color="green">350</FONT>         * @throws StoreException If action doesn't exist<a name="line.350"></a>
+<FONT color="green">351</FONT>         */<a name="line.351"></a>
+<FONT color="green">352</FONT>        public WorkflowActionBean getAction(final String id, final boolean locking) throws StoreException {<a name="line.352"></a>
+<FONT color="green">353</FONT>            ParamChecker.notEmpty(id, "ActionID");<a name="line.353"></a>
+<FONT color="green">354</FONT>            WorkflowActionBean action = doOperation("getAction", new Callable&lt;WorkflowActionBean&gt;() {<a name="line.354"></a>
+<FONT color="green">355</FONT>                public WorkflowActionBean call() throws SQLException, StoreException, WorkflowException, InterruptedException {<a name="line.355"></a>
+<FONT color="green">356</FONT>                    WorkflowActionBean action = new WorkflowActionBean();<a name="line.356"></a>
+<FONT color="green">357</FONT>                    ResultSet rs = null;<a name="line.357"></a>
+<FONT color="green">358</FONT>                    Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.358"></a>
+<FONT color="green">359</FONT>                    values.put("1", id);<a name="line.359"></a>
+<FONT color="green">360</FONT>                    if (selectForUpdate &amp;&amp; locking) {<a name="line.360"></a>
+<FONT color="green">361</FONT>                        if (prepGetActionForUpdate == null) {<a name="line.361"></a>
+<FONT color="green">362</FONT>                            prepGetActionForUpdate = GET_ACTION_FOR_UPDATE.prepare(conn);<a name="line.362"></a>
+<FONT color="green">363</FONT>                        }<a name="line.363"></a>
+<FONT color="green">364</FONT>                        rs = GET_ACTION_FOR_UPDATE.getNewStatementWithValues(values).prepare(prepGetActionForUpdate)<a name="line.364"></a>
+<FONT color="green">365</FONT>                                .executeQuery();<a name="line.365"></a>
+<FONT color="green">366</FONT>                    }<a name="line.366"></a>
+<FONT color="green">367</FONT>                    else {<a name="line.367"></a>
+<FONT color="green">368</FONT>                        if (locking) {<a name="line.368"></a>
+<FONT color="green">369</FONT>                            LockToken token = Services.get().get(MemoryLocksService.class).getWriteLock(id, LOCK_TIMEOUT);<a name="line.369"></a>
+<FONT color="green">370</FONT>                            if(token == null) {<a name="line.370"></a>
+<FONT color="green">371</FONT>                                throw new StoreException(ErrorCode.E0606, id);<a name="line.371"></a>
+<FONT color="green">372</FONT>                            }<a name="line.372"></a>
+<FONT color="green">373</FONT>                            locks.add(token);<a name="line.373"></a>
+<FONT color="green">374</FONT>                        }<a name="line.374"></a>
+<FONT color="green">375</FONT>                        if (prepGetAction == null) {<a name="line.375"></a>
+<FONT color="green">376</FONT>                            prepGetAction = GET_ACTION.prepare(conn);<a name="line.376"></a>
+<FONT color="green">377</FONT>                        }<a name="line.377"></a>
+<FONT color="green">378</FONT>                        rs = GET_ACTION.getNewStatementWithValues(values).prepare(prepGetAction).executeQuery();<a name="line.378"></a>
+<FONT color="green">379</FONT>                    }<a name="line.379"></a>
+<FONT color="green">380</FONT>                    ResultSetReader rsReader;<a name="line.380"></a>
+<FONT color="green">381</FONT>                    if (rs.next()) {<a name="line.381"></a>
+<FONT color="green">382</FONT>                        rsReader = parse(rs);<a name="line.382"></a>
+<FONT color="green">383</FONT>                        action = getBeanForRunningAction(rsReader);<a name="line.383"></a>
+<FONT color="green">384</FONT>                        rsReader.close();<a name="line.384"></a>
+<FONT color="green">385</FONT>                    }<a name="line.385"></a>
+<FONT color="green">386</FONT>                    else {<a name="line.386"></a>
+<FONT color="green">387</FONT>                        rs.close();<a name="line.387"></a>
+<FONT color="green">388</FONT>                        throw new StoreException(ErrorCode.E0605, id);<a name="line.388"></a>
+<FONT color="green">389</FONT>                    }<a name="line.389"></a>
+<FONT color="green">390</FONT>                    return action;<a name="line.390"></a>
+<FONT color="green">391</FONT>                }<a name="line.391"></a>
+<FONT color="green">392</FONT>            });<a name="line.392"></a>
+<FONT color="green">393</FONT>            return action;<a name="line.393"></a>
+<FONT color="green">394</FONT>        }<a name="line.394"></a>
+<FONT color="green">395</FONT>    <a name="line.395"></a>
+<FONT color="green">396</FONT>        /**<a name="line.396"></a>
+<FONT color="green">397</FONT>         * Update the given action bean to DB.<a name="line.397"></a>
+<FONT color="green">398</FONT>         * <a name="line.398"></a>
+<FONT color="green">399</FONT>         * @param action Action Bean<a name="line.399"></a>
+<FONT color="green">400</FONT>         * @throws StoreException if action doesn't exist<a name="line.400"></a>
+<FONT color="green">401</FONT>         */<a name="line.401"></a>
+<FONT color="green">402</FONT>        public void updateAction(final WorkflowActionBean action) throws StoreException {<a name="line.402"></a>
+<FONT color="green">403</FONT>            ParamChecker.notNull(action, "WorkflowActionBean");<a name="line.403"></a>
+<FONT color="green">404</FONT>            doOperation("updateAction", new Callable&lt;Void&gt;() {<a name="line.404"></a>
+<FONT color="green">405</FONT>                public Void call() throws SQLException, StoreException, WorkflowException {<a name="line.405"></a>
+<FONT color="green">406</FONT>                    if (prepUpdateAction == null) {<a name="line.406"></a>
+<FONT color="green">407</FONT>                        prepUpdateAction = UPDATE_ACTION.prepare(conn);<a name="line.407"></a>
+<FONT color="green">408</FONT>                    }<a name="line.408"></a>
+<FONT color="green">409</FONT>                    if (UPDATE_ACTION.getNewStatementWithValues(getActionValueMapFromBean(action))<a name="line.409"></a>
+<FONT color="green">410</FONT>                            .prepare(prepUpdateAction).executeUpdate() != 1) {<a name="line.410"></a>
+<FONT color="green">411</FONT>                        throw new StoreException(ErrorCode.E0605, action.getId());<a name="line.411"></a>
+<FONT color="green">412</FONT>                    }<a name="line.412"></a>
+<FONT color="green">413</FONT>                    return null;<a name="line.413"></a>
+<FONT color="green">414</FONT>                }<a name="line.414"></a>
+<FONT color="green">415</FONT>            });<a name="line.415"></a>
+<FONT color="green">416</FONT>        }<a name="line.416"></a>
+<FONT color="green">417</FONT>    <a name="line.417"></a>
+<FONT color="green">418</FONT>        /**<a name="line.418"></a>
+<FONT color="green">419</FONT>         * Delete the Action with given id.<a name="line.419"></a>
+<FONT color="green">420</FONT>         * <a name="line.420"></a>
+<FONT color="green">421</FONT>         * @param id Action ID<a name="line.421"></a>
+<FONT color="green">422</FONT>         * @throws StoreException if Action doesn't exist<a name="line.422"></a>
+<FONT color="green">423</FONT>         */<a name="line.423"></a>
+<FONT color="green">424</FONT>        public void deleteAction(final String id) throws StoreException {<a name="line.424"></a>
+<FONT color="green">425</FONT>            ParamChecker.notEmpty(id, "ActionID");<a name="line.425"></a>
+<FONT color="green">426</FONT>            doOperation("deleteAction", new Callable&lt;Void&gt;() {<a name="line.426"></a>
+<FONT color="green">427</FONT>                public Void call() throws SQLException, StoreException, WorkflowException {<a name="line.427"></a>
+<FONT color="green">428</FONT>                    Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.428"></a>
+<FONT color="green">429</FONT>                    values.put("1", id);<a name="line.429"></a>
+<FONT color="green">430</FONT>                    if (prepDeleteAction == null) {<a name="line.430"></a>
+<FONT color="green">431</FONT>                        prepDeleteAction = DELETE_ACTION.prepare(conn);<a name="line.431"></a>
+<FONT color="green">432</FONT>                    }<a name="line.432"></a>
+<FONT color="green">433</FONT>                    if (DELETE_ACTION.getNewStatementWithValues(values).prepare(prepDeleteAction).executeUpdate() != 1) {<a name="line.433"></a>
+<FONT color="green">434</FONT>                        throw new StoreException(ErrorCode.E0605, id);<a name="line.434"></a>
+<FONT color="green">435</FONT>                    }<a name="line.435"></a>
+<FONT color="green">436</FONT>                    return null;<a name="line.436"></a>
+<FONT color="green">437</FONT>                }<a name="line.437"></a>
+<FONT color="green">438</FONT>            });<a name="line.438"></a>
+<FONT color="green">439</FONT>        }<a name="line.439"></a>
+<FONT color="green">440</FONT>    <a name="line.440"></a>
+<FONT color="green">441</FONT>        /**<a name="line.441"></a>
+<FONT color="green">442</FONT>         * Loads all the actions for the given Workflow. Also locks all the actions<a name="line.442"></a>
+<FONT color="green">443</FONT>         * if locking is true.<a name="line.443"></a>
+<FONT color="green">444</FONT>         * <a name="line.444"></a>
+<FONT color="green">445</FONT>         * @param wfId Workflow ID<a name="line.445"></a>
+<FONT color="green">446</FONT>         * @param locking true if Actions are to be locked<a name="line.446"></a>
+<FONT color="green">447</FONT>         * @return A List of ActionBeans<a name="line.447"></a>
+<FONT color="green">448</FONT>         * @throws StoreException<a name="line.448"></a>
+<FONT color="green">449</FONT>         */<a name="line.449"></a>
+<FONT color="green">450</FONT>        public List&lt;WorkflowActionBean&gt; getActionsForWorkflow(final String wfId, final boolean locking) throws StoreException {<a name="line.450"></a>
+<FONT color="green">451</FONT>            ParamChecker.notEmpty(wfId, "WorkflowID");<a name="line.451"></a>
+<FONT color="green">452</FONT>            List&lt;WorkflowActionBean&gt; actions = doOperation("getActionsForWorkflow", new Callable&lt;List&lt;WorkflowActionBean&gt;&gt;() {<a name="line.452"></a>
+<FONT color="green">453</FONT>                        public List&lt;WorkflowActionBean&gt; call() throws SQLException, StoreException, WorkflowException,<a name="line.453"></a>
+<FONT color="green">454</FONT>                                InterruptedException {<a name="line.454"></a>
+<FONT color="green">455</FONT>                            List&lt;WorkflowActionBean&gt; actions = new ArrayList&lt;WorkflowActionBean&gt;();<a name="line.455"></a>
+<FONT color="green">456</FONT>                            actions.addAll(getActionsOnlyForWorkflow(wfId, locking));<a name="line.456"></a>
+<FONT color="green">457</FONT>                            return actions;<a name="line.457"></a>
+<FONT color="green">458</FONT>                        }<a name="line.458"></a>
+<FONT color="green">459</FONT>                    });<a name="line.459"></a>
+<FONT color="green">460</FONT>            return actions;<a name="line.460"></a>
+<FONT color="green">461</FONT>        }<a name="line.461"></a>
+<FONT color="green">462</FONT>    <a name="line.462"></a>
+<FONT color="green">463</FONT>        /**<a name="line.463"></a>
+<FONT color="green">464</FONT>         * Load All the actions that are pending for more than given time.<a name="line.464"></a>
+<FONT color="green">465</FONT>         * <a name="line.465"></a>
+<FONT color="green">466</FONT>         * @param minimumPendingAgeSecs Minimum Pending age in seconds<a name="line.466"></a>
+<FONT color="green">467</FONT>         * @return List of action beans<a name="line.467"></a>
+<FONT color="green">468</FONT>         * @throws StoreException<a name="line.468"></a>
+<FONT color="green">469</FONT>         */<a name="line.469"></a>
+<FONT color="green">470</FONT>        public List&lt;WorkflowActionBean&gt; getPendingActions(final long minimumPendingAgeSecs) throws StoreException {<a name="line.470"></a>
+<FONT color="green">471</FONT>            List&lt;WorkflowActionBean&gt; actions = doOperation("getPendingActions", new Callable&lt;List&lt;WorkflowActionBean&gt;&gt;() {<a name="line.471"></a>
+<FONT color="green">472</FONT>                        public List&lt;WorkflowActionBean&gt; call() throws SQLException, StoreException, WorkflowException {<a name="line.472"></a>
+<FONT color="green">473</FONT>                            List&lt;WorkflowActionBean&gt; actions = new ArrayList&lt;WorkflowActionBean&gt;();<a name="line.473"></a>
+<FONT color="green">474</FONT>                            Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.474"></a>
+<FONT color="green">475</FONT>                            values.put("1", new Timestamp(System.currentTimeMillis() - minimumPendingAgeSecs * 1000));<a name="line.475"></a>
+<FONT color="green">476</FONT>                            ResultSet rs;<a name="line.476"></a>
+<FONT color="green">477</FONT>                            if (prepGetPendingActions == null) {<a name="line.477"></a>
+<FONT color="green">478</FONT>                                prepGetPendingActions = GET_PENDING_ACTIONS.prepare(conn);<a name="line.478"></a>
+<FONT color="green">479</FONT>                            }<a name="line.479"></a>
+<FONT color="green">480</FONT>                            rs = GET_PENDING_ACTIONS.getNewStatementWithValues(values).prepare(prepGetPendingActions)<a name="line.480"></a>
+<FONT color="green">481</FONT>                                    .executeQuery();<a name="line.481"></a>
+<FONT color="green">482</FONT>                            ResultSetReader rsReader = parse(rs);<a name="line.482"></a>
+<FONT color="green">483</FONT>                            while (rsReader.next()) {<a name="line.483"></a>
+<FONT color="green">484</FONT>                                WorkflowActionBean action = getBeanForRunningAction(rsReader);<a name="line.484"></a>
+<FONT color="green">485</FONT>                                actions.add(action);<a name="line.485"></a>
+<FONT color="green">486</FONT>                            }<a name="line.486"></a>
+<FONT color="green">487</FONT>                            rsReader.close();<a name="line.487"></a>
+<FONT color="green">488</FONT>                            return actions;<a name="line.488"></a>
+<FONT color="green">489</FONT>                        }<a name="line.489"></a>
+<FONT color="green">490</FONT>                    });<a name="line.490"></a>
+<FONT color="green">491</FONT>            return actions;<a name="line.491"></a>
+<FONT color="green">492</FONT>        }<a name="line.492"></a>
+<FONT color="green">493</FONT>        <a name="line.493"></a>
+<FONT color="green">494</FONT>        /**<a name="line.494"></a>
+<FONT color="green">495</FONT>         * Load All the actions that are running and were last checked after now - miminumCheckAgeSecs<a name="line.495"></a>
+<FONT color="green">496</FONT>         *<a name="line.496"></a>
+<FONT color="green">497</FONT>         * @param checkAgeSecs check age in seconds.<a name="line.497"></a>
+<FONT color="green">498</FONT>         * @return List of action beans.<a name="line.498"></a>
+<FONT color="green">499</FONT>         * @throws StoreException<a name="line.499"></a>
+<FONT color="green">500</FONT>         */<a name="line.500"></a>
+<FONT color="green">501</FONT>        public List&lt;WorkflowActionBean&gt; getRunningActions(final long checkAgeSecs) throws StoreException {<a name="line.501"></a>
+<FONT color="green">502</FONT>            List&lt;WorkflowActionBean&gt; actions = doOperation("getRunningActions", new Callable&lt;List&lt;WorkflowActionBean&gt;&gt;() {<a name="line.502"></a>
+<FONT color="green">503</FONT>    <a name="line.503"></a>
+<FONT color="green">504</FONT>                        public List&lt;WorkflowActionBean&gt; call() throws SQLException, StoreException, WorkflowException {<a name="line.504"></a>
+<FONT color="green">505</FONT>                            List&lt;WorkflowActionBean&gt; actions = new ArrayList&lt;WorkflowActionBean&gt;();<a name="line.505"></a>
+<FONT color="green">506</FONT>                            Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.506"></a>
+<FONT color="green">507</FONT>                            values.put("1", new Timestamp(System.currentTimeMillis() - checkAgeSecs * 1000));<a name="line.507"></a>
+<FONT color="green">508</FONT>                            ResultSet rs;<a name="line.508"></a>
+<FONT color="green">509</FONT>                            if (prepGetRunningActions == null) {<a name="line.509"></a>
+<FONT color="green">510</FONT>                                prepGetRunningActions = GET_RUNNING_ACTIONS.prepare(conn);<a name="line.510"></a>
+<FONT color="green">511</FONT>                            }<a name="line.511"></a>
+<FONT color="green">512</FONT>                            rs = GET_RUNNING_ACTIONS.getNewStatementWithValues(values).prepare(prepGetRunningActions)<a name="line.512"></a>
+<FONT color="green">513</FONT>                                    .executeQuery();<a name="line.513"></a>
+<FONT color="green">514</FONT>                            ResultSetReader rsReader = parse(rs);<a name="line.514"></a>
+<FONT color="green">515</FONT>                            while (rsReader.next()) {<a name="line.515"></a>
+<FONT color="green">516</FONT>                                WorkflowActionBean action = getBeanForRunningAction(rsReader);<a name="line.516"></a>
+<FONT color="green">517</FONT>                                actions.add(action);<a name="line.517"></a>
+<FONT color="green">518</FONT>                            }<a name="line.518"></a>
+<FONT color="green">519</FONT>                            rsReader.close();<a name="line.519"></a>
+<FONT color="green">520</FONT>                            return actions;<a name="line.520"></a>
+<FONT color="green">521</FONT>                        }<a name="line.521"></a>
+<FONT color="green">522</FONT>                    });<a name="line.522"></a>
+<FONT color="green">523</FONT>            return actions;<a name="line.523"></a>
+<FONT color="green">524</FONT>        }<a name="line.524"></a>
+<FONT color="green">525</FONT>    <a name="line.525"></a>
+<FONT color="green">526</FONT>        /**<a name="line.526"></a>
+<FONT color="green">527</FONT>         * Loads all the jobs that are satisfying the given filter condition.<a name="line.527"></a>
+<FONT color="green">528</FONT>         * Filters can be applied on user, group, appName, status.<a name="line.528"></a>
+<FONT color="green">529</FONT>         * <a name="line.529"></a>
+<FONT color="green">530</FONT>         * @param filter Filter condition<a name="line.530"></a>
+<FONT color="green">531</FONT>         * @param start offset for select statement<a name="line.531"></a>
+<FONT color="green">532</FONT>         * @param len number of Workflows to be returned<a name="line.532"></a>
+<FONT color="green">533</FONT>         * @return A list of workflows<a name="line.533"></a>
+<FONT color="green">534</FONT>         * @throws StoreException<a name="line.534"></a>
+<FONT color="green">535</FONT>         */<a name="line.535"></a>
+<FONT color="green">536</FONT>        public WorkflowsInfo getWorkflowsInfo(final Map&lt;String, List&lt;String&gt;&gt; filter, final int start, final int len)<a name="line.536"></a>
+<FONT color="green">537</FONT>                throws StoreException {<a name="line.537"></a>
+<FONT color="green">538</FONT>    <a name="line.538"></a>
+<FONT color="green">539</FONT>            WorkflowsInfo workFlowsInfo = doOperation("getWorkflowsInfo", new Callable&lt;WorkflowsInfo&gt;() {<a name="line.539"></a>
+<FONT color="green">540</FONT>                public WorkflowsInfo call() throws SQLException, StoreException {<a name="line.540"></a>
+<FONT color="green">541</FONT>                    List&lt;WorkflowJobBean&gt; wfBeans = new ArrayList&lt;WorkflowJobBean&gt;();<a name="line.541"></a>
+<FONT color="green">542</FONT>    <a name="line.542"></a>
+<FONT color="green">543</FONT>                    SqlStatement s = GET_WORKFLOWS;<a name="line.543"></a>
+<FONT color="green">544</FONT>                    SqlStatement countQuery = GET_WORKFLOWS_COUNT;<a name="line.544"></a>
+<FONT color="green">545</FONT>                    List&lt;Condition&gt; andArray = new ArrayList&lt;Condition&gt;();<a name="line.545"></a>
+<FONT color="green">546</FONT>                    for (Map.Entry&lt;String, List&lt;String&gt;&gt; entry : filter.entrySet()) {<a name="line.546"></a>
+<FONT color="green">547</FONT>                        OozieColumn col = null;<a name="line.547"></a>
+<FONT color="green">548</FONT>                        if (entry.getKey().equals(OozieClient.FILTER_GROUP)) {<a name="line.548"></a>
+<FONT color="green">549</FONT>                            col = OozieColumn.WF_groupName;<a name="line.549"></a>
+<FONT color="green">550</FONT>                        }<a name="line.550"></a>
+<FONT color="green">551</FONT>                        else if (entry.getKey().equals(OozieClient.FILTER_NAME)) {<a name="line.551"></a>
+<FONT color="green">552</FONT>                            col = OozieColumn.WF_appName;<a name="line.552"></a>
+<FONT color="green">553</FONT>                        }<a name="line.553"></a>
+<FONT color="green">554</FONT>                        else if (entry.getKey().equals(OozieClient.FILTER_STATUS)) {<a name="line.554"></a>
+<FONT color="green">555</FONT>                            col = OozieColumn.WF_status;<a name="line.555"></a>
+<FONT color="green">556</FONT>                        }<a name="line.556"></a>
+<FONT color="green">557</FONT>                        else if (entry.getKey().equals(OozieClient.FILTER_USER)) {<a name="line.557"></a>
+<FONT color="green">558</FONT>                            col = OozieColumn.WF_user;<a name="line.558"></a>
+<FONT color="green">559</FONT>                        }<a name="line.559"></a>
+<FONT color="green">560</FONT>                        if (col != null) {<a name="line.560"></a>
+<FONT color="green">561</FONT>                            List&lt;Condition&gt; orArray = new ArrayList&lt;Condition&gt;();<a name="line.561"></a>
+<FONT color="green">562</FONT>                            for (String val : entry.getValue()) {<a name="line.562"></a>
+<FONT color="green">563</FONT>                                if (col.equals(OozieColumn.WF_status)) {<a name="line.563"></a>
+<FONT color="green">564</FONT>                                    val = val.toUpperCase();<a name="line.564"></a>
+<FONT color="green">565</FONT>                                }<a name="line.565"></a>
+<FONT color="green">566</FONT>                                orArray.add(isEqual(col, val));<a name="line.566"></a>
+<FONT color="green">567</FONT>                            }<a name="line.567"></a>
+<FONT color="green">568</FONT>                            if (orArray.size() &gt; 1) {<a name="line.568"></a>
+<FONT color="green">569</FONT>                                andArray.add(or(orArray.toArray(new Condition[orArray.size()])));<a name="line.569"></a>
+<FONT color="green">570</FONT>                            }<a name="line.570"></a>
+<FONT color="green">571</FONT>                            else if (orArray.size() == 1) {<a name="line.571"></a>
+<FONT color="green">572</FONT>                                andArray.add(orArray.get(0));<a name="line.572"></a>
+<FONT color="green">573</FONT>                            }<a name="line.573"></a>
+<FONT color="green">574</FONT>                        }<a name="line.574"></a>
+<FONT color="green">575</FONT>                    }<a name="line.575"></a>
+<FONT color="green">576</FONT>                    if (andArray.size() &gt; 0) {<a name="line.576"></a>
+<FONT color="green">577</FONT>                        s = ((Select) s).where(and(andArray.toArray(new Condition[andArray.size()])));<a name="line.577"></a>
+<FONT color="green">578</FONT>                        countQuery = ((Select) countQuery).where(and(andArray.toArray(new Condition[andArray.size()])));<a name="line.578"></a>
+<FONT color="green">579</FONT>                    }<a name="line.579"></a>
+<FONT color="green">580</FONT>                    s = ((Select) s).orderBy(WF_startTime, false, WF_endTime, false);<a name="line.580"></a>
+<FONT color="green">581</FONT>                    if ((start &gt; 0) &amp;&amp; (len &gt; 0)) {<a name="line.581"></a>
+<FONT color="green">582</FONT>                        s = ((Select) s).limit(start-1, len);<a name="line.582"></a>
+<FONT color="green">583</FONT>                    }<a name="line.583"></a>
+<FONT color="green">584</FONT>    <a name="line.584"></a>
+<FONT color="green">585</FONT>                    int count = 0;<a name="line.585"></a>
+<FONT color="green">586</FONT>                    ResultSet rsCount = countQuery.prepareAndSetValues(conn).executeQuery();<a name="line.586"></a>
+<FONT color="green">587</FONT>                    if (rsCount.next()) {<a name="line.587"></a>
+<FONT color="green">588</FONT>                        count = rsCount.getInt(1);<a name="line.588"></a>
+<FONT color="green">589</FONT>                    }<a name="line.589"></a>
+<FONT color="green">590</FONT>    <a name="line.590"></a>
+<FONT color="green">591</FONT>                    int realLen = 0;<a name="line.591"></a>
+<FONT color="green">592</FONT>                    ResultSetReader rsReader = parse(s.prepareAndSetValues(conn).executeQuery());<a name="line.592"></a>
+<FONT color="green">593</FONT>                    while (rsReader.next()) {<a name="line.593"></a>
+<FONT color="green">594</FONT>                        WorkflowJobBean wf = getBeanForRunningWorkflow(rsReader);<a name="line.594"></a>
+<FONT color="green">595</FONT>                        wfBeans.add(wf);<a name="line.595"></a>
+<FONT color="green">596</FONT>                        realLen++;<a name="line.596"></a>
+<FONT color="green">597</FONT>                    }<a name="line.597"></a>
+<FONT color="green">598</FONT>                    return new WorkflowsInfo(wfBeans, start, realLen, count);<a name="line.598"></a>
+<FONT color="green">599</FONT>                }<a name="line.599"></a>
+<FONT color="green">600</FONT>            });<a name="line.600"></a>
+<FONT color="green">601</FONT>            return workFlowsInfo;<a name="line.601"></a>
+<FONT color="green">602</FONT>        }<a name="line.602"></a>
+<FONT color="green">603</FONT>    <a name="line.603"></a>
+<FONT color="green">604</FONT>    <a name="line.604"></a>
+<FONT color="green">605</FONT>        /**<a name="line.605"></a>
+<FONT color="green">606</FONT>         * Load the Workflow and Action details and return a WorkflowBean. Workflow<a name="line.606"></a>
+<FONT color="green">607</FONT>         * Instance is not loaded<a name="line.607"></a>
+<FONT color="green">608</FONT>         * <a name="line.608"></a>
+<FONT color="green">609</FONT>         * @param id Workflow Id<a name="line.609"></a>
+<FONT color="green">610</FONT>         * @return Workflow Bean<a name="line.610"></a>
+<FONT color="green">611</FONT>         * @throws StoreException If Workflow doesn't exist<a name="line.611"></a>
+<FONT color="green">612</FONT>         */<a name="line.612"></a>
+<FONT color="green">613</FONT>        public WorkflowJobBean getWorkflowInfo(final String id) throws StoreException {<a name="line.613"></a>
+<FONT color="green">614</FONT>            ParamChecker.notEmpty(id, "WorkflowID");<a name="line.614"></a>
+<FONT color="green">615</FONT>            WorkflowJobBean wfBean = doOperation("getWorkflowInfo", new Callable&lt;WorkflowJobBean&gt;() {<a name="line.615"></a>
+<FONT color="green">616</FONT>                        public WorkflowJobBean call() throws SQLException, StoreException, InterruptedException {<a name="line.616"></a>
+<FONT color="green">617</FONT>                            WorkflowJobBean wfBean = null;<a name="line.617"></a>
+<FONT color="green">618</FONT>                            wfBean = getWorkflowOnly(id, false);<a name="line.618"></a>
+<FONT color="green">619</FONT>                            if (wfBean == null) {<a name="line.619"></a>
+<FONT color="green">620</FONT>                                throw new StoreException(ErrorCode.E0604, id);<a name="line.620"></a>
+<FONT color="green">621</FONT>                            }<a name="line.621"></a>
+<FONT color="green">622</FONT>                            else {<a name="line.622"></a>
+<FONT color="green">623</FONT>                                wfBean.setActions(getActionsOnlyForWorkflow(id, false));<a name="line.623"></a>
+<FONT color="green">624</FONT>                            }<a name="line.624"></a>
+<FONT color="green">625</FONT>                            return wfBean;<a name="line.625"></a>
+<FONT color="green">626</FONT>                        }<a name="line.626"></a>
+<FONT color="green">627</FONT>                    });<a name="line.627"></a>
+<FONT color="green">628</FONT>            return wfBean;<a name="line.628"></a>
+<FONT color="green">629</FONT>        }<a name="line.629"></a>
+<FONT color="green">630</FONT>    <a name="line.630"></a>
+<FONT color="green">631</FONT>        /**<a name="line.631"></a>
+<FONT color="green">632</FONT>         * Get the Workflow ID with given external ID which will be assigned for the<a name="line.632"></a>
+<FONT color="green">633</FONT>         * subworkflows.<a name="line.633"></a>
+<FONT color="green">634</FONT>         * <a name="line.634"></a>
+<FONT color="green">635</FONT>         * @param externalId external ID<a name="line.635"></a>
+<FONT color="green">636</FONT>         * @return Workflow ID<a name="line.636"></a>
+<FONT color="green">637</FONT>         * @throws StoreException if there is no job with external ID<a name="line.637"></a>
+<FONT color="green">638</FONT>         */<a name="line.638"></a>
+<FONT color="green">639</FONT>        public String getWorkflowIdForExternalId(final String externalId) throws StoreException {<a name="line.639"></a>
+<FONT color="green">640</FONT>            ParamChecker.notEmpty(externalId, "externalId");<a name="line.640"></a>
+<FONT color="green">641</FONT>            String wfId = doOperation("getWorkflowIdForExternalId", new Callable&lt;String&gt;() {<a name="line.641"></a>
+<FONT color="green">642</FONT>                        public String call() throws SQLException, StoreException {<a name="line.642"></a>
+<FONT color="green">643</FONT>                            String id = "";<a name="line.643"></a>
+<FONT color="green">644</FONT>                            if (prepGetWorkflowIdForExtId == null) {<a name="line.644"></a>
+<FONT color="green">645</FONT>                                prepGetWorkflowIdForExtId = GET_WORKFLOW_ID_FOR_EXTERNAL_ID.prepare(conn);<a name="line.645"></a>
+<FONT color="green">646</FONT>                            }<a name="line.646"></a>
+<FONT color="green">647</FONT>                            Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.647"></a>
+<FONT color="green">648</FONT>                            //TODO add current user to the where clause<a name="line.648"></a>
+<FONT color="green">649</FONT>                            values.put("1", externalId);<a name="line.649"></a>
+<FONT color="green">650</FONT>                            ResultSetReader rsReader = parse(GET_WORKFLOW_ID_FOR_EXTERNAL_ID.getNewStatementWithValues(<a name="line.650"></a>
+<FONT color="green">651</FONT>                                    values).prepare(prepGetWorkflowIdForExtId).executeQuery());<a name="line.651"></a>
+<FONT color="green">652</FONT>                            if (rsReader.next()) {<a name="line.652"></a>
+<FONT color="green">653</FONT>                                id = rsReader.getString(WF_id);<a name="line.653"></a>
+<FONT color="green">654</FONT>                            }<a name="line.654"></a>
+<FONT color="green">655</FONT>                            return id;<a name="line.655"></a>
+<FONT color="green">656</FONT>                        }<a name="line.656"></a>
+<FONT color="green">657</FONT>                    });<a name="line.657"></a>
+<FONT color="green">658</FONT>            return wfId;<a name="line.658"></a>
+<FONT color="green">659</FONT>        }<a name="line.659"></a>
+<FONT color="green">660</FONT>    <a name="line.660"></a>
+<FONT color="green">661</FONT>        private static final long DAY_IN_MS = 24 * 60 * 60 * 1000;<a name="line.661"></a>
+<FONT color="green">662</FONT>    <a name="line.662"></a>
+<FONT color="green">663</FONT>        /**<a name="line.663"></a>
+<FONT color="green">664</FONT>         * Purge the Workflows Completed older than given days.<a name="line.664"></a>
+<FONT color="green">665</FONT>         * <a name="line.665"></a>
+<FONT color="green">666</FONT>         * @param olderThanDays number of days for which to preserve the workflows<a name="line.666"></a>
+<FONT color="green">667</FONT>         * @throws StoreException<a name="line.667"></a>
+<FONT color="green">668</FONT>         */<a name="line.668"></a>
+<FONT color="green">669</FONT>        public void purge(final long olderThanDays) throws StoreException {<a name="line.669"></a>
+<FONT color="green">670</FONT>            doOperation("purge", new Callable&lt;Void&gt;() {<a name="line.670"></a>
+<FONT color="green">671</FONT>                public Void call() throws SQLException, StoreException, WorkflowException {<a name="line.671"></a>
+<FONT color="green">672</FONT>                    Timestamp maxEndTime = new Timestamp(System.currentTimeMillis() - (olderThanDays * DAY_IN_MS));<a name="line.672"></a>
+<FONT color="green">673</FONT>                    Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.673"></a>
+<FONT color="green">674</FONT>                    values.put("1", maxEndTime);<a name="line.674"></a>
+<FONT color="green">675</FONT>                    if (prepGetCompletedWorkflowsOlderThan == null) {<a name="line.675"></a>
+<FONT color="green">676</FONT>                        prepGetCompletedWorkflowsOlderThan = GET_COMPLETED_WORKFLOWS_OLDER_THAN.prepare(conn);<a name="line.676"></a>
+<FONT color="green">677</FONT>                    }<a name="line.677"></a>
+<FONT color="green">678</FONT>                    if (prepDeleteWorkflow == null) {<a name="line.678"></a>
+<FONT color="green">679</FONT>                        prepDeleteWorkflow = DELETE_WORKFLOW.prepare(conn);<a name="line.679"></a>
+<FONT color="green">680</FONT>                    }<a name="line.680"></a>
+<FONT color="green">681</FONT>                    if (prepDeleteActionsForWorkflow == null) {<a name="line.681"></a>
+<FONT color="green">682</FONT>                        prepDeleteActionsForWorkflow = DELETE_ACTIONS_FOR_WORKFLOW.prepare(conn);<a name="line.682"></a>
+<FONT color="green">683</FONT>                    }<a name="line.683"></a>
+<FONT color="green">684</FONT>                    ResultSetReader rsReader = parse(GET_COMPLETED_WORKFLOWS_OLDER_THAN.getNewStatementWithValues(values)<a name="line.684"></a>
+<FONT color="green">685</FONT>                            .prepare(prepGetCompletedWorkflowsOlderThan).executeQuery());<a name="line.685"></a>
+<FONT color="green">686</FONT>                    while (rsReader.next()) {<a name="line.686"></a>
+<FONT color="green">687</FONT>                        Map&lt;Object, Object&gt; wfIdMap = new HashMap&lt;Object, Object&gt;();<a name="line.687"></a>
+<FONT color="green">688</FONT>                        wfIdMap.put("1", rsReader.getString(WF_id));<a name="line.688"></a>
+<FONT color="green">689</FONT>                        DELETE_WORKFLOW.getNewStatementWithValues(wfIdMap).prepare(prepDeleteWorkflow).executeUpdate();<a name="line.689"></a>
+<FONT color="green">690</FONT>                        DELETE_ACTIONS_FOR_WORKFLOW.getNewStatementWithValues(wfIdMap)<a name="line.690"></a>
+<FONT color="green">691</FONT>                                .prepare(prepDeleteActionsForWorkflow).executeUpdate();<a name="line.691"></a>
+<FONT color="green">692</FONT>                    }<a name="line.692"></a>
+<FONT color="green">693</FONT>                    rsReader.close();<a name="line.693"></a>
+<FONT color="green">694</FONT>                    return null;<a name="line.694"></a>
+<FONT color="green">695</FONT>                }<a name="line.695"></a>
+<FONT color="green">696</FONT>            });<a name="line.696"></a>
+<FONT color="green">697</FONT>        }<a name="line.697"></a>
+<FONT color="green">698</FONT>    <a name="line.698"></a>
+<FONT color="green">699</FONT>        /**<a name="line.699"></a>
+<FONT color="green">700</FONT>         * Commit the DB changes made.<a name="line.700"></a>
+<FONT color="green">701</FONT>         * <a name="line.701"></a>
+<FONT color="green">702</FONT>         * @throws StoreException<a name="line.702"></a>
+<FONT color="green">703</FONT>         */<a name="line.703"></a>
+<FONT color="green">704</FONT>        public void commit() throws StoreException {<a name="line.704"></a>
+<FONT color="green">705</FONT>            try {<a name="line.705"></a>
+<FONT color="green">706</FONT>                workflowLib.commit();<a name="line.706"></a>
+<FONT color="green">707</FONT>                conn.commit();<a name="line.707"></a>
+<FONT color="green">708</FONT>            }<a name="line.708"></a>
+<FONT color="green">709</FONT>            catch (SQLException ex) {<a name="line.709"></a>
+<FONT color="green">710</FONT>                throw new StoreException(ErrorCode.E0602, ex.getMessage(), ex);<a name="line.710"></a>
+<FONT color="green">711</FONT>            }<a name="line.711"></a>
+<FONT color="green">712</FONT>            catch (WorkflowException ex) {<a name="line.712"></a>
+<FONT color="green">713</FONT>                throw new StoreException(ex);<a name="line.713"></a>
+<FONT color="green">714</FONT>            }<a name="line.714"></a>
+<FONT color="green">715</FONT>            finally {<a name="line.715"></a>
+<FONT color="green">716</FONT>                if (locks != null) {<a name="line.716"></a>
+<FONT color="green">717</FONT>                    for (LockToken lock : locks) {<a name="line.717"></a>
+<FONT color="green">718</FONT>                        lock.release();<a name="line.718"></a>
+<FONT color="green">719</FONT>                    }<a name="line.719"></a>
+<FONT color="green">720</FONT>                    locks.clear();<a name="line.720"></a>
+<FONT color="green">721</FONT>                }<a name="line.721"></a>
+<FONT color="green">722</FONT>            }<a name="line.722"></a>
+<FONT color="green">723</FONT>        }<a name="line.723"></a>
+<FONT color="green">724</FONT>    <a name="line.724"></a>
+<FONT color="green">725</FONT>        /**<a name="line.725"></a>
+<FONT color="green">726</FONT>         * Close the connection.<a name="line.726"></a>
+<FONT color="green">727</FONT>         * <a name="line.727"></a>
+<FONT color="green">728</FONT>         * @throws StoreException<a name="line.728"></a>
+<FONT color="green">729</FONT>         */<a name="line.729"></a>
+<FONT color="green">730</FONT>        public void close() throws StoreException {<a name="line.730"></a>
+<FONT color="green">731</FONT>            try {<a name="line.731"></a>
+<FONT color="green">732</FONT>                workflowLib.close();<a name="line.732"></a>
+<FONT color="green">733</FONT>                conn.close();<a name="line.733"></a>
+<FONT color="green">734</FONT>    <a name="line.734"></a>
+<FONT color="green">735</FONT>            }<a name="line.735"></a>
+<FONT color="green">736</FONT>            catch (SQLException ex) {<a name="line.736"></a>
+<FONT color="green">737</FONT>                throw new StoreException(ErrorCode.E0601, ex.getMessage(), ex);<a name="line.737"></a>
+<FONT color="green">738</FONT>            }<a name="line.738"></a>
+<FONT color="green">739</FONT>            catch (WorkflowException ex) {<a name="line.739"></a>
+<FONT color="green">740</FONT>                throw new StoreException(ex);<a name="line.740"></a>
+<FONT color="green">741</FONT>            }<a name="line.741"></a>
+<FONT color="green">742</FONT>            finally {<a name="line.742"></a>
+<FONT color="green">743</FONT>                if (locks != null) {<a name="line.743"></a>
+<FONT color="green">744</FONT>                    for (LockToken lock : locks) {<a name="line.744"></a>
+<FONT color="green">745</FONT>                        lock.release();<a name="line.745"></a>
+<FONT color="green">746</FONT>                    }<a name="line.746"></a>
+<FONT color="green">747</FONT>                    locks.clear();<a name="line.747"></a>
+<FONT color="green">748</FONT>                }<a name="line.748"></a>
+<FONT color="green">749</FONT>            }<a name="line.749"></a>
+<FONT color="green">750</FONT>        }<a name="line.750"></a>
+<FONT color="green">751</FONT>    <a name="line.751"></a>
+<FONT color="green">752</FONT>        private &lt;V&gt; V doOperation(String name, Callable&lt;V&gt; command) throws StoreException {<a name="line.752"></a>
+<FONT color="green">753</FONT>            try {<a name="line.753"></a>
+<FONT color="green">754</FONT>                Instrumentation.Cron cron = new Instrumentation.Cron();<a name="line.754"></a>
+<FONT color="green">755</FONT>                cron.start();<a name="line.755"></a>
+<FONT color="green">756</FONT>                V retVal;<a name="line.756"></a>
+<FONT color="green">757</FONT>                try {<a name="line.757"></a>
+<FONT color="green">758</FONT>                    retVal = command.call();<a name="line.758"></a>
+<FONT color="green">759</FONT>                }<a name="line.759"></a>
+<FONT color="green">760</FONT>                finally {<a name="line.760"></a>
+<FONT color="green">761</FONT>                    cron.stop();<a name="line.761"></a>
+<FONT color="green">762</FONT>                }<a name="line.762"></a>
+<FONT color="green">763</FONT>                Services.get().get(InstrumentationService.class).get().addCron(INSTR_GROUP, name, cron);<a name="line.763"></a>
+<FONT color="green">764</FONT>                return retVal;<a name="line.764"></a>
+<FONT color="green">765</FONT>            }<a name="line.765"></a>
+<FONT color="green">766</FONT>            catch (StoreException ex) {<a name="line.766"></a>
+<FONT color="green">767</FONT>                throw ex;<a name="line.767"></a>
+<FONT color="green">768</FONT>            }<a name="line.768"></a>
+<FONT color="green">769</FONT>            catch (SQLException ex) {<a name="line.769"></a>
+<FONT color="green">770</FONT>                throw new StoreException(ErrorCode.E0603, name, ex.getMessage(), ex);<a name="line.770"></a>
+<FONT color="green">771</FONT>            }<a name="line.771"></a>
+<FONT color="green">772</FONT>            catch (Exception e) {<a name="line.772"></a>
+<FONT color="green">773</FONT>                throw new StoreException(ErrorCode.E0607, name, e.getMessage(), e);<a name="line.773"></a>
+<FONT color="green">774</FONT>            }<a name="line.774"></a>
+<FONT color="green">775</FONT>        }<a name="line.775"></a>
+<FONT color="green">776</FONT>    <a name="line.776"></a>
+<FONT color="green">777</FONT>        private WorkflowJobBean getWorkflowOnly(final String id, boolean locking) throws SQLException, InterruptedException,<a name="line.777"></a>
+<FONT color="green">778</FONT>                StoreException {<a name="line.778"></a>
+<FONT color="green">779</FONT>            ResultSet rs;<a name="line.779"></a>
+<FONT color="green">780</FONT>            Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.780"></a>
+<FONT color="green">781</FONT>            values.put("1", id);<a name="line.781"></a>
+<FONT color="green">782</FONT>            if (selectForUpdate &amp;&amp; locking) {<a name="line.782"></a>
+<FONT color="green">783</FONT>                if (prepGetWorkflowForUpdate == null) {<a name="line.783"></a>
+<FONT color="green">784</FONT>                    prepGetWorkflowForUpdate = GET_WORKFLOW_FOR_UPDATE.prepare(conn);<a name="line.784"></a>
+<FONT color="green">785</FONT>                }<a name="line.785"></a>
+<FONT color="green">786</FONT>                rs = GET_WORKFLOW_FOR_UPDATE.getNewStatementWithValues(values).prepare(prepGetWorkflowForUpdate)<a name="line.786"></a>
+<FONT color="green">787</FONT>                        .executeQuery();<a name="line.787"></a>
+<FONT color="green">788</FONT>            }<a name="line.788"></a>
+<FONT color="green">789</FONT>            else {<a name="line.789"></a>
+<FONT color="green">790</FONT>                if (locking) {<a name="line.790"></a>
+<FONT color="green">791</FONT>                    LockToken token = Services.get().get(MemoryLocksService.class).getWriteLock(id, LOCK_TIMEOUT);<a name="line.791"></a>
+<FONT color="green">792</FONT>                    if(token == null) {<a name="line.792"></a>
+<FONT color="green">793</FONT>                        throw new StoreException(ErrorCode.E0606, id);<a name="line.793"></a>
+<FONT color="green">794</FONT>                    }<a name="line.794"></a>
+<FONT color="green">795</FONT>                    locks.add(token);<a name="line.795"></a>
+<FONT color="green">796</FONT>                }<a name="line.796"></a>
+<FONT color="green">797</FONT>                if (prepGetWorkflow == null) {<a name="line.797"></a>
+<FONT color="green">798</FONT>                    prepGetWorkflow = GET_WORKFLOW.prepare(conn);<a name="line.798"></a>
+<FONT color="green">799</FONT>                }<a name="line.799"></a>
+<FONT color="green">800</FONT>                rs = GET_WORKFLOW.getNewStatementWithValues(values).prepare(prepGetWorkflow).executeQuery();<a name="line.800"></a>
+<FONT color="green">801</FONT>            }<a name="line.801"></a>
+<FONT color="green">802</FONT>            if (!rs.next()) {<a name="line.802"></a>
+<FONT color="green">803</FONT>                rs.close();<a name="line.803"></a>
+<FONT color="green">804</FONT>                return null;<a name="line.804"></a>
+<FONT color="green">805</FONT>            }<a name="line.805"></a>
+<FONT color="green">806</FONT>            ResultSetReader rsReader = parse(rs);<a name="line.806"></a>
+<FONT color="green">807</FONT>            WorkflowJobBean wfBean = getBeanForRunningWorkflow(rsReader);<a name="line.807"></a>
+<FONT color="green">808</FONT>            rsReader.close();<a name="line.808"></a>
+<FONT color="green">809</FONT>            return wfBean;<a name="line.809"></a>
+<FONT color="green">810</FONT>        }<a name="line.810"></a>
+<FONT color="green">811</FONT>    <a name="line.811"></a>
+<FONT color="green">812</FONT>        private WorkflowJobBean getBeanForRunningWorkflow(ResultSetReader rsReader) throws SQLException {<a name="line.812"></a>
+<FONT color="green">813</FONT>            WorkflowJobBean wfBean = new WorkflowJobBean();<a name="line.813"></a>
+<FONT color="green">814</FONT>            wfBean.setId(rsReader.getString(WF_id));<a name="line.814"></a>
+<FONT color="green">815</FONT>            wfBean.setExternalId(rsReader.getString(WF_externalId));<a name="line.815"></a>
+<FONT color="green">816</FONT>            wfBean.setAppName(rsReader.getString(WF_appName));<a name="line.816"></a>
+<FONT color="green">817</FONT>            wfBean.setAppPath(rsReader.getString(WF_appPath));<a name="line.817"></a>
+<FONT color="green">818</FONT>            wfBean.setConf(rsReader.getString(WF_conf));<a name="line.818"></a>
+<FONT color="green">819</FONT>            wfBean.setProtoActionConf(rsReader.getString(WF_protoActionConf));<a name="line.819"></a>
+<FONT color="green">820</FONT>            wfBean.setLogToken(rsReader.getString(WF_logToken));<a name="line.820"></a>
+<FONT color="green">821</FONT>            wfBean.setStatus(WorkflowJob.Status.valueOf(rsReader.getString(WF_status)));<a name="line.821"></a>
+<FONT color="green">822</FONT>            wfBean.setRun(rsReader.getLong(WF_run).intValue());<a name="line.822"></a>
+<FONT color="green">823</FONT>            wfBean.setLastModTime(rsReader.getTimestamp(WF_lastModTime));<a name="line.823"></a>
+<FONT color="green">824</FONT>            wfBean.setCreatedTime(rsReader.getTimestamp(WF_createdTime));<a name="line.824"></a>
+<FONT color="green">825</FONT>            wfBean.setStartTime(rsReader.getTimestamp(WF_startTime));<a name="line.825"></a>
+<FONT color="green">826</FONT>            wfBean.setEndTime(rsReader.getTimestamp(WF_endTime));<a name="line.826"></a>
+<FONT color="green">827</FONT>            wfBean.setUser(rsReader.getString(WF_user));<a name="line.827"></a>
+<FONT color="green">828</FONT>            wfBean.setGroup(rsReader.getString(WF_groupName));<a name="line.828"></a>
+<FONT color="green">829</FONT>            wfBean.setAuthToken(rsReader.getString(WF_authToken));<a name="line.829"></a>
+<FONT color="green">830</FONT>            return wfBean;<a name="line.830"></a>
+<FONT color="green">831</FONT>        }<a name="line.831"></a>
+<FONT color="green">832</FONT>    <a name="line.832"></a>
+<FONT color="green">833</FONT>        private List&lt;WorkflowActionBean&gt; getActionsOnlyForWorkflow(String wfId, boolean locking) throws SQLException,<a name="line.833"></a>
+<FONT color="green">834</FONT>                InterruptedException, StoreException {<a name="line.834"></a>
+<FONT color="green">835</FONT>            List&lt;WorkflowActionBean&gt; actions = new ArrayList&lt;WorkflowActionBean&gt;();<a name="line.835"></a>
+<FONT color="green">836</FONT>            Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.836"></a>
+<FONT color="green">837</FONT>            values.put("1", wfId);<a name="line.837"></a>
+<FONT color="green">838</FONT>            ResultSet rs = null;<a name="line.838"></a>
+<FONT color="green">839</FONT>            if (selectForUpdate &amp;&amp; locking) {<a name="line.839"></a>
+<FONT color="green">840</FONT>                if (prepGetActionsForWorkflowForUpdate == null) {<a name="line.840"></a>
+<FONT color="green">841</FONT>                    prepGetActionsForWorkflowForUpdate = GET_ACTIONS_OF_WORKFLOW_FOR_UPDATE.prepare(conn);<a name="line.841"></a>
+<FONT color="green">842</FONT>                }<a name="line.842"></a>
+<FONT color="green">843</FONT>                rs = GET_ACTIONS_OF_WORKFLOW_FOR_UPDATE.getNewStatementWithValues(values).prepare(<a name="line.843"></a>
+<FONT color="green">844</FONT>                        prepGetActionsForWorkflowForUpdate).executeQuery();<a name="line.844"></a>
+<FONT color="green">845</FONT>            }<a name="line.845"></a>
+<FONT color="green">846</FONT>            else {<a name="line.846"></a>
+<FONT color="green">847</FONT>                if (prepGetActionsForWorkflow == null) {<a name="line.847"></a>
+<FONT color="green">848</FONT>                    prepGetActionsForWorkflow = GET_ACTIONS_FOR_WORKFLOW.prepare(conn);<a name="line.848"></a>
+<FONT color="green">849</FONT>                }<a name="line.849"></a>
+<FONT color="green">850</FONT>                rs = GET_ACTIONS_FOR_WORKFLOW.getNewStatementWithValues(values).prepare(prepGetActionsForWorkflow)<a name="line.850"></a>
+<FONT color="green">851</FONT>                        .executeQuery();<a name="line.851"></a>
+<FONT color="green">852</FONT>            }<a name="line.852"></a>
+<FONT color="green">853</FONT>            ResultSetReader rsReader = parse(rs);<a name="line.853"></a>
+<FONT color="green">854</FONT>            while (rsReader.next()) {<a name="line.854"></a>
+<FONT color="green">855</FONT>                WorkflowActionBean action = getBeanForRunningAction(rsReader);<a name="line.855"></a>
+<FONT color="green">856</FONT>                if (locking &amp;&amp; !selectForUpdate) {<a name="line.856"></a>
+<FONT color="green">857</FONT>                    LockToken token = Services.get().get(MemoryLocksService.class).getWriteLock(action.getId(),<a name="line.857"></a>
+<FONT color="green">858</FONT>                            LOCK_TIMEOUT);<a name="line.858"></a>
+<FONT color="green">859</FONT>                    if(token == null) {<a name="line.859"></a>
+<FONT color="green">860</FONT>                        throw new StoreException(ErrorCode.E0606, action.getId());<a name="line.860"></a>
+<FONT color="green">861</FONT>                    }<a name="line.861"></a>
+<FONT color="green">862</FONT>                    locks.add(token);<a name="line.862"></a>
+<FONT color="green">863</FONT>                }<a name="line.863"></a>
+<FONT color="green">864</FONT>                actions.add(action);<a name="line.864"></a>
+<FONT color="green">865</FONT>            }<a name="line.865"></a>
+<FONT color="green">866</FONT>            rsReader.close();<a name="line.866"></a>
+<FONT color="green">867</FONT>            return actions;<a name="line.867"></a>
+<FONT color="green">868</FONT>        }<a name="line.868"></a>
+<FONT color="green">869</FONT>    <a name="line.869"></a>
+<FONT color="green">870</FONT>        private WorkflowActionBean getBeanForRunningAction(ResultSetReader rsReader) throws SQLException {<a name="line.870"></a>
+<FONT color="green">871</FONT>            if (rsReader != null) {<a name="line.871"></a>
+<FONT color="green">872</FONT>                WorkflowActionBean action = new WorkflowActionBean();<a name="line.872"></a>
+<FONT color="green">873</FONT>                action.setId(rsReader.getString(ACTIONS_id));<a name="line.873"></a>
+<FONT color="green">874</FONT>                action.setName(rsReader.getString(ACTIONS_name));<a name="line.874"></a>
+<FONT color="green">875</FONT>                action.setType(rsReader.getString(ACTIONS_type));<a name="line.875"></a>
+<FONT color="green">876</FONT>                action.setJobId(rsReader.getString(ACTIONS_wfId));<a name="line.876"></a>
+<FONT color="green">877</FONT>                action.setConf(rsReader.getString(ACTIONS_conf));<a name="line.877"></a>
+<FONT color="green">878</FONT>                action.setStatus(WorkflowAction.Status.valueOf(rsReader.getString(ACTIONS_status)));<a name="line.878"></a>
+<FONT color="green">879</FONT>                action.setExternalStatus(rsReader.getString(ACTIONS_externalStatus));<a name="line.879"></a>
+<FONT color="green">880</FONT>                action.setTransition(rsReader.getString(ACTIONS_transition));<a name="line.880"></a>
+<FONT color="green">881</FONT>                action.setRetries(rsReader.getLong(ACTIONS_retries).intValue());<a name="line.881"></a>
+<FONT color="green">882</FONT>                action.setStartTime(rsReader.getTimestamp(ACTIONS_startTime));<a name="line.882"></a>
+<FONT color="green">883</FONT>                action.setData(rsReader.getString(ACTIONS_data));<a name="line.883"></a>
+<FONT color="green">884</FONT>                action.setExternalId(rsReader.getString(ACTIONS_externalId));<a name="line.884"></a>
+<FONT color="green">885</FONT>                action.setTrackerUri(rsReader.getString(ACTIONS_trackerUri));<a name="line.885"></a>
+<FONT color="green">886</FONT>                action.setConsoleUrl(rsReader.getString(ACTIONS_consoleUrl));<a name="line.886"></a>
+<FONT color="green">887</FONT>                action.setExecutionPath(rsReader.getString(ACTIONS_executionPath));<a name="line.887"></a>
+<FONT color="green">888</FONT>                if (rsReader.getBoolean(ACTIONS_pending).booleanValue() == true) {<a name="line.888"></a>
+<FONT color="green">889</FONT>                    action.setPending();<a name="line.889"></a>
+<FONT color="green">890</FONT>                }<a name="line.890"></a>
+<FONT color="green">891</FONT>                action.setPendingAge(rsReader.getTimestamp(ACTIONS_pendingAge));<a name="line.891"></a>
+<FONT color="green">892</FONT>                action.setSignalValue(rsReader.getString(ACTIONS_signalValue));<a name="line.892"></a>
+<FONT color="green">893</FONT>                action.setLogToken(rsReader.getString(ACTIONS_logToken));<a name="line.893"></a>
+<FONT color="green">894</FONT>                action.setErrorInfo(rsReader.getString(ACTIONS_errorCode), rsReader.getString(ACTIONS_errorMessage));<a name="line.894"></a>
+<FONT color="green">895</FONT>                action.setEndTime(rsReader.getTimestamp(ACTIONS_endTime));<a name="line.895"></a>
+<FONT color="green">896</FONT>                action.setLastCheckTime(rsReader.getTimestamp(ACTIONS_lastCheckTime));<a name="line.896"></a>
+<FONT color="green">897</FONT>                return action;<a name="line.897"></a>
+<FONT color="green">898</FONT>            }<a name="line.898"></a>
+<FONT color="green">899</FONT>            return null;<a name="line.899"></a>
+<FONT color="green">900</FONT>        }<a name="line.900"></a>
+<FONT color="green">901</FONT>    <a name="line.901"></a>
+<FONT color="green">902</FONT>        private Map&lt;Object, Object&gt; getJobValueMapfromBean(WorkflowJobBean wfBean) throws SQLException {<a name="line.902"></a>
+<FONT color="green">903</FONT>            Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.903"></a>
+<FONT color="green">904</FONT>            values.put("1", wfBean.getId());<a name="line.904"></a>
+<FONT color="green">905</FONT>            values.put("2", wfBean.getAppName());<a name="line.905"></a>
+<FONT color="green">906</FONT>            values.put("3", wfBean.getAppPath());<a name="line.906"></a>
+<FONT color="green">907</FONT>            values.put("4", wfBean.getConf());<a name="line.907"></a>
+<FONT color="green">908</FONT>            values.put("5", wfBean.getProtoActionConf());<a name="line.908"></a>
+<FONT color="green">909</FONT>            values.put("6", wfBean.getLogToken());<a name="line.909"></a>
+<FONT color="green">910</FONT>            values.put("7", wfBean.getStatus().toString());<a name="line.910"></a>
+<FONT color="green">911</FONT>            values.put("8", wfBean.getRun());<a name="line.911"></a>
+<FONT color="green">912</FONT>            values.put("9", convertDateToTimeStamp(wfBean.getCreatedTime()));<a name="line.912"></a>
+<FONT color="green">913</FONT>            values.put("10", convertDateToTimeStamp(wfBean.getStartTime()));<a name="line.913"></a>
+<FONT color="green">914</FONT>            values.put("11", convertDateToTimeStamp(wfBean.getEndTime()));<a name="line.914"></a>
+<FONT color="green">915</FONT>            values.put("12", wfBean.getUser());<a name="line.915"></a>
+<FONT color="green">916</FONT>            values.put("13", wfBean.getGroup());<a name="line.916"></a>
+<FONT color="green">917</FONT>            values.put("14", wfBean.getAuthToken());<a name="line.917"></a>
+<FONT color="green">918</FONT>            values.put("15", wfBean.getExternalId());<a name="line.918"></a>
+<FONT color="green">919</FONT>            values.put("16", new Timestamp(System.currentTimeMillis()));<a name="line.919"></a>
+<FONT color="green">920</FONT>            return values;<a name="line.920"></a>
+<FONT color="green">921</FONT>        }<a name="line.921"></a>
+<FONT color="green">922</FONT>    <a name="line.922"></a>
+<FONT color="green">923</FONT>        private Map&lt;Object, Object&gt; getActionValueMapFromBean(WorkflowActionBean action) throws SQLException {<a name="line.923"></a>
+<FONT color="green">924</FONT>            Map&lt;Object, Object&gt; values = new HashMap&lt;Object, Object&gt;();<a name="line.924"></a>
+<FONT color="green">925</FONT>            values.put("1", action.getId());<a name="line.925"></a>
+<FONT color="green">926</FONT>            values.put("2", action.getName());<a name="line.926"></a>
+<FONT color="green">927</FONT>            values.put("3", action.getType());<a name="line.927"></a>
+<FONT color="green">928</FONT>            values.put("4", action.getJobId());<a name="line.928"></a>
+<FONT color="green">929</FONT>            values.put("5", action.getConf());<a name="line.929"></a>
+<FONT color="green">930</FONT>            values.put("6", action.getStatus().toString());<a name="line.930"></a>
+<FONT color="green">931</FONT>            values.put("7", action.getExternalStatus());<a name="line.931"></a>
+<FONT color="green">932</FONT>            values.put("8", action.getTransition());<a name="line.932"></a>
+<FONT color="green">933</FONT>            values.put("9", action.getRetries());<a name="line.933"></a>
+<FONT color="green">934</FONT>            values.put("10", convertDateToTimeStamp(action.getStartTime()));<a name="line.934"></a>
+<FONT color="green">935</FONT>            values.put("11", action.getData());<a name="line.935"></a>
+<FONT color="green">936</FONT>            values.put("12", action.getExternalId());<a name="line.936"></a>
+<FONT color="green">937</FONT>            values.put("13", action.getTrackerUri());<a name="line.937"></a>
+<FONT color="green">938</FONT>            values.put("14", action.getConsoleUrl());<a name="line.938"></a>
+<FONT color="green">939</FONT>            values.put("15", action.getExecutionPath());<a name="line.939"></a>
+<FONT color="green">940</FONT>            values.put("16", action.isPending());<a name="line.940"></a>
+<FONT color="green">941</FONT>            values.put("17", convertDateToTimeStamp(action.getPendingAge()));<a name="line.941"></a>
+<FONT color="green">942</FONT>            values.put("18", action.getSignalValue());<a name="line.942"></a>
+<FONT color="green">943</FONT>            values.put("19", action.getLogToken());<a name="line.943"></a>
+<FONT color="green">944</FONT>            values.put("20", action.getErrorCode());<a name="line.944"></a>
+<FONT color="green">945</FONT>            values.put("21", action.getErrorMessage());<a name="line.945"></a>
+<FONT color="green">946</FONT>            values.put("22", convertDateToTimeStamp(action.getEndTime()));<a name="line.946"></a>
+<FONT color="green">947</FONT>            values.put("23", convertDateToTimeStamp(action.getLastCheckTime()));<a name="line.947"></a>
+<FONT color="green">948</FONT>            return values;<a name="line.948"></a>
+<FONT color="green">949</FONT>        }<a name="line.949"></a>
+<FONT color="green">950</FONT>    <a name="line.950"></a>
+<FONT color="green">951</FONT>        private Timestamp convertDateToTimeStamp(Date d) {<a name="line.951"></a>
+<FONT color="green">952</FONT>            if (d != null) {<a name="line.952"></a>
+<FONT color="green">953</FONT>                return new Timestamp(d.getTime());<a name="line.953"></a>
+<FONT color="green">954</FONT>            }<a name="line.954"></a>
+<FONT color="green">955</FONT>            return null;<a name="line.955"></a>
+<FONT color="green">956</FONT>        }<a name="line.956"></a>
+<FONT color="green">957</FONT>    }<a name="line.957"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

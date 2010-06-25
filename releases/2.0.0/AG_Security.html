@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-06-25
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Security"></a>
+<div class="section"><h2> Oozie Security</h2>
+<p><ul><ul><li><a href="#Security_in_Oozie">Security in Oozie</a>
+</li>
+<li><a href="#Oozie_Authorization_Model">Oozie Authorization Model</a>
+</li>
+<li><a href="#Oozie_Security_Activation">Oozie Security Activation</a>
+</li>
+<li><a href="#Adding_Authentication_Checks_to_Oozie">Adding Authentication Checks to Oozie</a>
+</li>
+<li><a href="#Adding_Authorization_Checks_to_Oozie">Adding Authorization Checks to Oozie</a>
+</li>
+<li><a href="#Built_in_Admin_User_List">Built in Admin User List</a>
+</li>
+<li><a href="#Audit_Logging">Audit Logging</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Security_in_Oozie"></a>
+<div class="section"><h3>Security in Oozie</h3>
+<p>Oozie provides a simple authorization model.</p>
+<p>Oozie does not provide authentication or authorization checks out of the box.</p>
+<p>Oozie provides a plugglable mechanism to easily integrate existing authentication and authorization services.</p>
+<a name="Oozie_Authorization_Model"></a>
+</div>
+<div class="section"><h3>Oozie Authorization Model</h3>
+<p><ul><li>Users have read access to all jobs</li>
+<li>Users have write access to their own jobs</li>
+<li>Users have write access to jobs for groups the users belong to</li>
+<li>Users have read access to admin operations</li>
+</ul>
+</p>
+<p><ul><li>Admin users have write access to all jobs</li>
+<li>Admin users have write access to admin operations</li>
+</ul>
+</p>
+<p>If Oozie security is disabled, all users are admin users.</p>
+<a name="Oozie_Security_Activation"></a>
+</div>
+<div class="section"><h3>Oozie Security Activation</h3>
+<p>Oozie security is disabled by default, to enabled it the <tt>oozie.service.AuthorizationService.security.enabled</tt>
+
+property must be set to <tt>true</tt>
+.</p>
+<a name="Adding_Authentication_Checks_to_Oozie"></a>
+</div>
+<div class="section"><h3>Adding Authentication Checks to Oozie</h3>
+<p>All interaction with Oozie is via Web Services implemented as Java Servlets.</p>
+<p>Authentication can be enforced via a Java Servlet Filter.</p>
+<p>The filter should only allow requests that contain valid credentials (i.e. HTTP basic authorization, cookies).</p>
+<p>If the request does not contain valid credentials the filter must return the HTTP UNAUTHORIZED (401) error code.</p>
+<p>If the request does contain valid credetials, the filter must set the user name as the <tt>oozie.user.name</tt>
+ attribute
+in the request before dispaching the request with the <tt>doChain()</tt>
+ method.</p>
+<a name="Adding_Authorization_Checks_to_Oozie"></a>
+</div>
+<div class="section"><h3>Adding Authorization Checks to Oozie</h3>
+<p>Oozie provides an <tt>AuthorizationService</tt>
+ that enforces Oozie authorization model for administration and jobs.</p>
+<p>However it does not validate user-group information against any store.</p>
+<p>The user-group information for the default <tt>AuthorizationService</tt>
+ is:</p>
+<p><ul><li>The default group for all users is <tt>users</tt>
+.</li>
+<li>All users belong to all groups.</li>
+</ul>
+</p>
+<p>The <tt>AuthorizationService</tt>
+ should be subclassed and the following methods should be overriden:</p>
+<p><ul><li><tt>String getDefaultGroup(String user)</tt>
+</li>
+<li><tt>boolean isUserInGroup(String user, String group)</tt>
+</li>
+<li><tt>boolean isAdmin(String user)</tt>
+</li>
+</ul>
+</p>
+<a name="Built_in_Admin_User_List"></a>
+</div>
+<div class="section"><h3>Built in Admin User List</h3>
+<p>The default <tt>AuthorizationService</tt>
+ provides a basic mechanism to define admin users.</p>
+<p>The list of admin users is configured by adding 1 user per line to a file <tt>adminusers.txt</tt>
+, and placing this file in
+the Oozie Configuration directory. Empty lines and lines starting with '#' are ignored.</p>
+<p>The Oozie configuration directory is specified by setting the property 'oozie.config.dir'. Refer to
+<a href="./AG_Install.html">Oozie Install</a>
+ for details.</p>
+<a name="Audit_Logging"></a>
+</div>
+<div class="section"><h3>Audit Logging</h3>
+<p>Write requests are logged in an audit log (oozie-audit.log). This log is not rotated  This log captures the following
+information.</p>
+<p><ul><li>User name</li>
+<li>Group name</li>
+<li>Workflow Application Name</li>
+<li>Job id if applicable</li>
+<li>Operation</li>
+<li>Operation parameter</li>
+<li>Operation status</li>
+<li>Response HTTP status code</li>
+<li>Error code and error message if applicable.</li>
+</ul>
+</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

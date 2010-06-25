@@ -1,0 +1,392 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Licensed to the Apache Software Foundation (ASF) under one<a name="line.2"></a>
+<FONT color="green">003</FONT>     * or more contributor license agreements.  See the NOTICE file<a name="line.3"></a>
+<FONT color="green">004</FONT>     * distributed with this work for additional information<a name="line.4"></a>
+<FONT color="green">005</FONT>     * regarding copyright ownership.  The ASF licenses this file<a name="line.5"></a>
+<FONT color="green">006</FONT>     * to you under the Apache License, Version 2.0 (the<a name="line.6"></a>
+<FONT color="green">007</FONT>     * "License"); you may not use this file except in compliance<a name="line.7"></a>
+<FONT color="green">008</FONT>     * with the License.  You may obtain a copy of the License at<a name="line.8"></a>
+<FONT color="green">009</FONT>     *<a name="line.9"></a>
+<FONT color="green">010</FONT>     *     http://www.apache.org/licenses/LICENSE-2.0<a name="line.10"></a>
+<FONT color="green">011</FONT>     *<a name="line.11"></a>
+<FONT color="green">012</FONT>     * Unless required by applicable law or agreed to in writing, software<a name="line.12"></a>
+<FONT color="green">013</FONT>     * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.13"></a>
+<FONT color="green">014</FONT>     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.14"></a>
+<FONT color="green">015</FONT>     * See the License for the specific language governing permissions and<a name="line.15"></a>
+<FONT color="green">016</FONT>     * limitations under the License.<a name="line.16"></a>
+<FONT color="green">017</FONT>     */<a name="line.17"></a>
+<FONT color="green">018</FONT>    package org.apache.oozie.service;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import org.apache.commons.logging.LogFactory;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import org.apache.log4j.LogManager;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import org.apache.log4j.PropertyConfigurator;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import org.apache.oozie.util.Instrumentable;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import org.apache.oozie.util.Instrumentation;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import org.apache.oozie.util.XLog;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import org.apache.oozie.util.XLogStreamer;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import org.apache.oozie.util.XConfiguration;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import org.apache.oozie.BuildInfo;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import org.apache.oozie.ErrorCode;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import org.apache.hadoop.conf.Configuration;<a name="line.30"></a>
+<FONT color="green">031</FONT>    <a name="line.31"></a>
+<FONT color="green">032</FONT>    import java.io.BufferedReader;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import java.io.File;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import java.io.FileInputStream;<a name="line.34"></a>
+<FONT color="green">035</FONT>    import java.io.IOException;<a name="line.35"></a>
+<FONT color="green">036</FONT>    import java.io.InputStream;<a name="line.36"></a>
+<FONT color="green">037</FONT>    import java.io.InputStreamReader;<a name="line.37"></a>
+<FONT color="green">038</FONT>    import java.io.Writer;<a name="line.38"></a>
+<FONT color="green">039</FONT>    import java.net.URL;<a name="line.39"></a>
+<FONT color="green">040</FONT>    import java.util.Properties;<a name="line.40"></a>
+<FONT color="green">041</FONT>    import java.util.Map;<a name="line.41"></a>
+<FONT color="green">042</FONT>    import java.util.Date;<a name="line.42"></a>
+<FONT color="green">043</FONT>    <a name="line.43"></a>
+<FONT color="green">044</FONT>    /**<a name="line.44"></a>
+<FONT color="green">045</FONT>     * Built in service that initializes and manages the log4j.<a name="line.45"></a>
+<FONT color="green">046</FONT>     * &lt;p/&gt;<a name="line.46"></a>
+<FONT color="green">047</FONT>     * The log4j configuration file to use is read from the system property {@link #LOG4J_FILE}, if the system propery is<a name="line.47"></a>
+<FONT color="green">048</FONT>     * not set the default value is {@link #DEFAULT_LOG4J_PROPERTIES}. The log4j configuration file can be a Java Properties<a name="line.48"></a>
+<FONT color="green">049</FONT>     * file (.properties) or an XML file (.xml).<a name="line.49"></a>
+<FONT color="green">050</FONT>     * &lt;p/&gt;<a name="line.50"></a>
+<FONT color="green">051</FONT>     * If the system property {@link ConfigurationService#CONFIG_PATH} is set, the log4j configuration file is read from<a name="line.51"></a>
+<FONT color="green">052</FONT>     * that directory. Otherwise is read from the classpath root.<a name="line.52"></a>
+<FONT color="green">053</FONT>     * &lt;p/&gt;<a name="line.53"></a>
+<FONT color="green">054</FONT>     * The reload interval of the log4j configuration is set by the system property {@link #RELOAD_INTERVAL}, the value is<a name="line.54"></a>
+<FONT color="green">055</FONT>     * in seconds, the default value is {@link #DEFAULT_RELOAD_INTERVAL}.<a name="line.55"></a>
+<FONT color="green">056</FONT>     * &lt;p/&gt;<a name="line.56"></a>
+<FONT color="green">057</FONT>     * The log4j configuration is reloaded only when read from a configuration directory, when read from the classpath<a name="line.57"></a>
+<FONT color="green">058</FONT>     * reloading is not in effect.<a name="line.58"></a>
+<FONT color="green">059</FONT>     */<a name="line.59"></a>
+<FONT color="green">060</FONT>    public class XLogService implements Service, Instrumentable {<a name="line.60"></a>
+<FONT color="green">061</FONT>        private static final String INSTRUMENTATION_GROUP = "logging";<a name="line.61"></a>
+<FONT color="green">062</FONT>    <a name="line.62"></a>
+<FONT color="green">063</FONT>        /**<a name="line.63"></a>
+<FONT color="green">064</FONT>         * System property that indicates the log4j configuration file to load.<a name="line.64"></a>
+<FONT color="green">065</FONT>         */<a name="line.65"></a>
+<FONT color="green">066</FONT>        public static final String LOG4J_FILE = "oozie.log4j.file";<a name="line.66"></a>
+<FONT color="green">067</FONT>    <a name="line.67"></a>
+<FONT color="green">068</FONT>        /**<a name="line.68"></a>
+<FONT color="green">069</FONT>         * System property that indicates the reload interval of the configuration file.<a name="line.69"></a>
+<FONT color="green">070</FONT>         */<a name="line.70"></a>
+<FONT color="green">071</FONT>        public static final String RELOAD_INTERVAL = "oozie.log4j.reload";<a name="line.71"></a>
+<FONT color="green">072</FONT>    <a name="line.72"></a>
+<FONT color="green">073</FONT>        /**<a name="line.73"></a>
+<FONT color="green">074</FONT>         * Default value for the log4j configuration file if {@link #LOG4J_FILE} is not set.<a name="line.74"></a>
+<FONT color="green">075</FONT>         */<a name="line.75"></a>
+<FONT color="green">076</FONT>        public static final String DEFAULT_LOG4J_PROPERTIES = "oozie-log4j.properties";<a name="line.76"></a>
+<FONT color="green">077</FONT>    <a name="line.77"></a>
+<FONT color="green">078</FONT>        /**<a name="line.78"></a>
+<FONT color="green">079</FONT>         * Default value for the reload interval if {@link #RELOAD_INTERVAL} is not set.<a name="line.79"></a>
+<FONT color="green">080</FONT>         */<a name="line.80"></a>
+<FONT color="green">081</FONT>        public static final String DEFAULT_RELOAD_INTERVAL = "10";<a name="line.81"></a>
+<FONT color="green">082</FONT>    <a name="line.82"></a>
+<FONT color="green">083</FONT>        // for testing purposes<a name="line.83"></a>
+<FONT color="green">084</FONT>        static boolean testingDefaultFile;<a name="line.84"></a>
+<FONT color="green">085</FONT>    <a name="line.85"></a>
+<FONT color="green">086</FONT>        private long interval;<a name="line.86"></a>
+<FONT color="green">087</FONT>        private boolean fromClasspath;<a name="line.87"></a>
+<FONT color="green">088</FONT>        private String configFile;<a name="line.88"></a>
+<FONT color="green">089</FONT>    <a name="line.89"></a>
+<FONT color="green">090</FONT>        private static final String STARTUP_MESSAGE =<a name="line.90"></a>
+<FONT color="green">091</FONT>                "{E}" +<a name="line.91"></a>
+<FONT color="green">092</FONT>                " ******************************************************************************* {E}" +<a name="line.92"></a>
+<FONT color="green">093</FONT>                "  STARTUP MSG: Oozie BUILD_VERSION [{0}] compiled by [{1}] on [{2}]{E}" +<a name="line.93"></a>
+<FONT color="green">094</FONT>                "  STARTUP MSG:       revision [{3}]@[{4}]{E}" +<a name="line.94"></a>
+<FONT color="green">095</FONT>                "*******************************************************************************";<a name="line.95"></a>
+<FONT color="green">096</FONT>    <a name="line.96"></a>
+<FONT color="green">097</FONT>        private String oozieLogPath;<a name="line.97"></a>
+<FONT color="green">098</FONT>        private String oozieLogName;<a name="line.98"></a>
+<FONT color="green">099</FONT>        private int oozieLogRotation = -1;<a name="line.99"></a>
+<FONT color="green">100</FONT>    <a name="line.100"></a>
+<FONT color="green">101</FONT>        public XLogService() {<a name="line.101"></a>
+<FONT color="green">102</FONT>            testingDefaultFile = false;<a name="line.102"></a>
+<FONT color="green">103</FONT>        }<a name="line.103"></a>
+<FONT color="green">104</FONT>    <a name="line.104"></a>
+<FONT color="green">105</FONT>        /**<a name="line.105"></a>
+<FONT color="green">106</FONT>         * Initialize the log service.<a name="line.106"></a>
+<FONT color="green">107</FONT>         *<a name="line.107"></a>
+<FONT color="green">108</FONT>         * @param services services instance.<a name="line.108"></a>
+<FONT color="green">109</FONT>         * @throws ServiceException thrown if the log service could not be initialized.<a name="line.109"></a>
+<FONT color="green">110</FONT>         */<a name="line.110"></a>
+<FONT color="green">111</FONT>        public void init(Services services) throws ServiceException {<a name="line.111"></a>
+<FONT color="green">112</FONT>            try {<a name="line.112"></a>
+<FONT color="green">113</FONT>                LogManager.resetConfiguration();<a name="line.113"></a>
+<FONT color="green">114</FONT>                String defaultConfig = (testingDefaultFile) ? "test-" + DEFAULT_LOG4J_PROPERTIES : DEFAULT_LOG4J_PROPERTIES;<a name="line.114"></a>
+<FONT color="green">115</FONT>                String log4jPathOri = System.getProperty(LOG4J_FILE, defaultConfig);<a name="line.115"></a>
+<FONT color="green">116</FONT>    <a name="line.116"></a>
+<FONT color="green">117</FONT>                String configPath = System.getProperty(ConfigurationService.CONFIG_PATH);<a name="line.117"></a>
+<FONT color="green">118</FONT>    <a name="line.118"></a>
+<FONT color="green">119</FONT>                fromClasspath = configureLog4J(configPath, log4jPathOri);<a name="line.119"></a>
+<FONT color="green">120</FONT>    <a name="line.120"></a>
+<FONT color="green">121</FONT>                XLog log = new XLog(LogFactory.getLog(getClass()));<a name="line.121"></a>
+<FONT color="green">122</FONT>    <a name="line.122"></a>
+<FONT color="green">123</FONT>                String from = (fromClasspath) ? "classpath" : "path";<a name="line.123"></a>
+<FONT color="green">124</FONT>                long interval = Long.parseLong(System.getProperty(RELOAD_INTERVAL, DEFAULT_RELOAD_INTERVAL));<a name="line.124"></a>
+<FONT color="green">125</FONT>                String reload = (fromClasspath) ? "disabled" : Long.toString(interval) + " sec";<a name="line.125"></a>
+<FONT color="green">126</FONT>                log.info(XLog.OPS, STARTUP_MESSAGE,<a name="line.126"></a>
+<FONT color="green">127</FONT>                         BuildInfo.getBuildInfo().getProperty(BuildInfo.BUILD_VERSION),<a name="line.127"></a>
+<FONT color="green">128</FONT>                         BuildInfo.getBuildInfo().getProperty(BuildInfo.BUILD_USER_NAME),<a name="line.128"></a>
+<FONT color="green">129</FONT>                         BuildInfo.getBuildInfo().getProperty(BuildInfo.BUILD_TIME),<a name="line.129"></a>
+<FONT color="green">130</FONT>                         BuildInfo.getBuildInfo().getProperty(BuildInfo.BUILD_SVN_REVISION),<a name="line.130"></a>
+<FONT color="green">131</FONT>                         BuildInfo.getBuildInfo().getProperty(BuildInfo.BUILD_SVN_URL));<a name="line.131"></a>
+<FONT color="green">132</FONT>    <a name="line.132"></a>
+<FONT color="green">133</FONT>                log.info("Log4j configuration loaded from [{0}]", from);<a name="line.133"></a>
+<FONT color="green">134</FONT>                log.info("Log4j configuration file [{0}]", configFile);<a name="line.134"></a>
+<FONT color="green">135</FONT>                log.info("Log4j reload interval [{0}]", reload);<a name="line.135"></a>
+<FONT color="green">136</FONT>                if (log.isDebugEnabled()) {<a name="line.136"></a>
+<FONT color="green">137</FONT>                    ClassLoader cl = Thread.currentThread().getContextClassLoader();<a name="line.137"></a>
+<FONT color="green">138</FONT>                    InputStream is = (fromClasspath) ? cl.getResourceAsStream(configFile) : new FileInputStream(configFile);<a name="line.138"></a>
+<FONT color="green">139</FONT>                    BufferedReader br = new BufferedReader(new InputStreamReader(is));<a name="line.139"></a>
+<FONT color="green">140</FONT>                    StringBuffer sb = new StringBuffer();<a name="line.140"></a>
+<FONT color="green">141</FONT>                    String line;<a name="line.141"></a>
+<FONT color="green">142</FONT>                    while ((line = br.readLine()) != null) {<a name="line.142"></a>
+<FONT color="green">143</FONT>                        sb.append("   ").append(line).append('\n');<a name="line.143"></a>
+<FONT color="green">144</FONT>                    }<a name="line.144"></a>
+<FONT color="green">145</FONT>                    br.close();<a name="line.145"></a>
+<FONT color="green">146</FONT>                    log.trace("Log4j configuration:{E}----{E}{0}----{E}", sb);<a name="line.146"></a>
+<FONT color="green">147</FONT>                }<a name="line.147"></a>
+<FONT color="green">148</FONT>    <a name="line.148"></a>
+<FONT color="green">149</FONT>                //Getting configuration for oozie log via WS<a name="line.149"></a>
+<FONT color="green">150</FONT>                ClassLoader cl = Thread.currentThread().getContextClassLoader();<a name="line.150"></a>
+<FONT color="green">151</FONT>                InputStream is = (fromClasspath) ? cl.getResourceAsStream(configFile) : new FileInputStream(configFile);<a name="line.151"></a>
+<FONT color="green">152</FONT>                Properties props = new Properties();<a name="line.152"></a>
+<FONT color="green">153</FONT>                props.load(is);<a name="line.153"></a>
+<FONT color="green">154</FONT>                Configuration conf = new XConfiguration();<a name="line.154"></a>
+<FONT color="green">155</FONT>                for (Map.Entry entry : props.entrySet()) {<a name="line.155"></a>
+<FONT color="green">156</FONT>                    conf.set((String)entry.getKey(), (String) entry.getValue());<a name="line.156"></a>
+<FONT color="green">157</FONT>                }<a name="line.157"></a>
+<FONT color="green">158</FONT>                String logFile = conf.get("log4j.appender.oozie.File");<a name="line.158"></a>
+<FONT color="green">159</FONT>                if (logFile == null) {<a name="line.159"></a>
+<FONT color="green">160</FONT>                    log.warn("Oozie log via WS not configured properly, missing property [{0}]",<a name="line.160"></a>
+<FONT color="green">161</FONT>                             "log4j.appender.oozie.File");<a name="line.161"></a>
+<FONT color="green">162</FONT>                }<a name="line.162"></a>
+<FONT color="green">163</FONT>                else {<a name="line.163"></a>
+<FONT color="green">164</FONT>                    logFile = logFile.trim();<a name="line.164"></a>
+<FONT color="green">165</FONT>                    int i = logFile.lastIndexOf("/");<a name="line.165"></a>
+<FONT color="green">166</FONT>                    if (i == -1) {<a name="line.166"></a>
+<FONT color="green">167</FONT>                        log.warn("Oozie apps log via WS not configured properly, log file is not an absolute path [{0}]",<a name="line.167"></a>
+<FONT color="green">168</FONT>                                 logFile);<a name="line.168"></a>
+<FONT color="green">169</FONT>                    }<a name="line.169"></a>
+<FONT color="green">170</FONT>                    else {<a name="line.170"></a>
+<FONT color="green">171</FONT>                        String pattern = conf.get("log4j.appender.oozie.DatePattern");<a name="line.171"></a>
+<FONT color="green">172</FONT>                        if (pattern == null) {<a name="line.172"></a>
+<FONT color="green">173</FONT>                            log.warn("Oozie apps log via WS not configured properly, missing property [{0}]",<a name="line.173"></a>
+<FONT color="green">174</FONT>                                     "log4j.appender.oozie.DatePattern");<a name="line.174"></a>
+<FONT color="green">175</FONT>                        }<a name="line.175"></a>
+<FONT color="green">176</FONT>                        else {<a name="line.176"></a>
+<FONT color="green">177</FONT>                            pattern = pattern.trim();<a name="line.177"></a>
+<FONT color="green">178</FONT>                            if (pattern.endsWith("HH")) {<a name="line.178"></a>
+<FONT color="green">179</FONT>                                oozieLogRotation = 60 * 60;<a name="line.179"></a>
+<FONT color="green">180</FONT>                            }<a name="line.180"></a>
+<FONT color="green">181</FONT>                            else if (pattern.endsWith("dd")) {<a name="line.181"></a>
+<FONT color="green">182</FONT>                                oozieLogRotation = 60 * 60 * 24;<a name="line.182"></a>
+<FONT color="green">183</FONT>                            }<a name="line.183"></a>
+<FONT color="green">184</FONT>                            else {<a name="line.184"></a>
+<FONT color="green">185</FONT>                                log.warn("Oozie apps log via WS not configured properly, invalid DatePatter [{0}], " +<a name="line.185"></a>
+<FONT color="green">186</FONT>                                         "it should end with 'HH' or 'dd'", pattern);<a name="line.186"></a>
+<FONT color="green">187</FONT>                            }<a name="line.187"></a>
+<FONT color="green">188</FONT>                            if (oozieLogRotation &gt; 0) {<a name="line.188"></a>
+<FONT color="green">189</FONT>                                oozieLogPath = logFile.substring(0, i);<a name="line.189"></a>
+<FONT color="green">190</FONT>                                oozieLogName = logFile.substring(i + 1);<a name="line.190"></a>
+<FONT color="green">191</FONT>                            }<a name="line.191"></a>
+<FONT color="green">192</FONT>                        }<a name="line.192"></a>
+<FONT color="green">193</FONT>                    }<a name="line.193"></a>
+<FONT color="green">194</FONT>                }<a name="line.194"></a>
+<FONT color="green">195</FONT>            }<a name="line.195"></a>
+<FONT color="green">196</FONT>            catch (IOException ex) {<a name="line.196"></a>
+<FONT color="green">197</FONT>                throw new ServiceException(ErrorCode.E0010, ex.getMessage(), ex);<a name="line.197"></a>
+<FONT color="green">198</FONT>            }<a name="line.198"></a>
+<FONT color="green">199</FONT>            XLog.Info.reset();<a name="line.199"></a>
+<FONT color="green">200</FONT>            XLog.Info.defineParameter(USER);<a name="line.200"></a>
+<FONT color="green">201</FONT>            XLog.Info.defineParameter(GROUP);<a name="line.201"></a>
+<FONT color="green">202</FONT>            XLogStreamer.Filter.reset();<a name="line.202"></a>
+<FONT color="green">203</FONT>            XLogStreamer.Filter.defineParameter(USER);<a name="line.203"></a>
+<FONT color="green">204</FONT>            XLogStreamer.Filter.defineParameter(GROUP);<a name="line.204"></a>
+<FONT color="green">205</FONT>        }<a name="line.205"></a>
+<FONT color="green">206</FONT>    <a name="line.206"></a>
+<FONT color="green">207</FONT>        /**<a name="line.207"></a>
+<FONT color="green">208</FONT>         * Destroy the log service.<a name="line.208"></a>
+<FONT color="green">209</FONT>         */<a name="line.209"></a>
+<FONT color="green">210</FONT>        public void destroy() {<a name="line.210"></a>
+<FONT color="green">211</FONT>            LogManager.shutdown();<a name="line.211"></a>
+<FONT color="green">212</FONT>            XLog.Info.reset();<a name="line.212"></a>
+<FONT color="green">213</FONT>            XLogStreamer.Filter.reset();<a name="line.213"></a>
+<FONT color="green">214</FONT>        }<a name="line.214"></a>
+<FONT color="green">215</FONT>    <a name="line.215"></a>
+<FONT color="green">216</FONT>        /**<a name="line.216"></a>
+<FONT color="green">217</FONT>         * Group log info constant.<a name="line.217"></a>
+<FONT color="green">218</FONT>         */<a name="line.218"></a>
+<FONT color="green">219</FONT>        public static final String USER = "USER";<a name="line.219"></a>
+<FONT color="green">220</FONT>    <a name="line.220"></a>
+<FONT color="green">221</FONT>        /**<a name="line.221"></a>
+<FONT color="green">222</FONT>         * Group log info constant.<a name="line.222"></a>
+<FONT color="green">223</FONT>         */<a name="line.223"></a>
+<FONT color="green">224</FONT>        public static final String GROUP = "GROUP";<a name="line.224"></a>
+<FONT color="green">225</FONT>    <a name="line.225"></a>
+<FONT color="green">226</FONT>        /**<a name="line.226"></a>
+<FONT color="green">227</FONT>         * Return the public interface for log service.<a name="line.227"></a>
+<FONT color="green">228</FONT>         *<a name="line.228"></a>
+<FONT color="green">229</FONT>         * @return {@link XLogService}.<a name="line.229"></a>
+<FONT color="green">230</FONT>         */<a name="line.230"></a>
+<FONT color="green">231</FONT>        public Class&lt;? extends Service&gt; getInterface() {<a name="line.231"></a>
+<FONT color="green">232</FONT>            return XLogService.class;<a name="line.232"></a>
+<FONT color="green">233</FONT>        }<a name="line.233"></a>
+<FONT color="green">234</FONT>    <a name="line.234"></a>
+<FONT color="green">235</FONT>        private boolean configureLog4J(String configPath, String log4jFile) throws IOException {<a name="line.235"></a>
+<FONT color="green">236</FONT>            boolean fromClasspath;<a name="line.236"></a>
+<FONT color="green">237</FONT>            if (configPath != null) {<a name="line.237"></a>
+<FONT color="green">238</FONT>                interval = Long.parseLong(System.getProperty(RELOAD_INTERVAL, DEFAULT_RELOAD_INTERVAL));<a name="line.238"></a>
+<FONT color="green">239</FONT>                File file = new File(configPath, log4jFile);<a name="line.239"></a>
+<FONT color="green">240</FONT>                if (!file.exists()) {<a name="line.240"></a>
+<FONT color="green">241</FONT>                    throw new RuntimeException(<a name="line.241"></a>
+<FONT color="green">242</FONT>                            XLog.format("Log4j configuration [{0}] not found in path [{1}]", log4jFile, configPath));<a name="line.242"></a>
+<FONT color="green">243</FONT>                }<a name="line.243"></a>
+<FONT color="green">244</FONT>                log4jFile = file.getAbsolutePath();<a name="line.244"></a>
+<FONT color="green">245</FONT>                if (log4jFile.endsWith(".properties")) {<a name="line.245"></a>
+<FONT color="green">246</FONT>                    PropertyConfigurator.configureAndWatch(log4jFile, interval * 1000);<a name="line.246"></a>
+<FONT color="green">247</FONT>                }<a name="line.247"></a>
+<FONT color="green">248</FONT>                else {<a name="line.248"></a>
+<FONT color="green">249</FONT>                    throw new RuntimeException(<a name="line.249"></a>
+<FONT color="green">250</FONT>                            XLog.format("Log4j configuration [{0}] must be a '.properties' file", log4jFile));<a name="line.250"></a>
+<FONT color="green">251</FONT>                }<a name="line.251"></a>
+<FONT color="green">252</FONT>                configFile = log4jFile;<a name="line.252"></a>
+<FONT color="green">253</FONT>                fromClasspath = false;<a name="line.253"></a>
+<FONT color="green">254</FONT>            }<a name="line.254"></a>
+<FONT color="green">255</FONT>            else {<a name="line.255"></a>
+<FONT color="green">256</FONT>                ClassLoader cl = Thread.currentThread().getContextClassLoader();<a name="line.256"></a>
+<FONT color="green">257</FONT>                URL log4jUrl = cl.getResource(log4jFile);<a name="line.257"></a>
+<FONT color="green">258</FONT>                if (log4jUrl != null) {<a name="line.258"></a>
+<FONT color="green">259</FONT>                    if (log4jFile.endsWith(".properties")) {<a name="line.259"></a>
+<FONT color="green">260</FONT>                        PropertyConfigurator.configure(log4jUrl);<a name="line.260"></a>
+<FONT color="green">261</FONT>                    }<a name="line.261"></a>
+<FONT color="green">262</FONT>                    else {<a name="line.262"></a>
+<FONT color="green">263</FONT>                        throw new RuntimeException(<a name="line.263"></a>
+<FONT color="green">264</FONT>                                XLog.format("Log4j configuration [{0}] must be a '.properties' file", log4jFile));<a name="line.264"></a>
+<FONT color="green">265</FONT>                    }<a name="line.265"></a>
+<FONT color="green">266</FONT>                }<a name="line.266"></a>
+<FONT color="green">267</FONT>                else {<a name="line.267"></a>
+<FONT color="green">268</FONT>                    throw new RuntimeException(XLog.format("Log4j configuration [{0}] not found in classpath", log4jFile));<a name="line.268"></a>
+<FONT color="green">269</FONT>                }<a name="line.269"></a>
+<FONT color="green">270</FONT>                configFile = log4jFile;<a name="line.270"></a>
+<FONT color="green">271</FONT>                fromClasspath = true;<a name="line.271"></a>
+<FONT color="green">272</FONT>            }<a name="line.272"></a>
+<FONT color="green">273</FONT>            return fromClasspath;<a name="line.273"></a>
+<FONT color="green">274</FONT>        }<a name="line.274"></a>
+<FONT color="green">275</FONT>    <a name="line.275"></a>
+<FONT color="green">276</FONT>        /**<a name="line.276"></a>
+<FONT color="green">277</FONT>         * Instruments the log service.<a name="line.277"></a>
+<FONT color="green">278</FONT>         * &lt;p/&gt;<a name="line.278"></a>
+<FONT color="green">279</FONT>         * It sets instrumentation variables indicating the config file, reload interval and if loaded from the classpath.<a name="line.279"></a>
+<FONT color="green">280</FONT>         *<a name="line.280"></a>
+<FONT color="green">281</FONT>         * @param instr instrumentation to use.<a name="line.281"></a>
+<FONT color="green">282</FONT>         */<a name="line.282"></a>
+<FONT color="green">283</FONT>        public void instrument(Instrumentation instr) {<a name="line.283"></a>
+<FONT color="green">284</FONT>            instr.addVariable("oozie", "version", new Instrumentation.Variable&lt;String&gt;() {<a name="line.284"></a>
+<FONT color="green">285</FONT>                public String getValue() {<a name="line.285"></a>
+<FONT color="green">286</FONT>                    return BuildInfo.getBuildInfo().getProperty(BuildInfo.BUILD_VERSION);<a name="line.286"></a>
+<FONT color="green">287</FONT>                }<a name="line.287"></a>
+<FONT color="green">288</FONT>            });<a name="line.288"></a>
+<FONT color="green">289</FONT>            instr.addVariable(INSTRUMENTATION_GROUP, "config.file", new Instrumentation.Variable&lt;String&gt;() {<a name="line.289"></a>
+<FONT color="green">290</FONT>                public String getValue() {<a name="line.290"></a>
+<FONT color="green">291</FONT>                    return configFile;<a name="line.291"></a>
+<FONT color="green">292</FONT>                }<a name="line.292"></a>
+<FONT color="green">293</FONT>            });<a name="line.293"></a>
+<FONT color="green">294</FONT>            instr.addVariable(INSTRUMENTATION_GROUP, "reload.interval", new Instrumentation.Variable&lt;Long&gt;() {<a name="line.294"></a>
+<FONT color="green">295</FONT>                public Long getValue() {<a name="line.295"></a>
+<FONT color="green">296</FONT>                    return interval;<a name="line.296"></a>
+<FONT color="green">297</FONT>                }<a name="line.297"></a>
+<FONT color="green">298</FONT>            });<a name="line.298"></a>
+<FONT color="green">299</FONT>            instr.addVariable(INSTRUMENTATION_GROUP, "from.classpath", new Instrumentation.Variable&lt;Boolean&gt;() {<a name="line.299"></a>
+<FONT color="green">300</FONT>                public Boolean getValue() {<a name="line.300"></a>
+<FONT color="green">301</FONT>                    return fromClasspath;<a name="line.301"></a>
+<FONT color="green">302</FONT>                }<a name="line.302"></a>
+<FONT color="green">303</FONT>            });<a name="line.303"></a>
+<FONT color="green">304</FONT>        }<a name="line.304"></a>
+<FONT color="green">305</FONT>    <a name="line.305"></a>
+<FONT color="green">306</FONT>        /**<a name="line.306"></a>
+<FONT color="green">307</FONT>         * Stream the log of a job.<a name="line.307"></a>
+<FONT color="green">308</FONT>         *<a name="line.308"></a>
+<FONT color="green">309</FONT>         * @param filter log streamer filter.<a name="line.309"></a>
+<FONT color="green">310</FONT>         * @param startTime start time for log events to filter.<a name="line.310"></a>
+<FONT color="green">311</FONT>         * @param endTime end time for log events to filter.<a name="line.311"></a>
+<FONT color="green">312</FONT>         * @param writer writer to stream the log to.<a name="line.312"></a>
+<FONT color="green">313</FONT>         * @throws IOException thrown if the log cannot be streamed.<a name="line.313"></a>
+<FONT color="green">314</FONT>         */<a name="line.314"></a>
+<FONT color="green">315</FONT>        public void streamLog(XLogStreamer.Filter filter, Date startTime, Date endTime, Writer writer) throws IOException {<a name="line.315"></a>
+<FONT color="green">316</FONT>            if (oozieLogPath != null) {<a name="line.316"></a>
+<FONT color="green">317</FONT>                new XLogStreamer(filter, writer, oozieLogPath, oozieLogName, oozieLogRotation).streamLog(startTime,<a name="line.317"></a>
+<FONT color="green">318</FONT>                                                                                                                  endTime);<a name="line.318"></a>
+<FONT color="green">319</FONT>            }<a name="line.319"></a>
+<FONT color="green">320</FONT>            else {<a name="line.320"></a>
+<FONT color="green">321</FONT>                writer.write("Log streaming disabled!!");<a name="line.321"></a>
+<FONT color="green">322</FONT>            }<a name="line.322"></a>
+<FONT color="green">323</FONT>    <a name="line.323"></a>
+<FONT color="green">324</FONT>        }<a name="line.324"></a>
+<FONT color="green">325</FONT>    <a name="line.325"></a>
+<FONT color="green">326</FONT>    }<a name="line.326"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

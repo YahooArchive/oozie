@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-05-21
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Building_Oozie"></a>
+<div class="section"><h2> Building Oozie</h2>
+<p><ul><ul><li><a href="#System_Requirements">System Requirements</a>
+</li>
+<li><a href="#Initial_Maven_Setup">Initial Maven Setup</a>
+</li>
+<li><a href="#Passphare-less_SSH_Setup">Passphare-less SSH Setup</a>
+</li>
+<li><a href="#Building_and_Testing_Oozie">Building and Testing Oozie</a>
+<ul><li><a href="#Examples_of_Building_and_Testing_Oozie">Examples of Building and Testing Oozie</a>
+</li>
+</ul>
+</li>
+<li><a href="#Building_an_Oozie_Distribution_Different_Hadoop_Versions_Different_DBs">Building an Oozie Distribution, Different Hadoop Versions, Different DBs</a>
+</li>
+<li><a href="#Oozie_Version_Numbers">Oozie Version Numbers</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="System_Requirements"></a>
+<div class="section"><h3>System Requirements</h3>
+<p><ul><li>Unix box (tested on Mac OS X or Linux)</li>
+<li>Java JDK 1.6+</li>
+<li><a href="http://maven.apache.org/" class="externalLink">Maven 2.0.8+</a>
+</li>
+<li><a href="http://hadoop.apache.org/core/releases.html" class="externalLink">Hadoop 0.20.1+</a>
+</li>
+<li><a href="http://hadoop.apache.org/pig/releases.html" class="externalLink">Pig 0.7+</a>
+</li>
+</ul>
+</p>
+<p>The Java commands (java, javac) should be in the command path.</p>
+<p>The Maven command (mvn) should be in the command path.</p>
+<p><a name="InitialMavenSetup"></a>
+</p>
+<a name="Initial_Maven_Setup"></a>
+</div>
+<div class="section"><h3>Initial Maven Setup</h3>
+<p>There are a few Oozie dependencies that are not available in public Maven repositories, they have to be installed
+locally.</p>
+<p>To generate the documentation, Oozie uses a patched Doxia plugin for Maven.</p>
+<p>To install prepare your development environment to build Oozie, run the following scripts:</p>
+<p><verbation>
+$ build-setup/setup-maven.sh
+</pre></p>
+<p><verbation>
+$ build-setup/setup-jars.sh
+</pre></p>
+<p>The first script will install a modified documentation plugin with improved twiki support.</p>
+<p>The second script will install in the local Maven repository the JARs that are not available in public Maven
+repositories.</p>
+<p><a name="SshSetup"></a>
+</p>
+<a name="Passphare-less_SSH_Setup"></a>
+</div>
+<div class="section"><h3>Passphare-less SSH Setup</h3>
+<p>To run SSH Testcases and for easier Hadoop start/stop configure SSH to localhost to be passphrase-less.</p>
+<p>Create your SSH keys without a passphrase and add the public key to the authorized file:</p>
+<p><pre>
+$ ssh-keygen -t dsa
+$ cat ~/.ssh/id_dsa.pub &gt;&gt; ~/.ssh/authorized_keys2
+</pre></p>
+<p>Test that you can ssh without password:</p>
+<p><pre>
+$ ssh localhost
+</pre></p>
+<p><b>For paranoid people:</b>
+ Create the SSH key with a passphrase and use <tt>ssh-agent</tt>
+.</p>
+<a name="Building_and_Testing_Oozie"></a>
+</div>
+<div class="section"><h3>Building and Testing Oozie</h3>
+<p>Due to Hadoop and Pig API changes and Hadoop RPC protocol constraints Oozie has to be built for a specific version of
+Hadoop.</p>
+<p>All the following options can be used in multiple combinations.</p>
+<p>Use the Maven option <tt>-DhadoopVersion=0.20.1</tt>
+ (default) to build Oozie with a given Hadoop version.</p>
+<p>Use the Maven option <tt>-DpigVersion=0.7.0</tt>
+ (default) to run the testcases with a given version of Pig.</p>
+<p>Use the Maven option <tt>-Doozie.test.hadoop.minicluster=true</tt>
+ (default) to run the testcases with minicluster
+(no Hadoop cluster necessary).</p>
+<p>Use the Maven option <tt>-Doozie.test.hadoop.minicluster=false</tt>
+ to run the testcases against a Hadoop cluster.</p>
+<p>Use the Maven option <tt>-Doozie.test.job.tracker=localhost:9001</tt>
+ (default) to specify the Job Tracker of the cluster.</p>
+<p>Use the Maven option <tt>-Doozie.test.name.node=hdfs://localhost:9000</tt>
+ (default) to specify the Name Node of the cluster.</p>
+<p>Use the Maven option <tt>-Doozie.test.hadoop.security=pre</tt>
+ (default) for versions of Hadoop prior to 0.20.100.0.</p>
+<p>Use the Maven option <tt>-Doozie.test.hadoop.security=simple</tt>
+ for versions of Hadoop 0.20.100.0 or greater with Kerberos
+OFF.</p>
+<p>Use the Maven option <tt>-Doozie.test.hadoop.security=kerberos</tt>
+ for versions of Hadoop 0.20.100.0 or greater with Kerberos
+ON.</p>
+<p>The following Maven options are available (default values shown) when testing Oozie with Hadoop post 0.20.100 with Kerberos authentication
+enabled:</p>
+<p><ul><li>oozie.test.kerberos.keytab.file=${user.home}/oozie.keytab</li>
+<li>oozie.test.kerberos.realm=LOCALHOST</li>
+<li>oozie.test.kerberos.oozie.principal=${user.name}/localhost</li>
+<li>oozie.test.kerberos.jobtracker.principal=mapred/localhost</li>
+<li>oozie.test.kerberos.namenode.principal=hdfs/localhost</li>
+</ul>
+</p>
+<p><b>IMPORTANT:</b>
+ Minicluster testing cannot be used with Kerberos ON.</p>
+<p>Use the Maven options <tt>-Dmysql -Doozie.config.file=mysql-oozie-site.xml</tt>
+ to build Oozie with MySQL driver.</p>
+<p>Use the Maven option <tt>-Dtest=#TEST_CASE_CLASS_NAME#</tt>
+ to run a single test case.</p>
+<p>Use the Maven option <tt>-DskipTests</tt>
+ to skip all testcases.</p>
+<a name="Examples_of_Building_and_Testing_Oozie"></a>
+<div class="section"><h4>Examples of Building and Testing Oozie</h4>
+<p>Compiling and running all testcases with minicluster with Oozie's default Hadoop and Pig versions:</p>
+<p><pre>
+$ mvn clean test
+</pre></p>
+<p>Compiling and running all testcases with minicluster with a specific version of Hadoop pre 0.20.100:</p>
+<p><pre>
+$ mvn clean test -DhadoopVersion=0.20.2
+</pre></p>
+<p>Compiling and running one testcase with minicluster with a specific version of Hadoop pre 0.20.0100 and Pig:</p>
+<p><pre>
+$ mvn clean test -Dtest=TestPigMain -DhadoopVersion=0.20.1 -DpigVersion=0.7.0
+</pre></p>
+<p>Compiling and running all testcases with minicluster with a specific version of Hadoop post 0.20.100 with simple
+authentication:</p>
+<p><pre>
+$ mvn clean test -DhadoopVersion=0.20.100.0 -Doozie.test.hadoop.security=simple
+</pre></p>
+<p>Compiling and running all testcases with minicluster with a specific version of Hadoop post 0.20.100 with Kerberos
+authentication (it requires Hadoop 0.20.100.0 running with Kerberos ON):</p>
+<p><pre>
+$ mvn clean test -DhadoopVersion=0.20.100.0 -Doozie.test.hadoop.security=kerberos -Doozie.test.hadoop.minicluster=false
+</pre></p>
+<p>The above example assumes Hadoop job tracker and namenode are running locally in ports 9001 and 9000 and the kerberos
+settings are the defaults shwon in previous section, all the <tt>oozie.test.kerberos.</tt>
+ options.</p>
+<a name="Building_an_Oozie_Distribution_Different_Hadoop_Versions_Different_DBs"></a>
+</div>
+</div>
+<div class="section"><h3>Building an Oozie Distribution, Different Hadoop Versions, Different DBs</h3>
+<p>The <tt>bin/mkdistro.sh</tt>
+ script generates an Oozie distro.</p>
+<p>Built distros will be available in the <tt>distro/target/</tt>
+ directory.</p>
+<p>All Maven options above can be used with the <tt>mkdistro.sh</tt>
+ script.</p>
+<p>For example to build an Oozie distribution for a specific version of Hadoop and Pig execute the <tt>mkdistro.sh</tt>
+ command
+with the following options:</p>
+<p><pre>
+$ bin/mkdistro.sh [-full]
+</pre></p>
+<p>The <tt>-full</tt>
+ option, if specified will generate the cobertura and depedencies reports.</p>
+<a name="Oozie_Version_Numbers"></a>
+</div>
+<div class="section"><h3>Oozie Version Numbers</h3>
+<p>The full version number of an Oozie build is tied to the Hadoop version number it works with.</p>
+<p>This serves 2 purposes:</p>
+<p><ul><li>Identifies the version of Hadoop that an Oozie distro/instance works with.</li>
+<li>Gives different versions to Oozie JARs thus allowing them to be properly identified by build tools (Maven, Ivy).</li>
+</ul>
+</p>
+<p>The Oozie version format is <tt><OOZIE_VERSION>-<HADOOP_VERSION>[--<BUILD>]</tt>
+.</p>
+<p>The <tt>OOZIE_VERSION</tt>
+ indicates the Oozie version.</p>
+<p>The <tt>HADOOP_VERSION</tt>
+ indicates the Hadoop version.</p>
+<p>The <tt>BUILD</tt>
+ can be be used to specify SNAPSHOT developer builds or a particular build.</p>
+<p>For example: <tt>0.1-0.20.0--SNAPSHOT</tt>
+</p>
+<p>This 3 components of the Oozie version are controlled from Oozie main POM, in the properties section and they can be
+changed as Maven options <tt>-D</tt>
+ for a particular build.</p>
+<p><pre>
+    &lt;oozieVersion&gt;1.6.2&lt;/oozieVersion&gt;
+    &lt;hadoopVersion&gt;0.20.100.0&lt;/hadoopVersion&gt;
+    &lt;build&gt;SNAPSHOT&lt;/build&gt;
+</pre></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Apache Software Foundation
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>
