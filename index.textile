@@ -5,7 +5,7 @@ title: Yahoo!'s workflow engine for Hadoop
 
 h2(#overview). Overview
 
-Oozie(tm), Yahoo!(tm)'s workflow engine for Apache Hadoop(tm) is an open-source workflow solution to manage and coordinate jobs running on Hadoop, including HDFS, Pig and MapReduce.
+Oozie - Yahoo!(tm)'s workflow engine for Apache Hadoop(tm) is an open-source workflow solution to manage and coordinate jobs running on Hadoop, including HDFS, Pig and MapReduce.
 
 Oozie was designed for Yahoo!'s complex workflows and data pipelines at global scale. It is integrated with the Yahoo! Distribution of Hadoop with security and is a primary mechanism to manage a variety of complex data analysis workloads across Yahoo!.
 
@@ -13,7 +13,7 @@ h2(#download). Downloads
 
 The source for Oozie can be obtained from "github":http://github.com/yahoo/oozie/tarball/oozie-2.0.0. It can also be accessed via git from the "source repository":http://github.com/yahoo/oozie.
 
-Users may communicate with each other and Yahoo on Oozie user's mailing list:
+Users may communicate with each other and Yahoo! on Oozie user's mailing list:
 
 "oozie-users@yahoogroups.com":mailto:oozie-users@yahoogroups.com
 
