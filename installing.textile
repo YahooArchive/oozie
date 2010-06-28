@@ -1,0 +1,138 @@
+---
+layout: default
+title: Installing and Running
+---
+
+h2(#intro). Introduction
+
+The following instructions setup Oozie using an in-memory SQL DB (HSQLDB). 
+
+h3. System Requirements
+
+* Java 6+
+* Maven 2.0.10+
+* Hadoop 0.20+
+* Pig 0.2+
+
+The Java 1.6+ bin directory should be in the command path.
+
+Hadoop should be installed and running. 
+
+Tomcat should be installed and running.
+
+h2(#build). Building Oozie
+
+h3. Initial Maven setup
+
+bc. $ build-setup/setup-maven.sh
+$ build-setup/setup-jars.sh
+
+These scripts does 2 things: The first one will install a modified documentation plugin with better twiki support. The second one will install JARs in the local Maven repository that are not available in public Maven repositories.
+
+h3. Building a Oozie distro:
+
+bc. $ bin/mkdistro.sh -DskipTests
+
+This script will generate a distribution for the current version of Hadoop and Pig without running the testcases.
+
+After the distribution is built, detailed documentation, including build options, is available in the wars/ooziedocs.war file in the distribution, deploy this file in Tomcat or expand it within a docs/ directory.
+
+h3. Building with the ExtJS library for the Oozie web console
+
+The Oozie distro contains a script that installs the ExtJS, refer to the README.txt in the distribution for more details.
+
+To build Oozie with ExtJS already bundled do the following:
+
+* Download the "ExtJS 2.2":http://www.extjs.com/learn/Ext_Version_Archives
+* Expand the ExtJS ZIP file
+* Copy the contents of the ext-2.2 directory into 'webapp/src/main/webapp/ext-2'
+
+h2(#install). Install and Start Oozie server and Oozie Console
+
+Stop Tomcat.
+
+If present, delete the old oozie.war and ooziedocs.war files, and oozie and ooziedocs directories from Tomcat's webapps/ directory.
+
+Build Oozie.
+
+Copy the oozie.war and ooziedocs.war files from the distro directory into Tomcat's webapps/ directory.
+
+Oozie installation assumes that Tomcat is running on localhost on port 8080
+
+If Tomcat is running in a different port or Hadoop is running in another box, then the CATALINA_OPTS environment variable of the shell from where tomcat is invoked must be set to:
+
+bc. export CATALINA_OPTS=\
+  "-Doozie.base.url=http://<TOMCAT_HOST>:<TOMCAT_PORT>/oozie"
+
+Start Tomcat.
+
+Check the Oozie log file ${CATALINA_HOME}/logs/oozie.log to ensure Oozie started properly, there should an 'Oozie started' log entry.
+
+NOTE: If the CATALINA_HOME environment variable has not been set, check under the directory where Tomcat has been installed.
+
+h3. Checking Oozie is Running via Oozie Console
+
+From a browser go to http://localhost:8080/oozie , the Oozie console should come up and Oozie should be NORMAL .
+
+
+h2(#documentation). Oozie Documentation
+
+From a browser go to http://localhost:8080/ooziedocs , the Oozie Documentation should appear.
+
+h2(#examples). Running the Examples
+
+After you build Oozie, the examples will be bundled in the "distro" directory.  The file will be named: oozie-examples.tar.gz file.
+
+Exanding this file will create an examples/ directory.
+
+Within the examples/ directory there is a script, prepare-examples.sh that setups up the examples (it is done in this way to avoid having multiple copies of the Hadoop streaming and Pig JAR files).
+
+In the Oozie examples/ directory, run the script that setups up the examples:
+
+bc. $ prepare-examples.sh
+
+Copy the sample input data to HDFS:
+
+bc. $ hadoop fs -put input-data input-data
+
+Copy the example workflow applications to HDFS:
+
+bc. $ hadoop fs -put workflows /tmp/`whoami`/workflows
+
+h3. Running the Examples
+Add the bin/ directory of the Oozie directory to the PATH environment variable.
+
+Run a workflow job for the application, for example:
+
+bc. $ oozie job -oozie http://localhost:8080/oozie -config map-reduce-job.properties -run
+.
+job: 14-20090525161321-oozie-tucu
+
+Check the workflow job status:
+
+bc. $ oozie job -oozie http://localhost:8080/oozie -info 14-20090525161321-oozie-tucu
+.
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Workflow Name :  map-reduce-wf
+App Path      :  hdfs://localhost:9000/user/tucu/workflows/map-reduce
+Status        :  SUCCEEDED
+Run           :  0
+User          :  tucu
+Group         :  users
+Created       :  2009-05-26 05:01 +0000
+Started       :  2009-05-26 05:01 +0000
+Ended         :  2009-05-26 05:01 +0000
+Actions
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Action Name             Type        Status     Transition  External Id            External Status  Error Code    Start Time              End Time
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+hadoop1                 map-reduce  OK         end         job_200904281535_0254  SUCCEEDED        -             2009-05-26 05:01 +0000  2009-05-26 05:01 +0000
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+To check the workflow job status via the Oozie web console, with a browser go to http://localhost:8080/oozie .
+
+To avoid having to provide the -oozie option with the Oozie URL with every oozie command, set OOZIE_URL env variable to the Oozie URL in the shell environment. For example:
+
+bc. $ export OOZIE_URL="http://localhost:8080/oozie"
+
+bc. $ oozie job -info 14-20090525161321-oozie-tucu
