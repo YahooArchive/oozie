@@ -25,9 +25,8 @@ h2(#build). Building Oozie
 h3. Initial Maven setup
 
 bc. $ build-setup/setup-maven.sh
-$ build-setup/setup-jars.sh
 
-These scripts does 2 things: The first one will install a modified documentation plugin with better twiki support. The second one will install JARs in the local Maven repository that are not available in public Maven repositories.
+This script will install a modified documentation plugin with better twiki support. 
 
 h3. Building a Oozie distro:
 
