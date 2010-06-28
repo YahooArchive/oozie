@@ -12,7 +12,7 @@ h3. System Requirements
 * Java 6+
 * Maven 2.0.10+
 * Hadoop 0.20+
-* Pig 0.2+
+* Pig 0.7+
 
 The Java 1.6+ bin directory should be in the command path.
 
