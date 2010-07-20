@@ -20,3 +20,8 @@ Users may communicate with each other and Yahoo! on Oozie user's mailing list:
 h2(#notices).  Credits & Notices
 
 * Yahoo! does not offer any support for Oozie - Yahoo!'s workflow engine for Hadoop..
+
+h2(#ack). Acknowledgments 
+
+| !http://www.structure101.com/structure101-java/images/webapp.gif! | "Headway Software":http://www.headwaysoftware.com provided free licenses of "Structure101":http://www.headwaysoftware.com/products/structure101/index.php for analyzing Oozie Java code. |
+
