@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>doxia-wrapper</artifactId>
+    <groupId>org.apache.maven.doxia</groupId>
+    <version>1.0-alpha-9.2y</version>
+    <name>Doxia :: Wrapper</name>
+    <packaging>pom</packaging>
+
+    <properties>
+        <internal.maven.repository>file:///tmp/internalmavenrepo</internal.maven.repository>
+    </properties>
+
+    <modules>
+        <module>dummy</module>
+        <module>doxia-core</module>
+        <module>doxia-module-twiki</module>
+    </modules>
+
+    <distributionManagement>
+        <repository>
+            <id>internal.maven.repo</id>
+            <name>Internal Repository for Integration</name>
+            <url>${internal.maven.repository}</url>
+        </repository>
+    </distributionManagement>
+
+</project>
+

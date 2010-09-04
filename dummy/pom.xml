@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>com.yahoo.oozie</artifactId>
+    <groupId>doxia-dummy</groupId>
+    <version>1.0</version>
+    <name>Dummy project to force getting all doxia plugins</name>
+    <packaging>jar</packaging>
+
+    <properties>
+        <internal.maven.repository>file:///tmp/internalmavenrepo</internal.maven.repository>
+    </properties>
+    <distributionManagement>
+        <repository>
+            <id>internal.maven.repo</id>
+            <name>Internal Repository for Integration</name>
+            <url>${internal.maven.repository}</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>2.0-beta-6</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
