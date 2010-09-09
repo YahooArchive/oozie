@@ -1,0 +1,272 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright (c) 2010 Yahoo! Inc. All rights reserved.<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Licensed under the Apache License, Version 2.0 (the "License");<a name="line.3"></a>
+<FONT color="green">004</FONT>     * you may not use this file except in compliance with the License.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * You may obtain a copy of the License at<a name="line.5"></a>
+<FONT color="green">006</FONT>     *<a name="line.6"></a>
+<FONT color="green">007</FONT>     *   http://www.apache.org/licenses/LICENSE-2.0<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *  Unless required by applicable law or agreed to in writing, software<a name="line.9"></a>
+<FONT color="green">010</FONT>     *  distributed under the License is distributed on an "AS IS" BASIS,<a name="line.10"></a>
+<FONT color="green">011</FONT>     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.11"></a>
+<FONT color="green">012</FONT>     *  See the License for the specific language governing permissions and<a name="line.12"></a>
+<FONT color="green">013</FONT>     *  limitations under the License. See accompanying LICENSE file.<a name="line.13"></a>
+<FONT color="green">014</FONT>     */<a name="line.14"></a>
+<FONT color="green">015</FONT>    package org.apache.oozie.service;<a name="line.15"></a>
+<FONT color="green">016</FONT>    <a name="line.16"></a>
+<FONT color="green">017</FONT>    import java.io.IOException;<a name="line.17"></a>
+<FONT color="green">018</FONT>    import java.text.MessageFormat;<a name="line.18"></a>
+<FONT color="green">019</FONT>    import java.util.Properties;<a name="line.19"></a>
+<FONT color="green">020</FONT>    <a name="line.20"></a>
+<FONT color="green">021</FONT>    import org.apache.oozie.util.IOUtils;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import org.apache.oozie.util.Instrumentation;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import org.apache.oozie.util.XLog;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import org.apache.oozie.store.StoreException;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import org.apache.oozie.service.Service;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import org.apache.oozie.service.Services;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import org.apache.oozie.store.SLAStore;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import org.apache.oozie.store.Store;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import org.apache.oozie.store.WorkflowStore;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import org.apache.oozie.store.CoordinatorStore;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import org.apache.oozie.util.Instrumentable;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import org.apache.oozie.ErrorCode;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import org.apache.openjpa.persistence.OpenJPAEntityManagerFactorySPI;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import org.apache.hadoop.conf.Configuration;<a name="line.34"></a>
+<FONT color="green">035</FONT>    <a name="line.35"></a>
+<FONT color="green">036</FONT>    import java.sql.Connection;<a name="line.36"></a>
+<FONT color="green">037</FONT>    import java.sql.DriverManager;<a name="line.37"></a>
+<FONT color="green">038</FONT>    import java.sql.SQLException;<a name="line.38"></a>
+<FONT color="green">039</FONT>    <a name="line.39"></a>
+<FONT color="green">040</FONT>    import javax.persistence.EntityManager;<a name="line.40"></a>
+<FONT color="green">041</FONT>    import javax.persistence.EntityManagerFactory;<a name="line.41"></a>
+<FONT color="green">042</FONT>    import javax.persistence.Persistence;<a name="line.42"></a>
+<FONT color="green">043</FONT>    <a name="line.43"></a>
+<FONT color="green">044</FONT>    import org.apache.oozie.CoordinatorActionBean;<a name="line.44"></a>
+<FONT color="green">045</FONT>    import org.apache.oozie.CoordinatorJobBean;<a name="line.45"></a>
+<FONT color="green">046</FONT>    import org.apache.oozie.WorkflowActionBean;<a name="line.46"></a>
+<FONT color="green">047</FONT>    import org.apache.oozie.WorkflowJobBean;<a name="line.47"></a>
+<FONT color="green">048</FONT>    import org.apache.oozie.SLAEventBean;<a name="line.48"></a>
+<FONT color="green">049</FONT>    import org.apache.oozie.client.rest.JsonCoordinatorAction;<a name="line.49"></a>
+<FONT color="green">050</FONT>    import org.apache.oozie.client.rest.JsonCoordinatorJob;<a name="line.50"></a>
+<FONT color="green">051</FONT>    import org.apache.oozie.client.rest.JsonWorkflowAction;<a name="line.51"></a>
+<FONT color="green">052</FONT>    import org.apache.oozie.client.rest.JsonWorkflowJob;<a name="line.52"></a>
+<FONT color="green">053</FONT>    import org.apache.oozie.client.rest.JsonSLAEvent;<a name="line.53"></a>
+<FONT color="green">054</FONT>    <a name="line.54"></a>
+<FONT color="green">055</FONT>    /**<a name="line.55"></a>
+<FONT color="green">056</FONT>     * Base service for persistency of jobs and actions.<a name="line.56"></a>
+<FONT color="green">057</FONT>     */<a name="line.57"></a>
+<FONT color="green">058</FONT>    public class StoreService implements Service {<a name="line.58"></a>
+<FONT color="green">059</FONT>    <a name="line.59"></a>
+<FONT color="green">060</FONT>        public static final String CONF_PREFIX = Service.CONF_PREFIX + "StoreService.";<a name="line.60"></a>
+<FONT color="green">061</FONT>        public static final String CONF_URL = CONF_PREFIX + "jdbc.url";<a name="line.61"></a>
+<FONT color="green">062</FONT>        public static final String CONF_DRIVER = CONF_PREFIX + "jdbc.driver";<a name="line.62"></a>
+<FONT color="green">063</FONT>        public static final String CONF_USERNAME = CONF_PREFIX + "jdbc.username";<a name="line.63"></a>
+<FONT color="green">064</FONT>        public static final String CONF_PASSWORD = CONF_PREFIX + "jdbc.password";<a name="line.64"></a>
+<FONT color="green">065</FONT>        public static final String CONF_MAX_ACTIVE_CONN = CONF_PREFIX + "pool.max.active.conn";<a name="line.65"></a>
+<FONT color="green">066</FONT>        public static final String CONF_CREATE_DB_SCHEMA = CONF_PREFIX + "create.db.schema";<a name="line.66"></a>
+<FONT color="green">067</FONT>    <a name="line.67"></a>
+<FONT color="green">068</FONT>        private EntityManagerFactory factory;<a name="line.68"></a>
+<FONT color="green">069</FONT>    <a name="line.69"></a>
+<FONT color="green">070</FONT>        /**<a name="line.70"></a>
+<FONT color="green">071</FONT>         * Return instance of store.<a name="line.71"></a>
+<FONT color="green">072</FONT>         *<a name="line.72"></a>
+<FONT color="green">073</FONT>         * @return {@link Store}.<a name="line.73"></a>
+<FONT color="green">074</FONT>         */<a name="line.74"></a>
+<FONT color="green">075</FONT>        @SuppressWarnings("unchecked")<a name="line.75"></a>
+<FONT color="green">076</FONT>        public &lt;S extends Store&gt; S getStore(Class&lt;S&gt; klass) throws StoreException {<a name="line.76"></a>
+<FONT color="green">077</FONT>            if (WorkflowStore.class.equals(klass)) {<a name="line.77"></a>
+<FONT color="green">078</FONT>                return (S) Services.get().get(WorkflowStoreService.class).create();<a name="line.78"></a>
+<FONT color="green">079</FONT>            }<a name="line.79"></a>
+<FONT color="green">080</FONT>            else {<a name="line.80"></a>
+<FONT color="green">081</FONT>                if (CoordinatorStore.class.equals(klass)) {<a name="line.81"></a>
+<FONT color="green">082</FONT>                    return (S) Services.get().get(CoordinatorStoreService.class).create();<a name="line.82"></a>
+<FONT color="green">083</FONT>                }<a name="line.83"></a>
+<FONT color="green">084</FONT>                else {<a name="line.84"></a>
+<FONT color="green">085</FONT>                    if (SLAStore.class.equals(klass)) {<a name="line.85"></a>
+<FONT color="green">086</FONT>                        return (S) Services.get().get(SLAStoreService.class).create();<a name="line.86"></a>
+<FONT color="green">087</FONT>                    }<a name="line.87"></a>
+<FONT color="green">088</FONT>                }<a name="line.88"></a>
+<FONT color="green">089</FONT>            }<a name="line.89"></a>
+<FONT color="green">090</FONT>            // to do add checks for other stores - coordinator and SLA stores<a name="line.90"></a>
+<FONT color="green">091</FONT>            throw new StoreException(ErrorCode.E0607, " can not get store StoreService.getStore(Class)");<a name="line.91"></a>
+<FONT color="green">092</FONT>        }<a name="line.92"></a>
+<FONT color="green">093</FONT>    <a name="line.93"></a>
+<FONT color="green">094</FONT>        /**<a name="line.94"></a>
+<FONT color="green">095</FONT>         * Return instance of store with an EntityManager pointing to an existing Store.<a name="line.95"></a>
+<FONT color="green">096</FONT>         *<a name="line.96"></a>
+<FONT color="green">097</FONT>         * @return {@link Store}.<a name="line.97"></a>
+<FONT color="green">098</FONT>         */<a name="line.98"></a>
+<FONT color="green">099</FONT>        @SuppressWarnings("unchecked")<a name="line.99"></a>
+<FONT color="green">100</FONT>        public &lt;S extends Store, T extends Store&gt; S getStore(Class&lt;S&gt; klass, T store) throws StoreException {<a name="line.100"></a>
+<FONT color="green">101</FONT>            if (WorkflowStore.class.equals(klass)) {<a name="line.101"></a>
+<FONT color="green">102</FONT>                return (S) Services.get().get(WorkflowStoreService.class).create(store);<a name="line.102"></a>
+<FONT color="green">103</FONT>            }<a name="line.103"></a>
+<FONT color="green">104</FONT>            else {<a name="line.104"></a>
+<FONT color="green">105</FONT>                if (CoordinatorStore.class.equals(klass)) {<a name="line.105"></a>
+<FONT color="green">106</FONT>                    return (S) Services.get().get(CoordinatorStoreService.class).create(store);<a name="line.106"></a>
+<FONT color="green">107</FONT>                }<a name="line.107"></a>
+<FONT color="green">108</FONT>                else {<a name="line.108"></a>
+<FONT color="green">109</FONT>                    if (SLAStore.class.equals(klass)) {<a name="line.109"></a>
+<FONT color="green">110</FONT>                        return (S) Services.get().get(SLAStoreService.class).create(store);<a name="line.110"></a>
+<FONT color="green">111</FONT>                    }<a name="line.111"></a>
+<FONT color="green">112</FONT>                }<a name="line.112"></a>
+<FONT color="green">113</FONT>            }<a name="line.113"></a>
+<FONT color="green">114</FONT>            throw new StoreException(ErrorCode.E0607, " StoreService.getStore(Class, store)");<a name="line.114"></a>
+<FONT color="green">115</FONT>        }<a name="line.115"></a>
+<FONT color="green">116</FONT>    <a name="line.116"></a>
+<FONT color="green">117</FONT>        /**<a name="line.117"></a>
+<FONT color="green">118</FONT>         * Return the public interface of the service.<a name="line.118"></a>
+<FONT color="green">119</FONT>         *<a name="line.119"></a>
+<FONT color="green">120</FONT>         * @return {@link StoreService}.<a name="line.120"></a>
+<FONT color="green">121</FONT>         */<a name="line.121"></a>
+<FONT color="green">122</FONT>        public Class&lt;? extends Service&gt; getInterface() {<a name="line.122"></a>
+<FONT color="green">123</FONT>            return StoreService.class;<a name="line.123"></a>
+<FONT color="green">124</FONT>        }<a name="line.124"></a>
+<FONT color="green">125</FONT>    <a name="line.125"></a>
+<FONT color="green">126</FONT>        /**<a name="line.126"></a>
+<FONT color="green">127</FONT>         * Initializes the {@link StoreService}.<a name="line.127"></a>
+<FONT color="green">128</FONT>         *<a name="line.128"></a>
+<FONT color="green">129</FONT>         * @param services services instance.<a name="line.129"></a>
+<FONT color="green">130</FONT>         */<a name="line.130"></a>
+<FONT color="green">131</FONT>        public void init(Services services) throws ServiceException {<a name="line.131"></a>
+<FONT color="green">132</FONT>            Configuration conf = services.getConf();<a name="line.132"></a>
+<FONT color="green">133</FONT>            String url = conf.get(CONF_URL, "jdbc:hsqldb:mem:oozie;create=true");<a name="line.133"></a>
+<FONT color="green">134</FONT>            String driver = conf.get(CONF_DRIVER, "org.hsqldb.jdbcDriver");<a name="line.134"></a>
+<FONT color="green">135</FONT>            String user = conf.get(CONF_USERNAME, "sa");<a name="line.135"></a>
+<FONT color="green">136</FONT>            String password = conf.get(CONF_PASSWORD, "").trim();<a name="line.136"></a>
+<FONT color="green">137</FONT>            String maxConn = conf.get(CONF_MAX_ACTIVE_CONN, "10").trim();<a name="line.137"></a>
+<FONT color="green">138</FONT>            boolean autoSchemaCreation = conf.getBoolean(CONF_CREATE_DB_SCHEMA, true);<a name="line.138"></a>
+<FONT color="green">139</FONT>    <a name="line.139"></a>
+<FONT color="green">140</FONT>            if (!url.startsWith("jdbc:")) {<a name="line.140"></a>
+<FONT color="green">141</FONT>                throw new ServiceException(ErrorCode.E0608, url, "invalid JDBC URL, must start with 'jdbc:'");<a name="line.141"></a>
+<FONT color="green">142</FONT>            }<a name="line.142"></a>
+<FONT color="green">143</FONT>            String dbType = url.substring("jdbc:".length());<a name="line.143"></a>
+<FONT color="green">144</FONT>            if (dbType.indexOf(":") &lt;= 0) {<a name="line.144"></a>
+<FONT color="green">145</FONT>                throw new ServiceException(ErrorCode.E0608, url, "invalid JDBC URL, missing vendor 'jdbc:[VENDOR]:...'");<a name="line.145"></a>
+<FONT color="green">146</FONT>            }<a name="line.146"></a>
+<FONT color="green">147</FONT>            dbType = dbType.substring(0, dbType.indexOf(":"));<a name="line.147"></a>
+<FONT color="green">148</FONT>    <a name="line.148"></a>
+<FONT color="green">149</FONT>            String persistentUnit = "oozie-" + dbType;<a name="line.149"></a>
+<FONT color="green">150</FONT>    <a name="line.150"></a>
+<FONT color="green">151</FONT>            //Checking existince of ORM file for DB type<a name="line.151"></a>
+<FONT color="green">152</FONT>            String ormFile = "META-INF/" + persistentUnit + "-orm.xml";<a name="line.152"></a>
+<FONT color="green">153</FONT>            try {<a name="line.153"></a>
+<FONT color="green">154</FONT>                IOUtils.getResourceAsStream(ormFile, -1);<a name="line.154"></a>
+<FONT color="green">155</FONT>            }<a name="line.155"></a>
+<FONT color="green">156</FONT>            catch (IOException ex) {<a name="line.156"></a>
+<FONT color="green">157</FONT>                throw new ServiceException(ErrorCode.E0609, dbType, ormFile);<a name="line.157"></a>
+<FONT color="green">158</FONT>            }<a name="line.158"></a>
+<FONT color="green">159</FONT>    <a name="line.159"></a>
+<FONT color="green">160</FONT>            String connProps = "DriverClassName={0},Url={1},Username={2},Password={3},MaxActive={4}";<a name="line.160"></a>
+<FONT color="green">161</FONT>            connProps = MessageFormat.format(connProps, driver, url, user, password, maxConn);<a name="line.161"></a>
+<FONT color="green">162</FONT>            Properties props = new Properties();<a name="line.162"></a>
+<FONT color="green">163</FONT>            props.setProperty("openjpa.ConnectionProperties", connProps);<a name="line.163"></a>
+<FONT color="green">164</FONT>            if (autoSchemaCreation) {<a name="line.164"></a>
+<FONT color="green">165</FONT>                props.setProperty("openjpa.jdbc.SynchronizeMappings", "buildSchema(ForeignKeys=true)");<a name="line.165"></a>
+<FONT color="green">166</FONT>            }<a name="line.166"></a>
+<FONT color="green">167</FONT>    <a name="line.167"></a>
+<FONT color="green">168</FONT>            factory = Persistence.createEntityManagerFactory(persistentUnit, props);<a name="line.168"></a>
+<FONT color="green">169</FONT>    <a name="line.169"></a>
+<FONT color="green">170</FONT>            EntityManager entityManager = getEntityManager();<a name="line.170"></a>
+<FONT color="green">171</FONT>            entityManager.find(WorkflowActionBean.class, 1);<a name="line.171"></a>
+<FONT color="green">172</FONT>            entityManager.find(WorkflowJobBean.class, 1);<a name="line.172"></a>
+<FONT color="green">173</FONT>            entityManager.find(CoordinatorActionBean.class, 1);<a name="line.173"></a>
+<FONT color="green">174</FONT>            entityManager.find(CoordinatorJobBean.class, 1);<a name="line.174"></a>
+<FONT color="green">175</FONT>            entityManager.find(JsonWorkflowAction.class, 1);<a name="line.175"></a>
+<FONT color="green">176</FONT>            entityManager.find(JsonWorkflowJob.class, 1);<a name="line.176"></a>
+<FONT color="green">177</FONT>            entityManager.find(JsonCoordinatorAction.class, 1);<a name="line.177"></a>
+<FONT color="green">178</FONT>            entityManager.find(JsonCoordinatorJob.class, 1);<a name="line.178"></a>
+<FONT color="green">179</FONT>            entityManager.find(SLAEventBean.class, 1);<a name="line.179"></a>
+<FONT color="green">180</FONT>            entityManager.find(JsonSLAEvent.class, 1);<a name="line.180"></a>
+<FONT color="green">181</FONT>    <a name="line.181"></a>
+<FONT color="green">182</FONT>            XLog.getLog(getClass()).info(XLog.STD, "All entities initialized");<a name="line.182"></a>
+<FONT color="green">183</FONT>            // need to use a pseudo no-op transaction so all entities, datasource<a name="line.183"></a>
+<FONT color="green">184</FONT>            // and connection pool are initialized<a name="line.184"></a>
+<FONT color="green">185</FONT>            // one time only<a name="line.185"></a>
+<FONT color="green">186</FONT>            entityManager.getTransaction().begin();<a name="line.186"></a>
+<FONT color="green">187</FONT>            OpenJPAEntityManagerFactorySPI spi = (OpenJPAEntityManagerFactorySPI) factory;<a name="line.187"></a>
+<FONT color="green">188</FONT>            XLog.getLog(getClass()).info("JPA configuration: {0}", spi.getConfiguration().getConnectionProperties());<a name="line.188"></a>
+<FONT color="green">189</FONT>            entityManager.getTransaction().commit();<a name="line.189"></a>
+<FONT color="green">190</FONT>            entityManager.close();<a name="line.190"></a>
+<FONT color="green">191</FONT>        }<a name="line.191"></a>
+<FONT color="green">192</FONT>    <a name="line.192"></a>
+<FONT color="green">193</FONT>        /**<a name="line.193"></a>
+<FONT color="green">194</FONT>         * Destroy the StoreService<a name="line.194"></a>
+<FONT color="green">195</FONT>         */<a name="line.195"></a>
+<FONT color="green">196</FONT>        public void destroy() {<a name="line.196"></a>
+<FONT color="green">197</FONT>            factory.close();<a name="line.197"></a>
+<FONT color="green">198</FONT>        }<a name="line.198"></a>
+<FONT color="green">199</FONT>    <a name="line.199"></a>
+<FONT color="green">200</FONT>        /**<a name="line.200"></a>
+<FONT color="green">201</FONT>         * Return EntityManager<a name="line.201"></a>
+<FONT color="green">202</FONT>         */<a name="line.202"></a>
+<FONT color="green">203</FONT>        public EntityManager getEntityManager() {<a name="line.203"></a>
+<FONT color="green">204</FONT>            return factory.createEntityManager();<a name="line.204"></a>
+<FONT color="green">205</FONT>        }<a name="line.205"></a>
+<FONT color="green">206</FONT>    }<a name="line.206"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

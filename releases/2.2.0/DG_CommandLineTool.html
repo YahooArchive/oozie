@@ -1,0 +1,722 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-09-08
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Command_Line_Interface_Utilities"></a>
+<div class="section"><h2> Command Line Interface Utilities</h2>
+<p><ul><ul><li><a href="#Introduction">Introduction</a>
+</li>
+<li><a href="#Oozie_Command_Line_Usage">Oozie Command Line Usage</a>
+</li>
+<li><a href="#Common_CLI_Options">Common CLI Options</a>
+<ul><li><a href="#Oozie_URL">Oozie URL</a>
+</li>
+</ul>
+</li>
+<li><a href="#Job_Operations">Job Operations</a>
+<ul><li><a href="#Submitting_a_Workflow_or_Coordinator_Job">Submitting a Workflow or Coordinator Job</a>
+</li>
+<li><a href="#Starting_a_Workflow_Job_or_Coordinator_Job">Starting a Workflow Job or Coordinator Job</a>
+</li>
+<li><a href="#Running_a_Workflow_Job_or_Coordinator_Job">Running a Workflow Job or Coordinator Job</a>
+</li>
+<li><a href="#Suspending_a_Workflow_Job_or_Coordinator_Job">Suspending a Workflow Job or Coordinator Job</a>
+</li>
+<li><a href="#Resuming_a_Workflow_Job_or_Coordinator_Job">Resuming a Workflow Job or Coordinator Job</a>
+</li>
+<li><a href="#Killing_a_Workflow_Job_or_Coordinator_Job">Killing a Workflow Job or Coordinator Job</a>
+</li>
+<li><a href="#Changing_endtimeconcurrencypausetime_of_a_Coordinator_Job">Changing endtime/concurrency/pausetime of a Coordinator Job</a>
+</li>
+<li><a href="#Rerunning_a_Workflow_Job">Rerunning a Workflow Job</a>
+</li>
+<li><a href="#Rerunning_a_Coordinator_Action_or_Multiple_Actions">Rerunning a Coordinator Action or Multiple Actions</a>
+</li>
+<li><a href="#Checking_the_Status_of_a_Workflow_Job_or_Coordinator_Job_or_Coordinator_Action">Checking the Status of a Workflow Job or Coordinator Job or Coordinator Action</a>
+</li>
+<li><a href="#Checking_the_xml_definition_of_a_Workflow_Job_or_Coordinator_Job">Checking the xml definition of a Workflow Job or Coordinator Job</a>
+</li>
+<li><a href="#Checking_the_server_logs_of_a_Workflow_Job_or_Coordinator_Job">Checking the server logs of a Workflow Job or Coordinator Job</a>
+</li>
+<li><a href="#Dryrun_of_Coordinator_Job">Dryrun of Coordinator Job</a>
+</li>
+</ul>
+</li>
+<li><a href="#Jobs_Operations">Jobs Operations</a>
+<ul><li><a href="#Checking_the_Status_of_multiple_Workflow_Jobs">Checking the Status of multiple Workflow Jobs</a>
+</li>
+<li><a href="#Checking_the_Status_of_multiple_Coordinator_Jobs">Checking the Status of multiple Coordinator Jobs</a>
+</li>
+</ul>
+</li>
+<li><a href="#Admin_Operations">Admin Operations</a>
+<ul><li><a href="#Checking_the_Status_of_the_Oozie_System">Checking the Status of the Oozie System</a>
+</li>
+<li><a href="#Changing_the_Status_of_the_Oozie_System">Changing the Status of the Oozie System</a>
+</li>
+<li><a href="#Displaying_the_Build_Version_of_the_Oozie_System">Displaying the Build Version of the Oozie System</a>
+</li>
+<li><a href="#Displaying_the_queue_dump_of_the_Oozie_System">Displaying the queue dump of the Oozie System</a>
+</li>
+</ul>
+</li>
+<li><a href="#Validate_Operations">Validate Operations</a>
+<ul><li><a href="#Validating_a_Workflow_XML">Validating a Workflow XML</a>
+</li>
+</ul>
+</li>
+<li><a href="#SLA_Operations">SLA Operations</a>
+<ul><li><a href="#Getting_the_records_of_SLA_events">Getting the records of SLA events</a>
+</li>
+</ul>
+</li>
+<li><a href="#Pig_Operations">Pig Operations</a>
+<ul><li><a href="#Submitting_a_pig_job_through_HTTP">Submitting a pig job through HTTP</a>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Introduction"></a>
+<div class="section"><h3>Introduction</h3>
+<p>Oozie provides a command line utility, <tt>oozie</tt>
+, to perform job and admin tasks. All operations are done via
+sub-commands of the <tt>oozie</tt>
+ CLI.</p>
+<p>The <tt>oozie</tt>
+ CLI interacts with Oozie via its WS API.</p>
+<a name="Oozie_Command_Line_Usage"></a>
+</div>
+<div class="section"><h3>Oozie Command Line Usage</h3>
+<p><pre>
+  usage:
+      the env variable 'OOZIE_URL' is used as default value for the '-oozie' option
+      custom headers for Oozie web services can be specified using '-Dheader:NAME=VALUE'      oozie help : display usage
+      oozie version : show client version
+      oozie job &lt;OPTIONS&gt; : job operations
+                -action &lt;arg&gt;       coordinator rerun on action ids (requires -rerun)
+                -change &lt;arg&gt;       change a coordinator job
+                -config &lt;arg&gt;       job configuration file '.xml' or '.properties'
+                -date &lt;arg&gt;         coordinator rerun on action dates (requires -rerun)
+                -definition &lt;arg&gt;   job definition
+                -dryrun             Supported in Oozie-2.0 or later versions ONLY - dryrun or test
+                                    run a coordinator job (requires -config) - job is not queued
+                -info &lt;arg&gt;         info of a job
+                -kill &lt;arg&gt;         kill a job
+                -len &lt;arg&gt;          number of actions (default TOTAL ACTIONS, requires -info)
+                -localtime          use local time (default GMT)
+                -log &lt;arg&gt;          job log
+                -nocleanup          do not clean up output-events of the coordiantor rerun actions
+                                    (requires -rerun)
+                -offset &lt;arg&gt;       job info offset of actions (default '1', requires -info)
+                -oozie &lt;arg&gt;        Oozie URL
+                -refresh            re-materialize the coordinator rerun actions (requires -rerun)
+                -rerun &lt;arg&gt;        rerun a job  (workflow requires -config, coordinator requires
+                                    -action or -date)
+                -resume &lt;arg&gt;       resume a job
+                -run                run a job    (requires -config)
+                -start &lt;arg&gt;        start a job
+                -submit             submit a job (requires -config)
+                -suspend &lt;arg&gt;      suspend a job
+                -value &lt;arg&gt;        new endtime/concurrency/pausetime value for changing a coordinator job
+                -verbose            verbose mode
+      oozie jobs &lt;OPTIONS&gt; : jobs status
+                 -filter &lt;arg&gt;    user=&lt;U&gt;;name=&lt;N&gt;;group=&lt;G&gt;;status=&lt;S&gt;;...
+                 -jobtype &lt;arg&gt;   job type ('Supported in Oozie-2.0 or later versions ONLY -
+                                  coordinator' or 'wf' (default))
+                 -len &lt;arg&gt;       number of jobs (default '100')
+                 -localtime       use local time (default GMT)
+                 -offset &lt;arg&gt;    jobs offset (default '1')
+                 -oozie &lt;arg&gt;     Oozie URL
+                 -verbose         verbose mode
+      oozie admin &lt;OPTIONS&gt; : admin operations
+                  -oozie &lt;arg&gt;        Oozie URL
+                  -queuedump          show Oozie server queue elements
+                  -status             show the current system status
+                  -systemmode &lt;arg&gt;   Supported in Oozie-2.0 or later versions ONLY. Change oozie
+                                      system mode [NORMAL|NOWEBSERVICE|SAFEMODE]
+                  -version            show Oozie server build version
+      oozie validate &lt;ARGS&gt; : validate a workflow XML file
+      oozie sla &lt;OPTIONS&gt; : sla operations (Supported in Oozie-2.0 or later)
+                -len &lt;arg&gt;      number of results (default '100')
+                -offset &lt;arg&gt;   start offset (default '0')
+                -oozie &lt;arg&gt;    Oozie URL
+      oozie pig &lt;OPTIONS&gt; -X &lt;ARGS&gt; : submit a pig job, everything after '-X' are pass-through parameters to pig
+                -config &lt;arg&gt;   job configuration file '.properties'
+                -file &lt;arg&gt;     Pig script
+                -oozie &lt;arg&gt;    Oozie URL
+</pre>
+</p>
+<a name="Common_CLI_Options"></a>
+</div>
+<div class="section"><h3>Common CLI Options</h3>
+<a name="Oozie_URL"></a>
+<div class="section"><h4>Oozie URL</h4>
+<p>All <tt>oozie</tt>
+ CLI sub-commands expect the <tt>-oozie OOZIE_URL</tt>
+ option indicating the URL of the Oozie system
+to run the command against.</p>
+<p>If the <tt>-oozie</tt>
+ option is not specified, the <tt>oozie</tt>
+ CLI will look for the <tt>OOZIE_URL</tt>
+ environment variable
+and uses it if set.</p>
+<p>If the option is not provided and the environment variable is not set, the <tt>oozie</tt>
+ CLI will fail.</p>
+<a name="Job_Operations"></a>
+</div>
+</div>
+<div class="section"><h3>Job Operations</h3>
+<a name="Submitting_a_Workflow_or_Coordinator_Job"></a>
+<div class="section"><h4>Submitting a Workflow or Coordinator Job</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -config job.properties -submit
+.
+job: 14-20090525161321-oozie-tucu
+</pre></p>
+<p>The parameters for the job must be provided in a file, either a Java Properties file (.properties) or a Hadoop XML
+Configuration file (.xml). This file must be specified with the <tt>-config</tt>
+ option.</p>
+<p>The workflow application path must be specified in the file with the <tt>oozie.wf.application.path</tt>
+ property.  The
+coordinator application path must be specified in the file with the <tt>oozie.coord.application.path</tt>
+ property.
+Specified path must be an HDFS path.</p>
+<p>The job will be created, but it will not be started, it will be in <tt>PREP</tt>
+ status.</p>
+<a name="Starting_a_Workflow_Job_or_Coordinator_Job"></a>
+</div>
+<div class="section"><h4>Starting a Workflow Job or Coordinator Job</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -start 14-20090525161321-oozie-tucu
+</pre></p>
+<p>The <tt>start</tt>
+ option starts a previously submitted workflow job or coordinator job that is in <tt>PREP</tt>
+ status.</p>
+<p>After the command is executed the workflow job will be in <tt>RUNNING</tt>
+ status and coordinator job will be in <tt>PREMATER</tt>
+ status.</p>
+<a name="Running_a_Workflow_Job_or_Coordinator_Job"></a>
+</div>
+<div class="section"><h4>Running a Workflow Job or Coordinator Job</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -config job.properties -run
+.
+job: 15-20090525161321-oozie-tucu
+</pre></p>
+<p>The <tt>run</tt>
+ option creates and starts a workflow job or coordinator job.</p>
+<p>The parameters for the job must be provided in a file, either a Java Properties file (.properties) or a Hadoop XML
+Configuration file (.xml). This file must be specified with the <tt>-config</tt>
+ option.</p>
+<p>The workflow application path must be specified in the file with the <tt>oozie.wf.application.path</tt>
+ property. The
+coordinator application path must be specified in the file with the <tt>oozie.coord.application.path</tt>
+ property. The
+specified path must be an HDFS path.</p>
+<p>The job will be created and it will started, the job will be in <tt>RUNNING</tt>
+ status.</p>
+<a name="Suspending_a_Workflow_Job_or_Coordinator_Job"></a>
+</div>
+<div class="section"><h4>Suspending a Workflow Job or Coordinator Job</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -suspend 14-20090525161321-oozie-tucu
+</pre></p>
+<p>The <tt>suspend</tt>
+ option suspends a job in <tt>RUNNING</tt>
+ status.</p>
+<p>After the command is executed the job will be in <tt>SUSPENDED</tt>
+ status.</p>
+<p>When the coordinator job is suspended, running coordinator actions will stay in running and the workflows will be suspended.</p>
+<a name="Resuming_a_Workflow_Job_or_Coordinator_Job"></a>
+</div>
+<div class="section"><h4>Resuming a Workflow Job or Coordinator Job</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -resume 14-20090525161321-oozie-tucu
+</pre></p>
+<p>The <tt>resume</tt>
+ option resumes a job in <tt>SUSPENDED</tt>
+ status.</p>
+<p>After the command is executed the job will be in <tt>RUNNING</tt>
+ status.</p>
+<p>When a coordinator job is resumed, it will transition to the status from which it was suspended, if it was RUNNING  it cannot
+transition to PREP .</p>
+<p>When the coordinator job is resumed it will create all the coordinator actions that should have been created during the time
+it was suspended, actions will not be lost, they will delayed.</p>
+<a name="Killing_a_Workflow_Job_or_Coordinator_Job"></a>
+</div>
+<div class="section"><h4>Killing a Workflow Job or Coordinator Job</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -kill 14-20090525161321-oozie-tucu
+</pre></p>
+<p>The <tt>kill</tt>
+ option kills a workflow job in <tt>PREP</tt>
+, <tt>SUSPENDED</tt>
+ or <tt>RUNNING</tt>
+ status and a coordinator job in
+=PREP=, <tt>PREMATER</tt>
+, <tt>SUSPENDED</tt>
+ or <tt>RUNNING</tt>
+ status.</p>
+<p>After the command is executed the job will be in <tt>KILLED</tt>
+ status.</p>
+<a name="Changing_endtimeconcurrencypausetime_of_a_Coordinator_Job"></a>
+</div>
+<div class="section"><h4>Changing endtime/concurrency/pausetime of a Coordinator Job</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -change 14-20090525161321-oozie-tucu -value endtime=2011-12-01T05:00Z\;concurrency=100\;2011-10-01T05:00Z
+</pre></p>
+<p>The <tt>change</tt>
+ option changes a coordinator job that is not in <tt>KILLED</tt>
+ status.</p>
+<p>Valid value names are:</p>
+<p><ul><li>endtime: the end time of the coordinator job.</li>
+<li>concurrency: the concurrency of the coordinator job.</li>
+<li>pausetime: the pause time of the coordinator job.</li>
+</ul>
+</p>
+<p>Repeated value names are not allowed. New end time must not be before job's start time and last action time.
+New concurrency value has to be a valid integer. New pause time must not be before job's start time and last action time and must be before job's end time. Also empty string &quot;&quot; can be used to reset pause time to none.</p>
+<p>After the command is executed the job's end time, concurrency or pause time should be changed. If an already-succeeded job changes its end time, its status will become running.</p>
+<a name="Rerunning_a_Workflow_Job"></a>
+</div>
+<div class="section"><h4>Rerunning a Workflow Job</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -config job.properties -rerun 14-20090525161321-oozie-tucu
+</pre></p>
+<p>The <tt>rerun</tt>
+ option reruns a completed ( <tt>SUCCCEDED</tt>
+, <tt>FAILED</tt>
+ or <tt>KILLED</tt>
+ ) job skipping the specified nodes.</p>
+<p>The parameters for the job must be provided in a file, either a Java Properties file (.properties) or a Hadoop XML
+Configuration file (.xml). This file must be specified with the <tt>-config</tt>
+ option.</p>
+<p>The workflow application path must be specified in the file with the <tt>oozie.wf.application.path</tt>
+ property. The
+specified path must be an HDFS path.</p>
+<p>The list of nodes to skipped must be provided in the <tt>oozie.wf.rerun.skip.nodes</tt>
+ property separated by commas.</p>
+<p>After the command is executed the job will be in <tt>RUNNING</tt>
+ status.</p>
+<p>Refer to the <a href="./DG_WorkflowReRun.html">Rerunning Workflow Jobs</a>
+ for details on rerun.</p>
+<a name="Rerunning_a_Coordinator_Action_or_Multiple_Actions"></a>
+</div>
+<div class="section"><h4>Rerunning a Coordinator Action or Multiple Actions</h4>
+<p>Example:</p>
+<p><pre>
+$oozie job -rerun &lt;coord_Job_id&gt; [-nocleanup] [-refresh]
+[-action 1, 3-4, 7-40] (-action or -date is required to rerun.)
+[-date 2009-01-01T01:00Z::2009-05-31T23:59Z, 2009-11-10T01:00Z, 2009-12-31T22:00Z]
+(if neither -action nor -date is given, the exception will be thrown.)
+</pre></p>
+<p>The <tt>rerun</tt>
+ option reruns a terminated (=TIMEDOUT=, <tt>SUCCEEDED</tt>
+, <tt>KILLED</tt>
+, <tt>FAILED</tt>
+) coordiantor action when coordiator job
+is not in <tt>FAILED</tt>
+ or <tt>KILLED</tt>
+ state.</p>
+<p>After the command is executed the rerun coordiator action will be in <tt>WAITING</tt>
+ status.</p>
+<p>Refer to the <a href="./DG_CoordinatorRerun.html">Rerunning Coordinator Actions</a>
+ for details on rerun.</p>
+<a name="Checking_the_Status_of_a_Workflow_Job_or_Coordinator_Job_or_Coordinator_Action"></a>
+</div>
+<div class="section"><h4>Checking the Status of a Workflow Job or Coordinator Job or Coordinator Action</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -info 14-20090525161321-oozie-tucu
+.
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Workflow Name :  map-reduce-wf
+App Path      :  hdfs://localhost:9000/user/tucu/workflows/map-reduce
+Status        :  SUCCEEDED
+Run           :  0
+User          :  tucu
+Group         :  users
+Created       :  2009-05-26 05:01 +0000
+Started       :  2009-05-26 05:01 +0000
+Ended         :  2009-05-26 05:01 +0000
+Actions
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Action Name             Type        Status     Transition  External Id            External Status  Error Code    Start                   End
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+hadoop1                 map-reduce  OK         end         job_200904281535_0254  SUCCEEDED        -             2009-05-26 05:01 +0000  2009-05-26 05:01 +0000
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+</pre></p>
+<p>The <tt>info</tt>
+ option can display information about a workflow job or coordinator job or coordinator action.</p>
+<p>The <tt>offset</tt>
+ and <tt>len</tt>
+ option specified the offset and number of actions to display, if checking a workflow job or coordinator job.</p>
+<p>The <tt>localtime</tt>
+ option displays times in local time, if not specified times are displayed in GMT.</p>
+<p>The <tt>verbose</tt>
+ option gives more detailed information for all the actions, if checking for workflow job or coordinator job.</p>
+<a name="Checking_the_xml_definition_of_a_Workflow_Job_or_Coordinator_Job"></a>
+</div>
+<div class="section"><h4>Checking the xml definition of a Workflow Job or Coordinator Job</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -definition 14-20090525161321-oozie-tucu&lt;workflow-app xmlns=&quot;uri:oozie:workflow:0.2&quot; name=&quot;sm3-segment-2413&quot;&gt;
+	&lt;start to=&quot;p0&quot;/&gt;
+    &lt;action name=&quot;p0&quot;&gt;
+    &lt;/action&gt;
+	&lt;end name=&quot;end&quot;/&gt;
+&lt;/workflow-app&gt;
+</pre>
+</p>
+<a name="Checking_the_server_logs_of_a_Workflow_Job_or_Coordinator_Job"></a>
+</div>
+<div class="section"><h4>Checking the server logs of a Workflow Job or Coordinator Job</h4>
+<p>Example:</p>
+<p><pre>$ oozie job -oozie http://localhost:8080/oozie -log 14-20090525161321-oozie-tucu
+</pre>
+</p>
+<a name="Dryrun_of_Coordinator_Job"></a>
+</div>
+<div class="section"><h4>Dryrun of Coordinator Job</h4>
+<p>* This feature is only supported in Oozie 2.0 or later.</p>
+<p>Example:</p>
+<p><pre>$ oozie job -oozie http://localhost:8080/oozie job -dryrun -config job.properties
+***coordJob after parsing: ***
+&lt;coordinator-app xmlns=&quot;uri:oozie:coordinator:0.1&quot; name=&quot;sla_coord&quot; frequency=&quot;20&quot;
+start=&quot;2009-03-06T010:00Z&quot; end=&quot;2009-03-20T11:00Z&quot; timezone=&quot;America/Los_Angeles&quot;&gt;
+  &lt;output-events&gt;
+    &lt;data-out name=&quot;Output&quot; dataset=&quot;DayLogs&quot;&gt;
+      &lt;dataset name=&quot;DayLogs&quot; frequency=&quot;1440&quot; initial-instance=&quot;2009-01-01T00:00Z&quot; timezone=&quot;UTC&quot; freq_timeunit=&quot;MINUTE&quot; end_of_duration=&quot;NONE&quot;&gt;
+        &lt;uri-template&gt;hdfs://localhost:9000/user/angeloh/coord_examples/${YEAR}/${MONTH}/${DAY}&lt;/uri-template&gt;
+      &lt;/dataset&gt;
+      &lt;instance&gt;${coord:current(0)}&lt;/instance&gt;
+    &lt;/data-out&gt;
+  &lt;/output-events&gt;
+  &lt;action&gt;
+  &lt;/action&gt;
+&lt;/coordinator-app&gt;
+***actions for instance***
+***total coord actions is 1 ***
+------------------------------------------------------------------------------------------------------------------------------------
+coordAction instance: 1:
+&lt;coordinator-app xmlns=&quot;uri:oozie:coordinator:0.1&quot; name=&quot;sla_coord&quot; frequency=&quot;20&quot;
+start=&quot;2009-03-06T010:00Z&quot; end=&quot;2009-03-20T11:00Z&quot; timezone=&quot;America/Los_Angeles&quot;&gt;
+  &lt;output-events&gt;
+    &lt;data-out name=&quot;Output&quot; dataset=&quot;DayLogs&quot;&gt;
+      &lt;uris&gt;hdfs://localhost:9000/user/angeloh/coord_examples/2009/03/06&lt;/uris&gt;
+      &lt;dataset name=&quot;DayLogs&quot; frequency=&quot;1440&quot; initial-instance=&quot;2009-01-01T00:00Z&quot; timezone=&quot;UTC&quot; freq_timeunit=&quot;MINUTE&quot; end_of_duration=&quot;NONE&quot;&gt;
+        &lt;uri-template&gt;hdfs://localhost:9000/user/angeloh/coord_examples/${YEAR}/${MONTH}/${DAY}&lt;/uri-template&gt;
+      &lt;/dataset&gt;
+    &lt;/data-out&gt;
+  &lt;/output-events&gt;
+  &lt;action&gt;
+  &lt;/action&gt;
+&lt;/coordinator-app&gt;
+------------------------------------------------------------------------------------------------------------------------------------
+</pre>
+</p>
+<p>The <tt>dryrun</tt>
+ option tests running a coordinator job with given job properties and does not create the job.</p>
+<p>The parameters for the job must be provided in a file, either a Java Properties file (.properties) or a Hadoop XML
+Configuration file (.xml). This file must be specified with the <tt>-config</tt>
+ option.</p>
+<p>The coordinator application path must be specified in the file with the <tt>oozie.coord.application.path</tt>
+ property. The
+specified path must be an HDFS path.</p>
+<a name="Jobs_Operations"></a>
+</div>
+</div>
+<div class="section"><h3>Jobs Operations</h3>
+<a name="Checking_the_Status_of_multiple_Workflow_Jobs"></a>
+<div class="section"><h4>Checking the Status of multiple Workflow Jobs</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie jobs -oozie http://localhost:8080/oozie -localtime -len 2 -fliter status=RUNNING
+.
+Job Id                          Workflow Name         Status     Run  User      Group     Created                Started                 Ended
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+4-20090527151008-oozie-tucu     hadoopel-wf           RUNNING    0    tucu      other     2009-05-27 15:34 +0530 2009-05-27 15:34 +0530  -
+0-20090527151008-oozie-tucu     hadoopel-wf           RUNNING    0    tucu      other     2009-05-27 15:15 +0530 2009-05-27 15:15 +0530  -
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+</pre></p>
+<p>The <tt>jobs</tt>
+ sub-command will display information about multiple jobs.</p>
+<p>The <tt>offset</tt>
+ and <tt>len</tt>
+ option specified the offset and number of jobs to display, default values are <tt>1</tt>
+ and <tt>100</tt>
+
+respectively.</p>
+<p>The <tt>localtime</tt>
+ option displays times in local time, if not specified times are displayed in GMT.</p>
+<p>The <tt>verbose</tt>
+ option gives more detailed information for each job.</p>
+<p>A filter can be specified after all options.</p>
+<p>The <tt>filter</tt>
+option syntax is: <tt>[NAME=VALUE][;NAME=VALUE]*</tt>
+.</p>
+<p>Valid filter names are:</p>
+<p><ul><li>name: the workflow application name from the workflow definition.</li>
+<li>user: the user that submitted the job.</li>
+<li>group: the group for the job.</li>
+<li>status: the status of the job.</li>
+</ul>
+</p>
+<p>The query will do an AND among all the filter names. The query will do an OR among all the filter values for the same
+name. Multiple values must be specified as different  name value pairs.</p>
+<a name="Checking_the_Status_of_multiple_Coordinator_Jobs"></a>
+</div>
+<div class="section"><h4>Checking the Status of multiple Coordinator Jobs</h4>
+<p>* This feature is only supported in Oozie 2.0 or later.</p>
+<p>Example:</p>
+<p><pre>
+$ oozie jobs -oozie http://localhost:8080/oozie -jobtype coordinator
+.
+Job ID                                                                                   App Name               Status      Freq Unit                    Started                 Next Materialized
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+0004165-100531045722929-oozie-wrkf-C     smaggs-xaggsptechno-coordinator SUCCEEDED 1440 MINUTE       2010-05-27 00:00        2010-05-29 00:00
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+0003823-100531045722929-oozie-wrkf-C     coordcal2880minutescurrent SUCCEEDED 2880 MINUTE       2010-02-01 16:30        2010-02-05 16:30
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+</pre></p>
+<p>The <tt>jobtype</tt>
+ option specified the job type to display, default value is 'wf'. To see the coordinator jobs, value is 'coordinator'.</p>
+<a name="Admin_Operations"></a>
+</div>
+</div>
+<div class="section"><h3>Admin Operations</h3>
+<a name="Checking_the_Status_of_the_Oozie_System"></a>
+<div class="section"><h4>Checking the Status of the Oozie System</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie admin -oozie http://localhost:8080/oozie -status
+.
+Safemode: OFF
+</pre></p>
+<p>It returns the current status of the Oozie system.</p>
+<a name="Changing_the_Status_of_the_Oozie_System"></a>
+</div>
+<div class="section"><h4>Changing the Status of the Oozie System</h4>
+<p>* This feature is only supported in Oozie 2.0 or later.</p>
+<p>Example:</p>
+<p><pre>
+$ oozie admin -oozie http://localhost:8080/oozie -systemmode [NORMAL|NOWEBSERVICE|SAFEMODE]
+.
+Safemode: ON
+</pre></p>
+<p>It returns the current status of the Oozie system.</p>
+<a name="Displaying_the_Build_Version_of_the_Oozie_System"></a>
+</div>
+<div class="section"><h4>Displaying the Build Version of the Oozie System</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie admin -oozie http://localhost:8080/oozie -version
+.
+Oozie server build version: 2.0.2.1-0.20.1.3092118008--
+</pre></p>
+<p>It returns the Oozie server build version.</p>
+<a name="Displaying_the_queue_dump_of_the_Oozie_System"></a>
+</div>
+<div class="section"><h4>Displaying the queue dump of the Oozie System</h4>
+<p>* This feature is for administrator debugging purpose</p>
+<p>Example:</p>
+<p><pre>
+$ oozie admin -oozie http://localhost:8080/oozie -queuedump[Server Queue Dump]:
+(coord_action_start,1),(coord_action_start,1),(coord_action_start,1)
+(coord_action_ready,1)
+(action.check,2)
+</pre>
+</p>
+<p>It returns the Oozie server current queued commands.</p>
+<a name="Validate_Operations"></a>
+</div>
+</div>
+<div class="section"><h3>Validate Operations</h3>
+<a name="Validating_a_Workflow_XML"></a>
+<div class="section"><h4>Validating a Workflow XML</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie validate myApp/workflow.xml
+.
+Error: Invalid workflow-app, org.xml.sax.SAXParseException: cvc-complex-type.2.4.a:
+       Invalid content was found starting with element 'xend'. One of '{&quot;uri:oozie:workflow:0.1&quot;:decision,
+       &quot;uri:oozie:workflow:0.1&quot;:fork, &quot;uri:oozie:workflow:0.1&quot;:join, &quot;uri:oozie:workflow:0.1&quot;:kill,
+       &quot;uri:oozie:workflow:0.1&quot;:action, &quot;uri:oozie:workflow:0.1&quot;:end}' is expected.
+</pre></p>
+<p>It performs an XML Schema validation on the specified workflow XML file.</p>
+<a name="SLA_Operations"></a>
+</div>
+</div>
+<div class="section"><h3>SLA Operations</h3>
+<a name="Getting_the_records_of_SLA_events"></a>
+<div class="section"><h4>Getting the records of SLA events</h4>
+<p>* This feature is only supported in Oozie 2.0 or later.</p>
+<p>Example:</p>
+<p><pre>
+$ oozie sla -oozie http://localhost:8080/oozie -len 1
+.
+&lt;sla-message&gt;
+   &lt;event&gt;
+    &lt;sequence-id&gt;1091&lt;/sequence-id&gt;
+    &lt;status&gt;
+      &lt;sla-id&gt;0000004-100521225917912-oozie-wrkf-C@1&lt;/sla-id&gt;
+      &lt;status-timestamp&gt;2010-05-22T00:41Z&lt;/status-timestamp&gt;
+      &lt;job-status&gt;STARTED&lt;/job-status&gt;
+      &lt;job-data /&gt;
+    &lt;/status&gt;
+  &lt;/event&gt;
+  &lt;last-sequence-id&gt;1091&lt;/last-sequence-id&gt;
+&lt;/sla-message&gt;</pre>
+</p>
+<p>The <tt>offset</tt>
+ and <tt>len</tt>
+ option specified the offset and number of sla events to display, default values are <tt>1</tt>
+ and <tt>100</tt>
+
+respectively.</p>
+<p>The return message is XML format that can be easily consumed by SLA users.</p>
+<a name="Pig_Operations"></a>
+</div>
+</div>
+<div class="section"><h3>Pig Operations</h3>
+<a name="Submitting_a_pig_job_through_HTTP"></a>
+<div class="section"><h4>Submitting a pig job through HTTP</h4>
+<p>Example:</p>
+<p><pre>
+$ oozie pig -oozie http://localhost:8080/oozie -file pigScriptFile -config job.properties -X -param_file params
+.
+job: 14-20090525161321-oozie-tucu-W
+.
+$cat job.properties
+fs.default.name=hdfs://localhost:9000
+mapreduce.jobtracker.kerberos.principal=ccc
+dfs.namenode.kerberos.principal=ddd
+oozie.libpath=hdfs://localhost:9000/user/oozie/pig/lib/
+</pre></p>
+<p>The parameters for the job must be provided in a Java Properties file (.properties). jobtracker, namenode, libpath must be
+specified in this file. pigScriptFile is a local file. All jar files (including pig jar file) and all other files needed by the pig job (e.g., parameter file in above example) need to be uploaded onto HDFS under libpath beforehand. The workflow.xml will be created in Oozie server internally. Users can get the workflow.xml from console or command line(-definition).</p>
+<p>The job will be created and run right away.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>
