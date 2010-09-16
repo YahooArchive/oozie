@@ -93,7 +93,7 @@
             <groupId>${hadoopGroupId}</groupId>
             <artifactId>hadoop-core</artifactId>
             <version>${hadoopVersion}</version>
-            <scope>provided</scope>
+            <scope>${hadoopScope}</scope>
         </dependency>
         <dependency>
             <groupId>${hadoopGroupId}</groupId>
