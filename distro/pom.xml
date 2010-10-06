@@ -18,7 +18,7 @@
     <parent>
         <groupId>com.yahoo.oozie</groupId>
         <artifactId>oozie-main</artifactId>
-        <version>2.2.2-SNAPSHOT</version> <!-- OOZIE_VERSION -->
+        <version>2.2.3-SNAPSHOT</version> <!-- OOZIE_VERSION -->
     </parent>
     <!-- calling the artifact oozie to the generated distro file is oozie- -->
     <artifactId>oozie</artifactId>
