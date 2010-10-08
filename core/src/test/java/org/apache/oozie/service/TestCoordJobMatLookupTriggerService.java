@@ -43,16 +43,20 @@ public class TestCoordJobMatLookupTriggerService extends XTestCase {
     }
 
     /**
-     * Tests functionality of the CoordJobMatLookupTriggerService Runnable command. </p> Insert a coordinator job with
-     * PREP. Then, runs the CoordJobMatLookupTriggerService runnable and ensures the job status changes to PREMATER.
+     * Tests functionality of the CoordJobMatLookupTriggerService Runnable
+     * command. </p> Insert a coordinator job with PREP. Then, runs the
+     * CoordJobMatLookupTriggerService runnable and ensures the job status
+     * changes to PREMATER.
      *
      * @throws Exception
      */
-    public void testCoordJobMatLookupTriggerService() throws Exception {
+    public void testCoordJobMatLookupTriggerService1() throws Exception {
         final String jobId = "0000000-" + new Date().getTime() + "-testCoordRecoveryService-C";
         CoordinatorStore store = Services.get().get(StoreService.class).getStore(CoordinatorStore.class);
         store.beginTrx();
-        addRecordToJobTable(jobId, store);
+        Date start = DateUtils.parseDateUTC("2009-02-01T01:00Z");
+        Date end = DateUtils.parseDateUTC("2009-02-03T23:59Z");
+        addRecordToJobTable(jobId, store, start, end);
         store.commitTrx();
         store.closeTrx();
 
@@ -71,7 +75,7 @@ public class TestCoordJobMatLookupTriggerService extends XTestCase {
         }
     }
 
-    private void addRecordToJobTable(String jobId, CoordinatorStore store) throws StoreException {
+    private void addRecordToJobTable(String jobId, CoordinatorStore store, Date start, Date end) throws StoreException {
         CoordinatorJobBean coordJob = new CoordinatorJobBean();
         coordJob.setId(jobId);
         coordJob.setAppName("testApp");
@@ -85,58 +89,38 @@ public class TestCoordJobMatLookupTriggerService extends XTestCase {
 
         String confStr = "<configuration></configuration>";
         coordJob.setConf(confStr);
-        String appXml = "<coordinator-app xmlns='uri:oozie:coordinator:0.1' name='NAME' frequency=\"1\" start='2009-02-01T01:00Z' end='2009-02-03T23:59Z'";
+        String startDateStr = null, endDateStr = null;
+        try {
+            startDateStr = DateUtils.formatDateUTC(start);
+            endDateStr = DateUtils.formatDateUTC(end);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            fail("Could not format dates");
+        }
+        String appXml = "<coordinator-app xmlns='uri:oozie:coordinator:0.1' name='NAME' frequency=\"1\" start='" + startDateStr + "' end='" + endDateStr + "'";
+
         appXml += " timezone='UTC' freq_timeunit='DAY' end_of_duration='NONE'>";
         appXml += "<controls>";
         appXml += "<timeout>10</timeout>";
         appXml += "<concurrency>2</concurrency>";
         appXml += "<execution>LIFO</execution>";
         appXml += "</controls>";
-        appXml += "<input-events>";
-        appXml += "<data-in name='A' dataset='a'>";
-        appXml += "<dataset name='a' frequency='7' initial-instance='2009-02-01T01:00Z' timezone='UTC' freq_timeunit='DAY' end_of_duration='NONE'>";
-        appXml += "<uri-template>file:///tmp/coord/workflows/${YEAR}/${DAY}</uri-template>";
-        appXml += "</dataset>";
-        appXml += "<instance>${coord:latest(0)}</instance>";
-        appXml += "</data-in>";
-        appXml += "</input-events>";
-        appXml += "<output-events>";
-        appXml += "<data-out name='LOCAL_A' dataset='local_a'>";
-        appXml += "<dataset name='local_a' frequency='7' initial-instance='2009-02-01T01:00Z' timezone='UTC' freq_timeunit='DAY' end_of_duration='NONE'>";
-        appXml += "<uri-template>file:///tmp/coord/workflows/${YEAR}/${DAY}</uri-template>";
-        appXml += "</dataset>";
-        appXml += "<instance>${coord:current(-1)}</instance>";
-        appXml += "</data-out>";
-        appXml += "</output-events>";
         appXml += "<action>";
         appXml += "<workflow>";
         appXml += "<app-path>hdfs:///tmp/workflows/</app-path>";
-        appXml += "<configuration>";
-        appXml += "<property>";
-        appXml += "<name>inputA</name>";
-        appXml += "<value>${coord:dataIn('A')}</value>";
-        appXml += "</property>";
-        appXml += "<property>";
-        appXml += "<name>inputB</name>";
-        appXml += "<value>${coord:dataOut('LOCAL_A')}</value>";
-        appXml += "</property>";
-        appXml += "</configuration>";
         appXml += "</workflow>";
         appXml += "</action>";
         appXml += "</coordinator-app>";
+
         coordJob.setJobXml(appXml);
         coordJob.setLastActionNumber(0);
         coordJob.setFrequency(1);
         coordJob.setExecution(Execution.FIFO);
         coordJob.setConcurrency(1);
-        try {
-            coordJob.setEndTime(DateUtils.parseDateUTC("2009-02-03T23:59Z"));
-            coordJob.setStartTime(DateUtils.parseDateUTC("2009-02-01T23:59Z"));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            fail("Could not set Date/time");
-        }
+
+        coordJob.setStartTime(start);
+        coordJob.setEndTime(end);
 
         try {
             store.insertCoordinatorJob(coordJob);
@@ -146,6 +130,36 @@ public class TestCoordJobMatLookupTriggerService extends XTestCase {
             store.rollbackTrx();
             fail("Unable to insert the test job record to table");
             throw se;
+        }
+    }
+
+    /**
+     * Test current mode.
+     *
+     * @throws Exception
+     */
+    public void testCoordJobMatLookupTriggerService2() throws Exception {
+        Date start = new Date();
+        Date end = new Date(start.getTime() + 3600 * 1000);
+        final String jobId = "0000000-" + start.getTime() + "-testCoordRecoveryService-C";
+        CoordinatorStore store = Services.get().get(StoreService.class).getStore(CoordinatorStore.class);
+        store.beginTrx();
+        addRecordToJobTable(jobId, store, start, end);
+        store.commitTrx();
+        store.closeTrx();
+
+        Thread.sleep(3000);
+        Runnable runnable = new CoordJobMatLookupTriggerRunnable(3600);
+        runnable.run();
+        Thread.sleep(6000);
+
+        CoordinatorStore store2 = Services.get().get(StoreService.class).getStore(CoordinatorStore.class);
+        store2.beginTrx();
+        CoordinatorJobBean action = store2.getCoordinatorJob(jobId, false);
+        store2.commitTrx();
+        store2.closeTrx();
+        if (!(action.getStatus() == CoordinatorJob.Status.PREMATER)) {
+            fail();
         }
     }
 }
