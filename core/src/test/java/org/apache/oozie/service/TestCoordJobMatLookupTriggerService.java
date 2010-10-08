@@ -14,18 +14,32 @@
  */
 package org.apache.oozie.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.Date;
+import java.util.Properties;
+import java.util.regex.Matcher;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.oozie.CoordinatorJobBean;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.CoordinatorJob.Execution;
 import org.apache.oozie.service.CoordJobMatLookupTriggerService.CoordJobMatLookupTriggerRunnable;
 import org.apache.oozie.store.CoordinatorStore;
 import org.apache.oozie.store.StoreException;
+import org.apache.oozie.test.XFsTestCase;
 import org.apache.oozie.test.XTestCase;
 import org.apache.oozie.util.DateUtils;
+import org.apache.oozie.util.IOUtils;
+import org.apache.oozie.util.XLog;
+import org.apache.oozie.util.XmlUtils;
 
-public class TestCoordJobMatLookupTriggerService extends XTestCase {
+public class TestCoordJobMatLookupTriggerService extends XFsTestCase {
     private Services services;
 
     @Override
@@ -67,15 +81,43 @@ public class TestCoordJobMatLookupTriggerService extends XTestCase {
 
         CoordinatorStore store2 = Services.get().get(StoreService.class).getStore(CoordinatorStore.class);
         store2.beginTrx();
-        CoordinatorJobBean action = store2.getCoordinatorJob(jobId, false);
+        CoordinatorJobBean coordJob = store2.getCoordinatorJob(jobId, false);
         store2.commitTrx();
         store2.closeTrx();
-        if (!(action.getStatus() == CoordinatorJob.Status.PREMATER)) {
+        if (!(coordJob.getStatus() == CoordinatorJob.Status.PREMATER)) {
             fail();
         }
     }
+    
+    private String getCoordJobXml(Path appPath, Date start, Date end) throws Exception {
+        String startDateStr = null, endDateStr = null;
+        String appXml = null;
+        try {
+            startDateStr = DateUtils.formatDateUTC(start);
+            endDateStr = DateUtils.formatDateUTC(end);
 
-    private void addRecordToJobTable(String jobId, CoordinatorStore store, Date start, Date end) throws StoreException {
+            Reader reader = IOUtils.getResourceAsReader("coord-matLookup-trigger.xml", -1);
+            appXml = IOUtils.getReaderAsString(reader, -1);
+            appXml = appXml.replaceAll("#start", startDateStr);
+            appXml = appXml.replaceAll("#end", endDateStr);
+            return appXml;
+        }
+        catch (Exception ex) {
+            fail("Could not get coord-matLookup-trigger.xml" + ex.getMessage());
+            throw ex;
+        }
+    }
+
+    private void addRecordToJobTable(String jobId, CoordinatorStore store, Date start, Date end) throws Exception {
+        Path appPath = new Path(getFsTestCaseDir(), "coord");
+        String appXml = getCoordJobXml(appPath, start, end);
+        FileSystem fs = getFileSystem();
+        Writer writer = new OutputStreamWriter(fs.create(new Path(appPath + "/coordinator.xml")));
+        byte[] bytes = appXml.getBytes("UTF-8");
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        Reader reader2 = new InputStreamReader(bais);
+        IOUtils.copyCharStream(reader2, writer);
+        
         CoordinatorJobBean coordJob = new CoordinatorJobBean();
         coordJob.setId(jobId);
         coordJob.setAppName("testApp");
@@ -86,39 +128,13 @@ public class TestCoordJobMatLookupTriggerService extends XTestCase {
         coordJob.setUser("testUser");
         coordJob.setGroup("testGroup");
         coordJob.setAuthToken("notoken");
-
         String confStr = "<configuration></configuration>";
         coordJob.setConf(confStr);
-        String startDateStr = null, endDateStr = null;
-        try {
-            startDateStr = DateUtils.formatDateUTC(start);
-            endDateStr = DateUtils.formatDateUTC(end);
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-            fail("Could not format dates");
-        }
-        String appXml = "<coordinator-app xmlns='uri:oozie:coordinator:0.1' name='NAME' frequency=\"1\" start='" + startDateStr + "' end='" + endDateStr + "'";
-
-        appXml += " timezone='UTC' freq_timeunit='DAY' end_of_duration='NONE'>";
-        appXml += "<controls>";
-        appXml += "<timeout>10</timeout>";
-        appXml += "<concurrency>2</concurrency>";
-        appXml += "<execution>LIFO</execution>";
-        appXml += "</controls>";
-        appXml += "<action>";
-        appXml += "<workflow>";
-        appXml += "<app-path>hdfs:///tmp/workflows/</app-path>";
-        appXml += "</workflow>";
-        appXml += "</action>";
-        appXml += "</coordinator-app>";
-
         coordJob.setJobXml(appXml);
         coordJob.setLastActionNumber(0);
         coordJob.setFrequency(1);
         coordJob.setExecution(Execution.FIFO);
         coordJob.setConcurrency(1);
-
         coordJob.setStartTime(start);
         coordJob.setEndTime(end);
 
@@ -134,7 +150,7 @@ public class TestCoordJobMatLookupTriggerService extends XTestCase {
     }
 
     /**
-     * Test current mode.
+     * Test current mode. The job should be picked up for materialization.
      *
      * @throws Exception
      */
@@ -155,10 +171,10 @@ public class TestCoordJobMatLookupTriggerService extends XTestCase {
 
         CoordinatorStore store2 = Services.get().get(StoreService.class).getStore(CoordinatorStore.class);
         store2.beginTrx();
-        CoordinatorJobBean action = store2.getCoordinatorJob(jobId, false);
+        CoordinatorJobBean coordJob = store2.getCoordinatorJob(jobId, false);
         store2.commitTrx();
         store2.closeTrx();
-        if (!(action.getStatus() == CoordinatorJob.Status.PREMATER)) {
+        if (!(coordJob.getStatus() == CoordinatorJob.Status.PREMATER)) {
             fail();
         }
     }
