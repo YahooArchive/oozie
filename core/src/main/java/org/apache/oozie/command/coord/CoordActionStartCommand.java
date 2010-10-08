@@ -26,6 +26,7 @@ import org.apache.oozie.service.DagEngineService;
 import org.apache.oozie.store.StoreException;
 import org.apache.oozie.store.CoordinatorStore;
 import org.apache.oozie.service.Services;
+import org.apache.oozie.servlet.BaseJobServlet;
 import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.XmlUtils;
@@ -148,6 +149,10 @@ public class CoordActionStartCommand extends CoordinatorCommand<Void> {
                 Configuration conf = new XConfiguration(new StringReader(coordAction.getRunConf()));
                 SLADbOperations.writeStausEvent(coordAction.getSlaXml(), coordAction.getId(), store, Status.STARTED,
                                                 SlaAppType.COORDINATOR_ACTION);
+
+                // Normalize workflow appPath here;
+                BaseJobServlet.normalizeAppPath(conf);
+                
                 String wfId = dagEngine.submitJob(conf, startJob);
                 coordAction.setStatus(CoordinatorAction.Status.RUNNING);
                 coordAction.setExternalId(wfId);

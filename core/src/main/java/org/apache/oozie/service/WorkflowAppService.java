@@ -92,7 +92,7 @@ public abstract class WorkflowAppService implements Service {
             URI uri = new URI(appPath);
             FileSystem fs = Services.get().get(HadoopAccessorService.class).
                     createFileSystem(user, group, uri, new Configuration());
-            Reader reader = new InputStreamReader(fs.open(new Path(uri.getPath(), "workflow.xml")));
+            Reader reader = new InputStreamReader(fs.open(new Path(uri.getPath())));
             StringWriter writer = new StringWriter();
             IOUtils.copyCharStream(reader, writer);
             return writer.toString();
@@ -149,7 +149,7 @@ public abstract class WorkflowAppService implements Service {
             if (jobConf.get(XOozieClient.LIBPATH) != null) { // This is a HTTP submission job;
                 filePaths = getLibFiles(fs, appPath);
             } else {
-                filePaths = getLibFiles(fs, new Path(appPath + "/lib"));
+                filePaths = getLibFiles(fs, new Path(appPath.getParent() + "/lib"));
             }
 
             conf.setStrings(APP_LIB_PATH_LIST, filePaths.toArray(new String[filePaths.size()]));

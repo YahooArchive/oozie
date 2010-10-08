@@ -83,6 +83,7 @@ public abstract class BaseJobsServlet extends JsonRestServlet {
         conf = XConfiguration.trim(conf);
         validateJobConfiguration(conf);
         BaseJobServlet.checkAuthorizationForApp(getUser(request), conf);
+        BaseJobServlet.normalizeAppPath(conf);
 
         JSONObject json = submitJob(request, conf);
         startCron();

@@ -22,6 +22,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.oozie.BaseEngineException;
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.client.OozieClient;
@@ -30,6 +33,8 @@ import org.apache.oozie.client.rest.JsonBean;
 import org.apache.oozie.client.rest.RestConstants;
 import org.apache.oozie.service.AuthorizationException;
 import org.apache.oozie.service.AuthorizationService;
+import org.apache.oozie.service.HadoopAccessorException;
+import org.apache.oozie.service.HadoopAccessorService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.service.XLogService;
 import org.apache.oozie.util.XConfiguration;
@@ -102,6 +107,7 @@ public abstract class BaseJobServlet extends JsonRestServlet {
             Configuration conf = new XConfiguration(request.getInputStream());
             stopCron();
             checkAuthorizationForApp(getUser(request), conf);
+            normalizeAppPath(conf);
             reRunJob(request, response, conf);
             startCron();
             response.setStatus(HttpServletResponse.SC_OK);
@@ -173,6 +179,55 @@ public abstract class BaseJobServlet extends JsonRestServlet {
         }
     }
 
+    /**
+     * Normalize appPath in conf - If it's not jobs via http submission, after normalization appPath always
+     * points to xml definition file. <p/>
+     *
+     * @param conf configuration.
+     * @throws IOException thrown if normalization can not be done properly.
+     */
+    public static void normalizeAppPath(Configuration conf) throws IOException {
+        String libPathStr = conf.get(XOozieClient.LIBPATH);
+        if (libPathStr != null) { // do nothing for http submission job;
+            return;
+        }
+
+        String wfPathStr = conf.get(OozieClient.APP_PATH);
+        String coordPathStr = conf.get(OozieClient.COORDINATOR_APP_PATH);
+        String appPathStr = wfPathStr != null ? wfPathStr : coordPathStr;
+
+        String user = conf.get(OozieClient.USER_NAME);
+        String group = conf.get(OozieClient.GROUP_NAME);
+        FileSystem fs = null;
+        try {
+            fs = Services.get().get(HadoopAccessorService.class).createFileSystem(user, group, new Path(appPathStr).toUri(), conf);
+        }
+        catch (HadoopAccessorException ex) {
+            throw new IOException(ex.getMessage());
+        }
+
+        Path appPath = new Path(appPathStr);
+        String normalizedAppPathStr = appPathStr;
+        if (!fs.exists(appPath)) {
+            throw new IOException("Error: " + appPathStr + " does not exist");
+        }
+
+        FileStatus fileStatus = fs.getFileStatus(appPath);
+        Path appXml = appPath;
+        // Normalize appPath here - it will always point to a workflow/coordinator xml definition file;
+        if (fileStatus.isDir()) {
+            appXml = new Path(appPath, wfPathStr != null? "workflow.xml" : "coordinator.xml");
+            normalizedAppPathStr = appXml.toString();
+        }
+
+        if (wfPathStr != null) {
+            conf.set(OozieClient.APP_PATH, normalizedAppPathStr);
+        }
+        else if (coordPathStr != null) {
+            conf.set(OozieClient.COORDINATOR_APP_PATH, normalizedAppPathStr);
+        }
+    }
+    
     /**
      * Return information about jobs.
      */
