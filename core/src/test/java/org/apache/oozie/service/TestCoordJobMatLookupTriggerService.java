@@ -15,14 +15,11 @@
 package org.apache.oozie.service;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Date;
-import java.util.Properties;
-import java.util.regex.Matcher;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,11 +30,8 @@ import org.apache.oozie.service.CoordJobMatLookupTriggerService.CoordJobMatLooku
 import org.apache.oozie.store.CoordinatorStore;
 import org.apache.oozie.store.StoreException;
 import org.apache.oozie.test.XFsTestCase;
-import org.apache.oozie.test.XTestCase;
 import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.IOUtils;
-import org.apache.oozie.util.XLog;
-import org.apache.oozie.util.XmlUtils;
 
 public class TestCoordJobMatLookupTriggerService extends XFsTestCase {
     private Services services;
