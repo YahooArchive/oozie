@@ -66,7 +66,7 @@ public class CoordJobMatLookupCommand extends CoordinatorCommand<Void> {
             startTime = coordJob.getStartTimestamp();
             
             if (startTime.after(new Timestamp(System.currentTimeMillis() + LOOKAHEAD_WINDOW * 1000))) {
-                log.debug("CoordJobMatLookupCommand for jobId=" + jobId + " job's start time is not reached yet");
+                log.debug("CoordJobMatLookupCommand for jobId=" + jobId + " job's start time is not reached yet - nothing to materialize");
                 return null;
             }
         }
