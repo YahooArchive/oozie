@@ -31,7 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Service that loads Oozie workflow definition schema and registered extension schemas.
+ * Service that loads Oozie workflow definition schema and registered extension
+ * schemas.
  */
 public class SchemaService implements Service {
 
@@ -41,6 +42,8 @@ public class SchemaService implements Service {
 
     public static final String COORD_CONF_EXT_SCHEMAS = CONF_PREFIX + "coord.ext.schemas";
 
+    public static final String BUNDLE_CONF_EXT_SCHEMAS = CONF_PREFIX + "bundle.ext.schemas";
+
     public static final String SLA_CONF_EXT_SCHEMAS = CONF_PREFIX + "sla.ext.schemas";
 
     public static final String SLA_NAME_SPACE_URI = "uri:oozie:sla:0.1";
@@ -49,11 +52,14 @@ public class SchemaService implements Service {
 
     private Schema coordSchema;
 
+    private Schema bundleSchema;
+
     private Schema slaSchema;
 
-    private static final String OOZIE_WORKFLOW_XSD[] = {"oozie-workflow-0.1.xsd", "oozie-workflow-0.2.xsd"};
-    private static final String OOZIE_COORDINATOR_XSD[] = {"oozie-coordinator-0.1.xsd"};
-    private static final String OOZIE_SLA_SEMANTIC_XSD[] = {"gms-oozie-sla-0.1.xsd"};
+    private static final String OOZIE_WORKFLOW_XSD[] = { "oozie-workflow-0.1.xsd", "oozie-workflow-0.2.xsd" };
+    private static final String OOZIE_COORDINATOR_XSD[] = { "oozie-coordinator-0.1.xsd" };
+    private static final String OOZIE_BUNDLE_XSD[] = { "oozie-bundle-0.1.xsd" };
+    private static final String OOZIE_SLA_SEMANTIC_XSD[] = { "gms-oozie-sla-0.1.xsd" };
 
     private Schema loadSchema(Configuration conf, String[] baseSchemas, String extSchema) throws SAXException,
             IOException {
@@ -81,6 +87,7 @@ public class SchemaService implements Service {
         try {
             wfSchema = loadSchema(services.getConf(), OOZIE_WORKFLOW_XSD, WF_CONF_EXT_SCHEMAS);
             coordSchema = loadSchema(services.getConf(), OOZIE_COORDINATOR_XSD, COORD_CONF_EXT_SCHEMAS);
+            bundleSchema = loadSchema(services.getConf(), OOZIE_BUNDLE_XSD, BUNDLE_CONF_EXT_SCHEMAS);
             slaSchema = loadSchema(services.getConf(), OOZIE_SLA_SEMANTIC_XSD, SLA_CONF_EXT_SCHEMAS);
         }
         catch (SAXException ex) {
@@ -110,30 +117,32 @@ public class SchemaService implements Service {
     /**
      * Return the schema for XML validation of application definitions.
      *
-     * @param schemaName: Name of schema definition (i.e. WORKFLOW/COORDINATOR)
+     * @param schemaName: Name of schema definition (i.e.
+     *        WORKFLOW/COORDINATOR/BUNDLE)
      * @return the schema for XML validation of application definitions.
      */
     public Schema getSchema(SchemaName schemaName) {
+        Schema returnSchema = null;
         if (schemaName == SchemaName.WORKFLOW) {
-            return wfSchema;
+            returnSchema = wfSchema;
+        }
+        else if (schemaName == SchemaName.COORDINATOR) {
+            returnSchema = coordSchema;
+        }
+        else if (schemaName == SchemaName.BUNDLE) {
+            returnSchema = bundleSchema;
+        }
+        else if (schemaName == SchemaName.SLA_ORIGINAL) {
+            returnSchema = slaSchema;
         }
         else {
-            if (schemaName == SchemaName.COORDINATOR) {
-                return coordSchema;
-            }
-            else {
-                if (schemaName == SchemaName.SLA_ORIGINAL) {
-                    return slaSchema;
-                }
-                else {
-                    throw new RuntimeException("No schema found with name " + schemaName);
-                }
-            }
+            throw new RuntimeException("No schema found with name " + schemaName);
         }
+        return returnSchema;
     }
 
     public enum SchemaName {
-        WORKFLOW(1), COORDINATOR(2), SLA_ORIGINAL(3);
+        WORKFLOW(1), COORDINATOR(2), SLA_ORIGINAL(3), BUNDLE(4);
         private int id;
 
         private SchemaName(int id) {
