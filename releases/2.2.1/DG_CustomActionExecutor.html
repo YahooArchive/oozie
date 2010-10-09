@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-10-08
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Custom_Action_Nodes"></a>
+<div class="section"><h2> Custom Action Nodes</h2>
+<p><ul><ul><li><a href="#Introduction">Introduction</a>
+</li>
+<li><a href="#Writing_a_custom_Action_Node">Writing a custom Action Node</a>
+<ul><li><a href="#ActionExecutor.Context">ActionExecutor.Context</a>
+</li>
+<li><a href="#Constructor">Constructor</a>
+</li>
+<li><a href="#initActionType">initActionType()</a>
+</li>
+<li><a href="#startActionExecutor.Context_context_Action_action">start(ActionExecutor.Context context, Action action)</a>
+</li>
+<li><a href="#checkActionExecutor.Context_context_Action_action">check(ActionExecutor.Context context, Action action)</a>
+</li>
+<li><a href="#killActionExecutor.Context_context_Action_action">kill(ActionExecutor.Context context, Action action)</a>
+</li>
+<li><a href="#endActionExecutor.Context_context_Action_action">end(ActionExecutor.Context context, Action action)</a>
+</li>
+<li><a href="#Registereing_Errors">Registereing Errors</a>
+</li>
+</ul>
+</li>
+<li><a href="#Deploying_a_custom_Action_Executor">Deploying a custom Action Executor</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Introduction"></a>
+<div class="section"><h3>Introduction</h3>
+<p>Oozie can be extended to support additional action types by writing a custom <a href="./WorkflowFunctionalSpec.html#ActionNodes">Action Node</a>
+. Action Nodes can be synchronous or asynchronous.<ul><li>Synchronous Node - Sync nodes are executed inline by Oozie, which waits for completion of these nodes before proceeding. Hence, these nodes should almost never be used and are meant for lightweight tasks like FileSystem move, mkdir, delete.</li>
+<li>Asynchronouse Nodes - Oozie starts asynchrnous nodes, and then monitors the action being executed for completion. This is done via a callback from the action or Oozie polling for the action status.</li>
+</ul>
+</p>
+<a name="Writing_a_custom_Action_Node"></a>
+</div>
+<div class="section"><h3>Writing a custom Action Node</h3>
+<p>Action Executors are configured in the oozie configuration file oozie-site.xml. These executors are loaded during Oozie startup. <a href="./DG_CustomActionExecutor.html#Deploying_a_custom_Action_Executor">Deploying a Custom Action Executor</a>
+.</p>
+<p>Action Executors MUST extend the <tt>ActionExecutor</tt>
+ class and override the required methods.</p>
+<p>Most methods take as argument the Execution Context and the actual Action object with various configuration properties resolved.</p>
+<a name="ActionExecutor.Context"></a>
+<div class="section"><h4>ActionExecutor.Context</h4>
+<p>The Execution context gives Action Nodes access to configuration properties, methods to set the state of the action, methods to set variables which are to be made available later in the execution path.</p>
+<p><b>The following methods from the ActionExecutor interface should be implemented.</b>
+</p>
+<a name="Constructor"></a>
+</div>
+<div class="section"><h4>Constructor</h4>
+<p>A no argument constructor should be implemented, which calls super(ACTION_TYPE). ACTION_TYPE is the name of the action which will be used in the workflow xml, and is used by Oozie to instantiate the correct type of Executor.</p>
+<a name="initActionType"></a>
+</div>
+<div class="section"><h4>initActionType()</h4>
+<p>This method is called once during initialization of the Action Executor during Oozie startup. Any common initialization code for the Action Node should go here.</p>
+<p>As an example, setting up of error handling for the Custom Action should be done here.</p>
+<p>This method must call super.initActionType() as it's first statement.</p>
+<a name="startActionExecutor.Context_context_Action_action"></a>
+</div>
+<div class="section"><h4>start(ActionExecutor.Context context, Action action)</h4>
+<p>The action start up happens here.<ul><li>Async Actions - The action should be started and context.setStartData(externalId, trackerUri, consoleUrl) must be set. A check can be made for whether the action has completed, in which case context.setExecutionData(externalStatus, actionData) must be called.</li>
+<li>Sync Actions - The action should be started and should complete execution. context.setExecutionData(externalStatus, actionData) must be called.</li>
+</ul>
+</p>
+<a name="checkActionExecutor.Context_context_Action_action"></a>
+</div>
+<div class="section"><h4>check(ActionExecutor.Context context, Action action)</h4>
+<p><tt>check(...)</tt>
+ is used by Oozie to poll for the status of the action. This method should interact with the action started previously, and update the status. If the action has completed, context.setExecutionData(externalStatus, actionData) must be called. Otherwise, the status can be updated using context.setExternalStatus(externalStatus).</p>
+<p>For sync actions, this method will not be called, and should throw an UnsupportedOperationException().</p>
+<a name="killActionExecutor.Context_context_Action_action"></a>
+</div>
+<div class="section"><h4>kill(ActionExecutor.Context context, Action action)</h4>
+<p><tt>kill(...)</tt>
+ is called when there is an attempt to kill the running job or action. No workflow transition is made after this.</p>
+<p>The implementation for a custom action should interact with and kill the running action, and take care of any cleanup which may be required. context.setEndData(status, signalValue) should be called with both values set to Action.Status.KILLED.</p>
+<a name="endActionExecutor.Context_context_Action_action"></a>
+</div>
+<div class="section"><h4>end(ActionExecutor.Context context, Action action)</h4>
+<p><tt>end(...)</end> is used for any cleanup or processing which may need to be done after completion of the action. After any processing, context.setEndData(status, signalValue) should be called to complete execution of the action and trigger the next workflow transition. signalValue can be Action.Status.OK or Action.Status.ERROR.</p>
+<a name="Registereing_Errors"></a>
+</div>
+<div class="section"><h4>Registereing Errors</h4>
+<p>Oozie actions can generate different types of Errors.<ul><li>TRANSIENT - will be retried</li>
+<li>NON TRANSIENT - the job will be suspended and can be resumed later by human intervention, after fixing whatever problem caused this error.</li>
+<li>ERROR - causes the error transition to be taken.</li>
+<li>FAILED - the action and the job are set to FAILED state. No transitions are taken.</li>
+</ul>
+registerError(exceptionClassName, errorType, errorMessage) can be used to register possible exceptions while executing the action, along with their type and error message. This will normally be done during initialization of the Action Executor.</p>
+<a name="Deploying_a_custom_Action_Executor"></a>
+</div>
+</div>
+<div class="section"><h3>Deploying a custom Action Executor</h3>
+<p>Action Nodes can be registered in the oozie configuration file oozie-site.xml, by changing the property 'oozie.service.ActionService.executor.ext.classes'. For multiple Executors, the class name should be separated by commas.
+<pre>  &lt;property&gt;
+    &lt;name&gt;oozie.service.ActionService.executor.ext.classes&lt;/name&gt;
+    &lt;value&gt;
+      org.apache.oozie.wf.action.decision.CustomActionExecutor,
+	  Custom_Action_Executr_2.class
+    &lt;/value&gt;
+  &lt;/property&gt;</pre>
+Any configuration properties to be made available to this class should also be added to oozie-site.xml. The convention to be followed for naming these properties is 'oozie.action.[ActionName].property.name'</p>
+<p>The XML schema (XSD) for the new Actions should be added to oozie-site.xml, under the property 'oozie.service.WorkflowSchemaService.ext.schemas'. A comma separated list for multiple Action schemas.</p>
+<p>The executor class should be placed along with the oozie webapp in the correct path. Once Tomcat is restarted, the custom action node can be used in workflows.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-10-08
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Quick_Start"></a>
+<div class="section"><h2> Oozie Quick Start</h2>
+<p>These instructions install and run Oozie using HSQLDB as an in-memory embedded database. It assumes that
+Tomcat is running in port 8080 and that a Hadoop instance is also running in locally. For detailed install
+and configuration instructions refer to <a href="./AG_Install.html">Oozie Install</a>
+.</p>
+<a name="System_Requirements"></a>
+<div class="section"><h3>System Requirements</h3>
+<p><ul><li>Unix (tested in Linux and Mac OS X)</li>
+<li>Java 1.6+</li>
+<li>Hadoop<ul><li><a class="externalLink" href="http://hadoop.apache.org">Apache Hadoop</a>
+ (tested with 0.20.2)</li>
+<li><a class="externalLink" href="http://developer.yahoo.com/hadoop">Yahoo! Hadoop</a>
+ (tested with 0.20.104.2)</li>
+</ul>
+</li>
+<li><a class="externalLink" href="http://tomcat.apache.org">Tomcat 6.x</a>
+ (tested with 6.0.18)</li>
+</ul>
+</p>
+<p>The Java 1.6+ <tt>bin</tt>
+ directory should be in the command path.</p>
+<p>Tomcat should be installed and running.</p>
+<a name="Server_Installation"></a>
+</div>
+<div class="section"><h3>Server Installation</h3>
+<p>Download the latest Oozie distribution from <a href="./Http://github.com/yahoo/oozie/downloads.html">http://github.com/yahoo/oozie/downloads</a>
+.</p>
+<p>Expand the Oozie distribution <tt>tar.gz</tt>
+.</p>
+<p>Set the <tt>OOZIE_HOME</tt>
+ environment variable to the directory where the expanded Oozie distribution is located.</p>
+<p><b>NOTE:</b>
+ The <tt>OOZIE_HOME</tt>
+ environment variable is only required and used by the Oozie server. It is not used by the
+Oozie client.</p>
+<p>Oozie WAR is bundled without the Hadoop JAR files and without the ExtJS library. The Hadoop JARs are required to run
+Oozie. The ExtJS library is optional (only required for the Oozie web-console to work).</p>
+<p>The ExtJS library can be downloaded from <a class="externalLink" href="http://www.extjs.com/learn/Ext_Version_Archives">ExtJS 2.2</a>
+ (it must be
+version 2.2). The ExtJS library is not bundled with Oozie because it uses a different license.</p>
+<p>Use the <tt>${OOZIE_HOME}/bin/addtowar.sh</tt>
+ script to add the Hadoop JARs and the ExtJS library to the Oozie WAR file.</p>
+<p>Usage:
+<pre>
+ Usage  : addtowar.sh &lt;OPTIONS&gt;
+ Options: -inputwar INPUT_OOZIE_WAR
+          -outputwar OUTPUT_OOZIE_WAR
+          [-hadoop HADOOP_VERSION HADOOP_PATH]
+          [-extjs EXTJS_PATH]
+          [-jars JARS_PATH] (multiple JAR path separated by ':')
+</pre></p>
+<p>The original Oozie WAR file is at <tt>${OOZIE_HOME}/oozie.war</tt>
+.</p>
+<p>After the Hadoop JARs and the ExtJS library has been added to the <tt>oozie.war</tt>
+ file Oozie is ready for deployment.</p>
+<p>Stop Tomcat.</p>
+<p>If present, delete any previous <tt>oozie.war</tt>
+ and <tt>ooziedocs.war</tt>
+ files, and <tt>oozie</tt>
+ and <tt>ooziedocs</tt>
+ directories from
+Tomcat's <tt>webapps/</tt>
+ directory.</p>
+<p>Copy the <tt>oozie.war</tt>
+ file (that contains the Hadoop JARs adn the ExtJS library) and <tt>${OOZIE_HOME}/wars/ooziedocs.war</tt>
+
+to Tomcat's <tt>webapps/</tt>
+ directory.</p>
+<p>Start Tomcat.</p>
+<p>Check the Oozie log file <tt>${OOZIE_HOME}/logs/oozie.log</tt>
+ to ensure Oozie started properly.</p>
+<p>Using the Oozie command line tool check the status of Oozie:</p>
+<p><pre>
+${OOZIE_HOME}/bin/oozie admin -oozie http://localhost:8080/oozie -status
+</pre></p>
+<p>Using a browser go to the <a class="externalLink" href="http://localhost:8080/oozie">Oozie web console</a>
+, Oozie status should be <b>NORMAL</b>
+.</p>
+<p>Refer to the <a href="./DG_Examples.html">Running the Examples</a>
+ document for details on running the examples.</p>
+<a name="Oozie_Command_Line_Installation"></a>
+</div>
+<div class="section"><h3>Oozie Command Line Installation</h3>
+<p>Copy and expand the <tt>oozie-client</tt>
+ TAR.GZ file bundled with the distribution. Add the <tt>bin/</tt>
+ directory to the <tt>PATH</tt>
+.</p>
+<p>Refer to the <a href="./DG_CommandLineTool.html">Command Line Interface Utilities</a>
+ document for a a full reference of the <tt>oozie</tt>
+
+command line tool.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

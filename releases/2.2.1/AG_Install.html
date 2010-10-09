@@ -1,0 +1,407 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-10-08
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Installation_and_Configuration"></a>
+<div class="section"><h2> Oozie Installation and Configuration</h2>
+<p><ul><ul><li><a href="#System_Requirements">System Requirements</a>
+</li>
+<li><a href="#Download_Oozie">Download Oozie</a>
+</li>
+<li><a href="#Environment_Setup">Environment Setup</a>
+</li>
+<li><a href="#Oozie_WAR_Setup">Oozie WAR Setup</a>
+</li>
+<li><a href="#Database_Setup">Database Setup</a>
+</li>
+<li><a href="#Oozie_Configuration">Oozie Configuration</a>
+<ul><li><a href="#Oozie_Configuration_Properties">Oozie Configuration Properties</a>
+</li>
+<li><a href="#Logging_Configuration">Logging Configuration</a>
+</li>
+<li><a href="#Oozie_Authentication_Configuration">Oozie Authentication Configuration</a>
+</li>
+<li><a href="#User_Authorization_Configuration">User Authorization Configuration</a>
+</li>
+<li><a href="#Database_Configuration">Database Configuration</a>
+</li>
+<li><a href="#Oozie_System_ID_Configuration">Oozie System ID Configuration</a>
+</li>
+<li><a href="#Oozie_URL_Configuration">Oozie URL Configuration</a>
+</li>
+<li><a href="#Fine_Tuning_an_Oozie_Server">Fine Tuning an Oozie Server</a>
+</li>
+</ul>
+</li>
+<li><a href="#Starting_and_Stopping_Oozie">Starting and Stopping Oozie</a>
+</li>
+<li><a href="#Oozie_Command_Line_Installation">Oozie Command Line Installation</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="System_Requirements"></a>
+<div class="section"><h3>System Requirements</h3>
+<p><ul><li>Unix (tested in Linux and Mac OS X)</li>
+<li>Java 1.6+</li>
+<li>Hadoop<ul><li><a class="externalLink" href="http://hadoop.apache.org">Apache Hadoop</a>
+ (tested with 0.20.2)</li>
+<li><a class="externalLink" href="http://developer.yahoo.com/hadoop">Yahoo! Hadoop</a>
+ (tested with 0.20.104.2)</li>
+</ul>
+</li>
+<li><a class="externalLink" href="http://tomcat.apache.org">Tomcat 6.x</a>
+ (tested with 6.0.18)</li>
+</ul>
+</p>
+<a name="Download_Oozie"></a>
+</div>
+<div class="section"><h3>Download Oozie</h3>
+<p>Download the latest Oozie distribution from <a href="./Http://yahoo.github.com/oozie/downloads.html">http://yahoo.github.com/oozie/downloads</a>
+.</p>
+<p>Expand the Oozie distribution <tt>tar.gz</tt>
+.</p>
+<a name="Environment_Setup"></a>
+</div>
+<div class="section"><h3>Environment Setup</h3>
+<p>Java JRE should be in the <tt>PATH</tt>
+.</p>
+<p>Set the <tt>OOZIE_HOME</tt>
+ environment variable to the directory where the expanded Oozie distribution is located.</p>
+<p><b>NOTE:</b>
+ The <tt>OOZIE_HOME</tt>
+ environment variable is only required and used by the Oozie server. It is not used by the
+Oozie client.</p>
+<p>Add <tt>${OOZIE_HOME}/bin</tt>
+ to the <tt>PATH</tt>
+.</p>
+<a name="Oozie_WAR_Setup"></a>
+</div>
+<div class="section"><h3>Oozie WAR Setup</h3>
+<p>Oozie WAR is bundled without the Hadoop JAR files and without the ExtJS library. The Hadoop JARs are required to run
+Oozie. The ExtJS library is optional (only required for the Oozie web-console to work).</p>
+<p>The ExtJS library can be downloaded from <a class="externalLink" href="http://www.extjs.com/learn/Ext_Version_Archives">ExtJS 2.2</a>
+ (it must be
+version 2.2). The ExtJS library is not bundled with Oozie because it uses a different license.</p>
+<p>Use the <tt>${OOZIE_HOME}/bin/addtowar.sh</tt>
+ script to add the Hadoop JARs and the ExtJS library to the Oozie WAR file.</p>
+<p>Usage:
+<pre>
+ Usage  : addtowar &lt;OPTIONS&gt;
+ Options: -inputwar INPUT_OOZIE_WAR
+          -outputwar OUTPUT_OOZIE_WAR
+          [-hadoop HADOOP_VERSION HADOOP_PATH]
+          [-extjs EXTJS_PATH]
+          [-jars JARS_PATH] (multiple JAR path separated by ':')
+</pre></p>
+<p>The original Oozie WAR file is at <tt>${OOZIE_HOME}/oozie.war</tt>
+.</p>
+<p>After the Hadoop JARs and the ExtJS library has been added to the <tt>oozie.war</tt>
+ file Oozie is ready for deployment.</p>
+<p>If present, delete any previous <tt>oozie.war</tt>
+ and <tt>oozie</tt>
+ directory from Tomcat's <tt>webapps/</tt>
+ directory.</p>
+<p>Copy the <tt>oozie.war</tt>
+ file (the one that contains the Hadoop JARs adn the ExtJS library) to Tomcat's <tt>webapps/</tt>
+
+directory.</p>
+<p><b>IMPORTANT:</b>
+ Only one Oozie instance can be deployed per Tomcat instance.</p>
+<a name="Database_Setup"></a>
+</div>
+<div class="section"><h3>Database Setup</h3>
+<p>Oozie works with HSQL, MySQL and Oracle databases.</p>
+<p>If using HSQL, Oozie bundles HSQL JDBC driver. HSQL is an embedded in-memory database, all data is lost when Oozie
+stops running.</p>
+<p>If using MySQL or Oracle, the corresponding JDBC driver JARs files must be in Oozie classpath (added to Oozie WAR or
+in Tomcat's <tt>common/lib</tt>
+ directory). A database should be created for Oozie, Oozie creates its tables automatically.</p>
+<p>The <tt>bin/addtowar.sh</tt>
+ script has an option <tt>-jars</tt>
+ that can be used to add the Oracle or MySQL JDBC driver JARs to the
+Oozie WAR file.</p>
+<a name="Oozie_Configuration"></a>
+</div>
+<div class="section"><h3>Oozie Configuration</h3>
+<p>Oozie configuration is always read from the <tt>${OOZIE_HOME}/conf</tt>
+ directory.</p>
+<p>The Oozie configuration is distributed in 3 different files:</p>
+<p><ul><li><tt>oozie-site.xml</tt>
+ : Oozie server configuration</li>
+<li><tt>oozie-log4j.properties</tt>
+ : Oozie logging configuration</li>
+<li><tt>adminusers.txt</tt>
+ : Oozie admin users list</li>
+</ul>
+</p>
+<a name="Oozie_Configuration_Properties"></a>
+<div class="section"><h4>Oozie Configuration Properties</h4>
+<p>All Oozie configuration properties and their default values are defined in the <tt>oozie-default.xml</tt>
+ file.</p>
+<p>Oozie resolves configuration property values in the following order:</p>
+<p><ul><li>If a Java System property is defined, it uses its value</li>
+<li>Else, if the Oozie configuration file (=oozie-site.xml=) contains the property, it uses its value</li>
+<li>Else, it uses the default value documented in the <tt>oozie-default.xml</tt>
+ file</li>
+</ul>
+</p>
+<p>The <tt>OOZIE_CONFIG_FILE</tt>
+ environment variable can be set to indicate an alternate Oozie configuration file than
+the <tt>oozie-site.xml</tt>
+ file. The alternate file must be in the <tt>${OOZIE_HOME}/conf/</tt>
+ directory.</p>
+<p><b>NOTE:</b>
+ The <tt>oozie-default.xml</tt>
+ file found in the <tt>${OOZIE_HOME}/conf/</tt>
+ directory is not used by Oozie, it is there
+for reference purposes only.</p>
+<a name="Logging_Configuration"></a>
+</div>
+<div class="section"><h4>Logging Configuration</h4>
+<p>By default Oozie logs to the <tt>${OOZIE_HOME}/logs/</tt>
+ directory in 4 different files:</p>
+<p><ul><li>oozie.log: web services log streaming works from this log</li>
+<li>oozie-ops.log: messages for Admin/Operations to monitor</li>
+<li>oozie-instrumentation.log: intrumentation data, every 60 seconds (configurable)</li>
+<li>oozie-audit.log: audit messages, workflow jobs changes</li>
+</ul>
+</p>
+<p>Oozie log configuration is defined in the <tt>oozie-log4j.properties</tt>
+ files.</p>
+<p>If the Oozie log configuration file changes, Oozie reloads the new settings dynamically.</p>
+<p>The <tt>OOZIE_LOG4J_FILE</tt>
+ environment variable can be set to indicate an alternate Oozie logging configuration file. The
+alternate file must be in the <tt>${OOZIE_HOME}/conf/</tt>
+ directory.</p>
+<p>The <tt>OOZIE_LOG4J_RELOAD</tt>
+ environment variable can be set to specify the logging configuration reload interval in
+seconds. The default value is 10 seconds.</p>
+<a name="Oozie_Authentication_Configuration"></a>
+</div>
+<div class="section"><h4>Oozie Authentication Configuration</h4>
+<p>Oozie can work with Hadoop 20 with Security distribution which supports Kerberos authentication.</p>
+<p>Oozie authentication is configured using the following configuration properties (default values shown):</p>
+<p><pre>
+  oozie.services.ext=org.apache.oozie.service.HadoopAccessorService
+  oozie.service.HadoopAccessorService.kerberos.enabled=false
+  oozie.service.HadoopAccessorService.keytab.file=${user.home}/oozie.keytab
+  oozie.service.HadoopAccessorService.kerberos.principal=${user.name}/localhost@LOCALHOST
+</pre></p>
+<p>The above default values are for a Hadoop 0.20.2 distribution without Kerberos authentication.</p>
+<p>To use a Hadoop 20 with Security distribution (regardless of using Simple or Kerberos authentication) the following
+property must be set:</p>
+<p><pre>
+  oozie.services.ext=org.apache.oozie.service.KerberosHadoopAccessorService
+</pre></p>
+<p>To enable Kerberos authentication, the following property must be set:</p>
+<p><pre>
+  oozie.service.HadoopAccessorService.kerberos.enabled=true
+</pre></p>
+<p>When using Kerberos authentication, the following properties must be set to the correct values (default values shown):</p>
+<p><pre>
+  oozie.service.HadoopAccessorService.keytab.file=${user.home}/oozie.keytab
+  oozie.service.HadoopAccessorService.kerberos.principal=${user.name}/localhost@LOCALHOST
+</pre></p>
+<p><b>IMPORTANT:</b>
+ When using Oozie with a Hadoop 20 with Security distribution, the Oozie user in Hadoop must be configured
+as a proxy user.</p>
+<a name="User_Authorization_Configuration"></a>
+</div>
+<div class="section"><h4>User Authorization Configuration</h4>
+<p>Oozie has a basic authorization model:</p>
+<p><ul><li>Users have read access to all jobs</li>
+<li>Users have write access to their own jobs</li>
+<li>Users have write access to jobs for groups the users belong to</li>
+<li>Users have read access to admin operations</li>
+<li>Admin users have write access to all jobs</li>
+<li>Admin users have write access to admin operations</li>
+</ul>
+</p>
+<p>If security is disabled all users are admin users.</p>
+<p>Oozie security is set via the following configuration property (default value shown):</p>
+<p><pre>
+  oozie.service.AuthorizationService.security.enabled=false
+</pre></p>
+<p>If security is enabled, the admin users are read from the <tt>${OOZIE_HOME}/conf/adminusers.txt</tt>
+ file:</p>
+<p><ul><li>One user name per line</li>
+<li>Empty lines and lines starting with '#' are ignored</li>
+</ul>
+</p>
+<a name="Database_Configuration"></a>
+</div>
+<div class="section"><h4>Database Configuration</h4>
+<p>The SQL database used by Oozie is configured using the following configuration properties (default values shown):</p>
+<p><pre>
+  oozie.db.schema.name=oozie
+  oozie.db.schema.create=true
+  oozie.service.StoreService.jdbc.driver=org.hsqldb.jdbcDriver
+  oozie.service.StoreService.jdbc.url=jdbc:hsqldb:mem:${oozie.db.schema.name}
+  oozie.service.StoreService.jdbc.username=sa
+  oozie.service.StoreService.jdbc.password=
+  oozie.service.StoreService.pool.max.active.conn=10
+</pre></p>
+<p>The default values are for HSQLDB, an embedded in-memory database bundled with Oozie.</p>
+<p>To use MySQL or Oracle the corresponding JDBC driver JAR must be in the classpath (or added to the Oozie WAR file).</p>
+<p><b>NOTE:</b>
+ If the <tt>oozie.db.schema.create</tt>
+ property is set to <tt>true</tt>
+ (default) the Oozie tables will be created
+automatically if they are not found in the database at Oozie start up time. In a production system this option should
+be set to <tt>false</tt>
+ once the databaset tables have been created.</p>
+<a name="Oozie_System_ID_Configuration"></a>
+</div>
+<div class="section"><h4>Oozie System ID Configuration</h4>
+<p>Oozie has a system ID that is is used to generate the Oozie temporary runtime directory, the workflow job IDs, and the
+workflow action IDs.</p>
+<p>Two Oozie systems running with the same ID will not have any conflict but in case of troubleshooting it will be easier
+to identify resources created/used by the different Oozie systems if they have different system IDs (default value
+shown):</p>
+<p><pre>
+  oozie.system.id=oozie-${user.name}
+</pre></p>
+<a name="Oozie_URL_Configuration"></a>
+</div>
+<div class="section"><h4>Oozie URL Configuration</h4>
+<p>Oozie needs to know its public base URL <tt>SCHEME ://HOST:PORT/CONTEXT</tt>
+. This base URL is used to
+create callback URLs for actions and the console URL for Oozie workflow jobs (default value shown):</p>
+<p><pre>
+  oozie.base.url=http://localhost:8080/oozie
+</pre></p>
+<a name="Fine_Tuning_an_Oozie_Server"></a>
+</div>
+<div class="section"><h4>Fine Tuning an Oozie Server</h4>
+<p>Refer to the <a href="./oozie-default.xml.html">oozie-default.xml.txt</a>
+ for details.</p>
+<a name="Starting_and_Stopping_Oozie"></a>
+</div>
+</div>
+<div class="section"><h3>Starting and Stopping Oozie</h3>
+<p>Use the standard Tomcat commands to start and stop Oozie.</p>
+<a name="Oozie_Command_Line_Installation"></a>
+</div>
+<div class="section"><h3>Oozie Command Line Installation</h3>
+<p>Copy and expand the <tt>oozie-client</tt>
+ TAR.GZ file bundled with the distribution. Add the <tt>bin/</tt>
+ directory to the <tt>PATH</tt>
+.</p>
+<p>Refer to the <a href="./DG_CommandLineTool.html">Command Line Interface Utilities</a>
+ document for a a full reference of the <tt>oozie</tt>
+
+command line tool.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>
