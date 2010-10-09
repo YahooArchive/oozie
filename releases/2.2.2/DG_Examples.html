@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2010-10-08
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Examples"></a>
+<div class="section"><h2> Oozie Examples</h2>
+<p><ul><ul><li><a href="#Command_Line_Examples">Command Line Examples</a>
+<ul><li><a href="#Setting_Up_the_Examples">Setting Up the Examples</a>
+</li>
+<li><a href="#Running_the_Examples">Running the Examples</a>
+</li>
+</ul>
+</li>
+<li><a href="#Java_API_Example">Java API Example</a>
+</li>
+<li><a href="#Local_Oozie_Example">Local Oozie Example</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Command_Line_Examples"></a>
+<div class="section"><h3>Command Line Examples</h3>
+<a name="Setting_Up_the_Examples"></a>
+<div class="section"><h4>Setting Up the Examples</h4>
+<p>Oozie examples are bundled within an Oozie distribution in the <tt>oozie-examples.tar.gz</tt>
+ file.</p>
+<p>Exanding this file will create an <tt>examples/</tt>
+ directory.</p>
+<p>Within the <tt>examples/</tt>
+ directory there is a script, <tt>prepare-examples.sh</tt>
+ that setups up the examples (it is done in
+this way to avoid having multiple copies of the Hadoop streaming and Pig JAR files).</p>
+<p>In the Oozie <tt>examples/</tt>
+ directory, run the script that setups up the examples:</p>
+<p><pre>
+$ prepare-examples.sh
+</pre></p>
+<p>Copy the sample input data to HDFS:</p>
+<p><pre>
+$ hadoop fs -put input-data input-data
+</pre></p>
+<p>Edit the file <b>map-reduce-job.properties</b>
+ and add your userid to it
+<pre>
+$ cat map-reduce-job.properties#replace 'your_userid_here' with your userid
+oozie.wf.application.path=hdfs://localhost:9000/user/'your_userid_here'/examples/workflows/map-reduce
+inputDir=hdfs://localhost:9000/user/'your_userid_here'/examples/input-data
+outputDir=hdfs://localhost:9000/user/'your_userid_here'/examples/output-data-map-reduce
+jobTracker=localhost:9001
+nameNode=hdfs:/localhost:9000
+</pre>
+</p>
+<p>Copy the example workflow applications to HDFS:</p>
+<p><pre>
+$ hadoop fs -put examples /user/'your_userid_here'/
+</pre></p>
+<a name="Running_the_Examples"></a>
+</div>
+<div class="section"><h4>Running the Examples</h4>
+<p>Add the <tt>bin/</tt>
+ directory of the Oozie directory to the <tt>PATH</tt>
+ environment variable.</p>
+<p>Run a workflow job for the application, for example:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -config map-reduce-job.properties -run
+.
+job: 14-20090525161321-oozie-tucu
+</pre></p>
+<p>Check the workflow job status:</p>
+<p><pre>
+$ oozie job -oozie http://localhost:8080/oozie -info 14-20090525161321-oozie-tucu
+.
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Workflow Name :  map-reduce-wf
+App Path      :  hdfs://localhost:9000/user/tucu/workflows/map-reduce
+Status        :  SUCCEEDED
+Run           :  0
+User          :  tucu
+Group         :  users
+Created       :  2009-05-26 05:01 +0000
+Started       :  2009-05-26 05:01 +0000
+Ended         :  2009-05-26 05:01 +0000
+Actions
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Action Name             Type        Status     Transition  External Id            External Status  Error Code    Start Time              End Time
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+hadoop1                 map-reduce  OK         end         job_200904281535_0254  SUCCEEDED        -             2009-05-26 05:01 +0000  2009-05-26 05:01 +0000
+.----------------------------------------------------------------------------------------------------------------------------------------------------------------
+</pre></p>
+<p>To check the workflow job status via the Oozie web console, with a browser go to <tt><a href="http://localhost:8080/oozie" class="externalLink">http://localhost:8080/oozie</a>
+</tt>
+.</p>
+<p>To avoid having to provide the <tt>-oozie</tt>
+ option with the Oozie URL with every <tt>oozie</tt>
+ command, set <tt>OOZIE_URL</tt>
+ env 
+variable to the Oozie URL in the shell environment. For example:</p>
+<p><pre>
+$ export OOZIE_URL=&quot;http://localhost:8080/oozie&quot;
+$
+$ oozie job -info 14-20090525161321-oozie-tucu
+</pre></p>
+<a name="Java_API_Example"></a>
+</div>
+</div>
+<div class="section"><h3>Java API Example</h3>
+<p>Oozie provides a =<a href="./apidocs/org/org/apache/oozie/client/package-summary.html">Java Client API</a>
+ that simplifies
+integrating Oozie with Java applications. This Java Client API is a convenience API to interact with Oozie Web-Services
+API.</p>
+<p>The following code snippet shows how to submit an Oozie job using the Java Client API.</p>
+<p><pre>
+import org.apache.oozie.client.OozieClient;
+import org.apache.oozie.client.WorkflowJob;
+.
+import java.util.Properties;
+.
+    ...
+.
+    // get a OozieClient for local Oozie
+    OozieClient wc = new OozieClient(&quot;http://bar:8080/oozie&quot;);
+.
+    // create a workflow job configuration and set the workflow application path
+    Properties conf = wc.createConfiguration();
+    conf.setProperty(OozieClient.APP_PATH, &quot;hdfs://foo:9000/usr/tucu/my-wf-app&quot;);
+.
+    // setting workflow parameters
+    conf.setProperty(&quot;jobTracker&quot;, &quot;foo:9001&quot;);
+    conf.setProperty(&quot;inputDir&quot;, &quot;/usr/tucu/inputdir&quot;);
+    conf.setProperty(&quot;outputDir&quot;, &quot;/usr/tucu/outputdir&quot;);
+    ...
+.
+    // submit and start the workflow job
+    String jobId = wc.run(conf);
+    System.out.println(&quot;Workflow job submitted&quot;);
+.
+    // wait until the workflow job finishes printing the status every 10 seconds
+    while (wc.getJobInfo(jobId).getStatus() == Workflow.Status.RUNNING) {
+        System.out.println(&quot;Workflow job running ...&quot;);
+        Thread.sleep(10 * 1000);
+    }
+.
+    // print the final status o the workflow job
+    System.out.println(&quot;Workflow job completed ...&quot;);
+    System.out.println(wf.getJobInfo(jobId));
+    ...
+</pre></p>
+<a name="Local_Oozie_Example"></a>
+</div>
+<div class="section"><h3>Local Oozie Example</h3>
+<p>Oozie provides a embedded Oozie implementation, <tt><a href="./apidocs/org/apache/oozie/local/LocalOozie.html">LocalOozie</a>
+</tt>
+,
+which is useful for development, debugging and testing of workflow applications within the convenience of an IDE.</p>
+<p>The code snipped below shows the usage of the <tt>LocalOozie</tt>
+ class. All the interaction with Oozie is done using Oozie
+ <tt>OozieClient</tt>
+ Java API, as shown in the previous section.</p>
+<p>The examples bundled with Oozie include the complete and running class, <tt>LocalOozieExample</tt>
+ from where this snipped was
+taken.</p>
+<p><pre>
+import org.apache.oozie.local.LocalOozie;
+import org.apache.oozie.client.OozieClient;
+import org.apache.oozie.client.WorkflowJob;
+.
+import java.util.Properties;
+.
+    ...
+    // start local Oozie
+    LocalOozie.start();
+.
+    // get a OozieClient for local Oozie
+    OozieClient wc = LocalOozie.getClient();
+.
+    // create a workflow job configuration and set the workflow application path
+    Properties conf = wc.createConfiguration();
+    conf.setProperty(OozieClient.APP_PATH, &quot;hdfs://foo:9000/usr/tucu/my-wf-app&quot;);
+.
+    // setting workflow parameters
+    conf.setProperty(&quot;jobTracker&quot;, &quot;foo:9001&quot;);
+    conf.setProperty(&quot;inputDir&quot;, &quot;/usr/tucu/inputdir&quot;);
+    conf.setProperty(&quot;outputDir&quot;, &quot;/usr/tucu/outputdir&quot;);
+    ...
+.
+    // submit and start the workflow job
+    String jobId = wc.run(conf);
+    System.out.println(&quot;Workflow job submitted&quot;);
+.
+    // wait until the workflow job finishes printing the status every 10 seconds
+    while (wc.getJobInfo(jobId).getStatus() == Workflow.Status.RUNNING) {
+        System.out.println(&quot;Workflow job running ...&quot;);
+        Thread.sleep(10 * 1000);
+    }
+.
+    // print the final status o the workflow job
+    System.out.println(&quot;Workflow job completed ...&quot;);
+    System.out.println(wf.getJobInfo(jobId));
+.
+    // stop local Oozie
+    LocalOozie.stop();
+    ...
+</pre></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2010
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>
