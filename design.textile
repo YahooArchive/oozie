@@ -25,6 +25,18 @@ Oozie is a transactional system and it has built in automatic and manual retry c
 
 In case of workflow job failure, the workflow job can be rerun skipping previously completed actions, the workflow application can be patched before being rerun.
 
+h2(#capabilities). Current capabilities
+* Workflow dependency management: Oozie runtime manages the dependencies and execute actions when all the dependencies are satisfied. Workflows depend on time and/or data arrival. Intra workflow dependency is usually a prior node job completion within the DAG. 
+* Parameterization of action nodes: Oozie supports built in JSP expression language (EL) function for users to parameterize their workflow action. E.g. workflow name, action name, nominal start time is now available to actions.
+* Synchronous datasets: Oozie workflows can also depend on synchronous input data set - These are also referred to as "clocked datasets", or those that are generated with regular periodicity.
+* Native support for Streaming, M/R, PIG, HDFS jobs on Hadoop: Oozie supports most types of jobs on Hadoop. 
+* WebService APIs: Oozie supports both command line and WebService APIs.
+* GUI Monitoring: Oozie workflows can be monitored via a GUI interface as well as a WebService API. 
+
+h2(#missingfeature). Most notable missing capabilities
+* Support for Hive
+* Support for HBase
+
 h2(#system). System Requirements
 
 * Unix

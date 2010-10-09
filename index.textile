@@ -5,23 +5,33 @@ title: Yahoo!'s workflow engine for Hadoop
 
 h2(#overview). Overview
 
-Oozie - Yahoo!(tm)'s workflow engine for Apache Hadoop(tm) is an open-source workflow solution to manage and coordinate jobs running on Hadoop, including HDFS, Pig and MapReduce.
+Oozie is an open-source workflow/coordination service to manage data processing jobs for Apache Hadoop(tm). It is an extensible, scalable and data-aware service to orchestrate dependencies between jobs running on Hadoop (including HDFS, Pig and MapReduce). Oozie is a lot of things, but being:
+* A workflow solution for off Hadoop processing
+* Another query processing API, a la Cascading
 
-Oozie was designed for Yahoo!'s complex workflows and data pipelines at global scale. It is integrated with the Yahoo! Distribution of Hadoop with security and is a primary mechanism to manage a variety of complex data analysis workloads across Yahoo!.
+is not one of them.
 
-h2(#download). Downloads
+h2(#benefits). Oozie Benefits 
+* Complex workflow action dependencies: Oozie workflow comprises of actions and dependencies among them. Users create Directed Acyclical Graphs (DAG) to model their workflow. Oozie at runtime manages the dependencies and execute the actions when the dependencies identified in the DAG are satisfied. 
+* Reduces Time-To-Market (TTM): The DAG specification enables users to specify the workflow. Users save the time to build and maintain custom solutions for dependency and workflow management.
+* Frequency execution: Oozie workflow specification supports both data and time triggers. Users can specify execution frequency and can wait for data arrival to trigger an action in the workflow. 
+* Native Hadoop stack integration: Oozie supports all types of Hadoop jobs and is integrated with the Hadoop stack. Yahoo! distribution of Oozie is validated against the Hadoop stack.  
+* Oozie was designed for Yahoo!'s complex workflows and data pipelines at global scale. It is integrated with the Yahoo! Distribution of Hadoop with security and is a primary mechanism to manage a variety of complex data analysis workloads across Yahoo!.
 
-The source for Oozie can be obtained from "github":http://github.com/yahoo/oozie/tarball/oozie-2.0.2.1. It can also be accessed via git from the "source repository":http://github.com/yahoo/oozie.
+h2(#poweredby). Powered by Oozie 
 
-Users may communicate with each other and Yahoo! on Oozie user's mailing list:
+Oozie users are encouraged to put in their specific use cases to help the community understand how Oozie is being used in the industry:
+* "Yahoo! Custom segmentation team":poweredby.html#yahoosegm
+* "Yahoo! Search":poweredby.html#yahoosearch
 
-"oozie-users@yahoogroups.com":mailto:oozie-users@yahoogroups.com
+h2(#download). Staying in touch
+
+* "Follow us on GitHub":http://github.com/yahoo/oozie 
+* "Follow us on Yahoo groups":http://groups.yahoo.com/group/Oozie-users/join
+* "Subscribe to the mailing lists":mailto:Oozie-users-subscribe@yahoogroups.com
 
 h2(#notices).  Credits & Notices
 
 * Yahoo! does not offer any support for Oozie - Yahoo!'s workflow engine for Hadoop..
 
-h2(#ack). Acknowledgments 
-
 | !http://www.structure101.com/structure101-java/images/webapp.gif! | "Headway Software":http://www.headwaysoftware.com provided free licenses of "Structure101":http://www.headwaysoftware.com/products/structure101/index.php for analyzing Oozie Java code. |
-

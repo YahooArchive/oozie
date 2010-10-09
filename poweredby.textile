@@ -1,0 +1,22 @@
+---
+layout: default
+title: Powered by Oozie
+---
+
+h2(#yahoosegm). Yahoo! Custom segmentation team
+
+Custom segmentation team uses Oozie to run workflows containing PIG jobs on Hadoop. Oozie helps manage dependencies within those workflows and automatically kick off the right workflow when input data feed for that workflow is available. This team runs more than 1000 daily workflows and 20 weekly workflows, each with about 5 actions.
+
+* Oozie version being used: 2.2.2
+* Workflows per day:
+* Actions per workflow: 
+* Overall duration of a workflow:
+
+h2(#yahoosearch). Yahoo! Search 
+
+Yahoo! Search runs data processing workflows via Oozieto manage a variety of different Hadoop jobs (PIG, M/R, Streaming and HDFS action) that run on a daily basis.
+
+* Oozie version being used: 2.2.2
+* Workflows per day:
+* Actions per workflow: 
+* Overall duration of a workflow:
