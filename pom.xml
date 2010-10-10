@@ -137,6 +137,13 @@
 
     <pluginRepositories>
       <pluginRepository>
+          <id>apache-releases</id>
+          <url>https://repository.apache.org/content/repositories/releases</url>
+          <snapshots>
+              <enabled>false</enabled>
+          </snapshots>
+      </pluginRepository>
+      <pluginRepository>
           <id>internal.maven.repo</id>
           <name>Internal Repository for Integration</name>
           <url>${internal.maven.repository}</url>
