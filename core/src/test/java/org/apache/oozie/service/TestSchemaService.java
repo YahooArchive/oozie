@@ -165,10 +165,11 @@ public class TestSchemaService extends XTestCase {
         Validator validator = wss.getSchema(SchemaName.BUNDLE).newValidator();
         String BUNDLE_APP = "<bundle-app name='NAME' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns='uri:oozie:bundle:0.1'> "
                 + "<controls> <kick-off-time>2009-02-02T00:00Z</kick-off-time> </controls> "
-                + "<coordinator> <configuration> "
+                + "<coordinator> "
+                + "<app-path>hdfs://localhost:9001/tmp/bundle-apps/coordinator1.xml</app-path>"
+                + "<configuration> "
                 + "<property> <name>START_TIME</name> <value>2009-02-01T00:00Z</value> </property> </configuration> "
-                + "<app-path>hdfs://localhost:9001/tmp/bundle-apps/coordinator1.xml</app-path> </coordinator>"
-                + "</bundle-app>";
+                + "</coordinator></bundle-app>";
         Element e = XmlUtils.parseXml(BUNDLE_APP);
         // System.out.println("XML :"+ XmlUtils.prettyPrint(e));
         validator.validate(new StreamSource(new StringReader(BUNDLE_APP)));
