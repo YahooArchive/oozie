@@ -25,7 +25,7 @@
     <xs:complexType name="BUNDLE-APP">
         <xs:sequence>
             <xs:element name="controls" type="bundle:CONTROLS" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="coordinator" type="bundle:COORDINATOR" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="coordinator" type="bundle:COORDINATOR" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" type="bundle:IDENTIFIER" use="required"/>
     </xs:complexType>
@@ -35,7 +35,7 @@
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="COORDINATOR">
-        <xs:sequence  minOccurs="0" maxOccurs="unbounded">
+        <xs:sequence  minOccurs="1" maxOccurs="unbounded">
             <xs:element name="app-path" type="xs:string" minOccurs="1" maxOccurs="1"/>
             <xs:element name="configuration" type="bundle:CONFIGURATION" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
