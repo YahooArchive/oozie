@@ -74,6 +74,7 @@
             org.apache.oozie.service.LiteWorkflowAppService,
             org.apache.oozie.service.StoreService,
             org.apache.oozie.service.CoordinatorStoreService,
+            org.apache.oozie.service.BundleStoreService,
             org.apache.oozie.service.SLAStoreService,
             org.apache.oozie.service.DBLiteWorkflowStoreService,
             org.apache.oozie.service.CallbackService,
@@ -83,6 +84,7 @@
             org.apache.oozie.service.PurgeService,
             org.apache.oozie.service.CoordinatorEngineService,
             org.apache.oozie.service.DagEngineService,
+            org.apache.oozie.service.BundleEngineService,
             org.apache.oozie.service.CoordJobMatLookupTriggerService
         </value>
         <description>

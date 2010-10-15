@@ -32,6 +32,27 @@ public class ServletUtilities {
             }
         }
     }
+    
+    // add bundle appPath
+    protected static void ValidateAppPath(String wfPath, String coordPath, String bundlePath) throws XServletException {
+        int n = 0;
+        
+        if (wfPath != null) {
+            n ++;
+        }
+        
+        if (coordPath != null) {
+            n ++;
+        }
+        
+        if (bundlePath != null) {
+            n ++;
+        }
+        
+        if (n != 1) {
+            throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ErrorCode.E0302);
+        }
+    }
 
     // accessory static method to check the lib path parameter for the request
     protected static void ValidateLibPath(String libPath) throws XServletException {
