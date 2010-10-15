@@ -17,6 +17,7 @@ package org.apache.oozie.command;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.CoordinatorJobBean;
 import org.apache.oozie.ErrorCode;
@@ -416,6 +417,25 @@ public abstract class Command<T, S extends Store> implements XCallable<T> {
      * @throws CommandException thrown if the command could not perform its operation.
      */
     protected abstract Class<? extends Store> getStoreClass();
+
+
+    /**
+     * Set the log info with the context of the given coordinator bean.
+     *
+     * @param cBean coordinator bean.
+     */
+    protected void setLogInfo(BundleJobBean bBean) {
+        if (logInfo.getParameter(XLogService.GROUP) == null) {
+            logInfo.setParameter(XLogService.GROUP, bBean.getGroup());
+        }
+        if (logInfo.getParameter(XLogService.USER) == null) {
+            logInfo.setParameter(XLogService.USER, bBean.getUser());
+        }
+        logInfo.setParameter(DagXLogInfoService.JOB, bBean.getId());
+        logInfo.setParameter(DagXLogInfoService.TOKEN, "");
+        logInfo.setParameter(DagXLogInfoService.APP, bBean.getBundleName());
+        XLog.Info.get().setParameters(logInfo);
+    }
 
     /**
      * Set the log info with the context of the given coordinator bean.

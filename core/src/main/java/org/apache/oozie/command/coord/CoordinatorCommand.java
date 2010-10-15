@@ -40,7 +40,7 @@ public abstract class CoordinatorCommand<T> extends Command<T, CoordinatorStore>
     /**
      * Return the public interface of the Coordinator Store.
      *
-     * @return {@link WorkflowStore}
+     * @return {@link CoordinatorStore}
      */
     public Class<? extends Store> getStoreClass() {
         return CoordinatorStore.class;

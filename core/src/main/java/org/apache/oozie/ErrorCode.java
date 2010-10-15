@@ -149,6 +149,10 @@ public enum ErrorCode {
     E1017(XLog.STD, "Cannot change a workflow job"),
     E1018(XLog.STD, "Coord Job Rerun Error: {0}"),
 
+    E1101(XLog.STD, "Could not read the bundle job definition, {0}"),
+    E1102(XLog.STD, "Invalid Bundle application URI [{0}], {1}"),
+    E1103(XLog.STD, "Invalid bundle application attributes [{0}], {1}"),
+
     ETEST(XLog.STD, "THIS SHOULD HAPPEN ONLY IN TESTING, invalid job id [{0}]"),;
 
     private String template;

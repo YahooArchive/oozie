@@ -138,7 +138,7 @@ public class CoordSubmitCommand extends CoordinatorCommand<String> {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.oozie.command.Command#call(org.apache.oozie.store.Store)
      */
     @Override
@@ -748,16 +748,14 @@ public class CoordSubmitCommand extends CoordinatorCommand<String> {
     }
 
     /**
-     * Read workflow definition.
+     * Read Coordinator definition.
      *
      * @param appPath application path.
-     * @param user user name.
-     * @param group group name.
-     * @param autToken authentication token.
-     * @return workflow definition.
-     * @throws WorkflowException thrown if the definition could not be read.
+     * @param fileName
+     * @return Coordinator definition.
+     * @throws CoordinatorJobException thrown if the definition could not be read.
      */
-    protected String readDefinition(String appPath, String fileName) throws CoordinatorJobException {// TODO:
+    protected String readDefinition(String appPath, String fileName) throws CoordinatorJobException {
         String user = ParamChecker.notEmpty(conf.get(OozieClient.USER_NAME), OozieClient.USER_NAME);
         String group = ParamChecker.notEmpty(conf.get(OozieClient.GROUP_NAME), OozieClient.GROUP_NAME);
         Configuration confHadoop = CoordUtils.getHadoopConf(conf);
@@ -773,20 +771,18 @@ public class CoordSubmitCommand extends CoordinatorCommand<String> {
             else {
                 p = new Path(uri.getPath(), fileName);
             }
-            // Reader reader = new InputStreamReader(fs.open(new Path(uri
-            // .getPath(), fileName)));
-            Reader reader = new InputStreamReader(fs.open(p));// TODO
+            Reader reader = new InputStreamReader(fs.open(p));
             StringWriter writer = new StringWriter();
             IOUtils.copyCharStream(reader, writer);
             return writer.toString();
         }
         catch (IOException ex) {
             log.warn("IOException :" + XmlUtils.prettyPrint(confHadoop), ex);
-            throw new CoordinatorJobException(ErrorCode.E1001, ex.getMessage(), ex); // TODO:
+            throw new CoordinatorJobException(ErrorCode.E1001, ex.getMessage(), ex);
         }
         catch (URISyntaxException ex) {
             log.warn("URISyException :" + ex.getMessage());
-            throw new CoordinatorJobException(ErrorCode.E1002, appPath, ex.getMessage(), ex);// TODO:
+            throw new CoordinatorJobException(ErrorCode.E1002, appPath, ex.getMessage(), ex);
         }
         catch (HadoopAccessorException ex) {
             throw new CoordinatorJobException(ex);
