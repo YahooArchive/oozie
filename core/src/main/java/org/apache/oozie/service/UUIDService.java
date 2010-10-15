@@ -44,7 +44,7 @@ public class UUIDService implements Service {
 
     /**
      * Initialize the UUID service.
-     * 
+     *
      * @param services services instance.
      * @throws ServiceException thrown if the UUID service could not be initialized.
      */
@@ -74,7 +74,7 @@ public class UUIDService implements Service {
 
     /**
      * Return the public interface for UUID service.
-     * 
+     *
      * @return {@link UUIDService}.
      */
     @Override
@@ -93,7 +93,7 @@ public class UUIDService implements Service {
 
     /**
      * Create a unique ID.
-     * 
+     *
      * @param type: Type of Id. Generally 'C' for Coordinator and 'W' for Workflow.
      * @return unique ID.
      */
@@ -122,7 +122,7 @@ public class UUIDService implements Service {
      * Create a child ID.
      * <p/>
      * If the same child name is given the returned child ID is the same.
-     * 
+     *
      * @param id unique ID.
      * @param childName child name.
      * @return a child ID.
@@ -139,7 +139,7 @@ public class UUIDService implements Service {
 
     /**
      * Return the ID from a child ID.
-     * 
+     *
      * @param childId child ID.
      * @return ID of the child ID.
      */
@@ -153,7 +153,7 @@ public class UUIDService implements Service {
 
     /**
      * Return the child name from a child ID.
-     * 
+     *
      * @param childId child ID.
      * @return child name.
      */
