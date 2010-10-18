@@ -20,7 +20,11 @@ import java.util.Map;
 import org.apache.oozie.client.OozieClient;
 
 public class StoreStatusFilter {
-    public static final String coordSeletStr = "Select w.id, w.appName, w.status, w.user, w.group, w.startTimestamp, w.endTimestamp, w.appPath, w.concurrency, w.frequency, w.lastActionTimestamp, w.nextMaterializedTimestamp, w.createdTimestamp, w.timeUnitStr, w.timeZone, w.timeOut from CoordinatorJobBean w";
+	public static final String bundleSeletStr = "Select w.id, w.bundleName, w.status, w.user, w.group, w.kickoffTimestamp, w.endTimestamp, w.bundlePath, w.createdTimestamp, w.timeUnitStr, w.timeOut from BundleJobBean w";
+
+    public static final String bundleCountStr = "Select count(w) from BundleJobBean w";
+
+	public static final String coordSeletStr = "Select w.id, w.appName, w.status, w.user, w.group, w.startTimestamp, w.endTimestamp, w.appPath, w.concurrency, w.frequency, w.lastActionTimestamp, w.nextMaterializedTimestamp, w.createdTimestamp, w.timeUnitStr, w.timeZone, w.timeOut from CoordinatorJobBean w";
 
     public static final String coordCountStr = "Select count(w) from CoordinatorJobBean w";
 

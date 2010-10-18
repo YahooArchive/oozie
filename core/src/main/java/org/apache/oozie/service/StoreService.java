@@ -19,33 +19,30 @@ import java.text.MessageFormat;
 import java.util.Properties;
 
 import org.apache.oozie.util.IOUtils;
-import org.apache.oozie.util.Instrumentation;
 import org.apache.oozie.util.XLog;
 import org.apache.oozie.store.StoreException;
 import org.apache.oozie.service.Service;
 import org.apache.oozie.service.Services;
+import org.apache.oozie.store.BundleStore;
 import org.apache.oozie.store.SLAStore;
 import org.apache.oozie.store.Store;
 import org.apache.oozie.store.WorkflowStore;
 import org.apache.oozie.store.CoordinatorStore;
-import org.apache.oozie.util.Instrumentable;
 import org.apache.oozie.ErrorCode;
 import org.apache.openjpa.persistence.OpenJPAEntityManagerFactorySPI;
 import org.apache.hadoop.conf.Configuration;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.CoordinatorJobBean;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.WorkflowJobBean;
 import org.apache.oozie.SLAEventBean;
+import org.apache.oozie.client.rest.JsonBundleJob;
 import org.apache.oozie.client.rest.JsonCoordinatorAction;
 import org.apache.oozie.client.rest.JsonCoordinatorJob;
 import org.apache.oozie.client.rest.JsonWorkflowAction;
@@ -75,17 +72,16 @@ public class StoreService implements Service {
     @SuppressWarnings("unchecked")
     public <S extends Store> S getStore(Class<S> klass) throws StoreException {
         if (WorkflowStore.class.equals(klass)) {
-            return (S) Services.get().get(WorkflowStoreService.class).create();
+             return (S) Services.get().get(WorkflowStoreService.class).create();
         }
-        else {
-            if (CoordinatorStore.class.equals(klass)) {
-                return (S) Services.get().get(CoordinatorStoreService.class).create();
-            }
-            else {
-                if (SLAStore.class.equals(klass)) {
-                    return (S) Services.get().get(SLAStoreService.class).create();
-                }
-            }
+        else if (CoordinatorStore.class.equals(klass)) {
+        	 return (S) Services.get().get(CoordinatorStoreService.class).create();
+        }
+        else if (SLAStore.class.equals(klass)) {
+        	 return (S) Services.get().get(SLAStoreService.class).create();
+        }
+        else if (BundleStore.class.equals(klass)) {
+        	 return (S) Services.get().get(BundleStoreService.class).create();
         }
         // to do add checks for other stores - coordinator and SLA stores
         throw new StoreException(ErrorCode.E0607, " can not get store StoreService.getStore(Class)");
@@ -101,16 +97,15 @@ public class StoreService implements Service {
         if (WorkflowStore.class.equals(klass)) {
             return (S) Services.get().get(WorkflowStoreService.class).create(store);
         }
-        else {
-            if (CoordinatorStore.class.equals(klass)) {
-                return (S) Services.get().get(CoordinatorStoreService.class).create(store);
-            }
-            else {
-                if (SLAStore.class.equals(klass)) {
-                    return (S) Services.get().get(SLAStoreService.class).create(store);
-                }
-            }
+        else if (CoordinatorStore.class.equals(klass)) {
+        	return (S) Services.get().get(CoordinatorStoreService.class).create(store);
         }
+        else if (SLAStore.class.equals(klass)) {
+        	return (S) Services.get().get(SLAStoreService.class).create(store);
+       }
+       else if (BundleStore.class.equals(klass)) {
+       	 	return (S) Services.get().get(BundleStoreService.class).create(store);
+       }
         throw new StoreException(ErrorCode.E0607, " StoreService.getStore(Class, store)");
     }
 
@@ -172,10 +167,12 @@ public class StoreService implements Service {
         entityManager.find(WorkflowJobBean.class, 1);
         entityManager.find(CoordinatorActionBean.class, 1);
         entityManager.find(CoordinatorJobBean.class, 1);
+        entityManager.find(BundleJobBean.class, 1);
         entityManager.find(JsonWorkflowAction.class, 1);
         entityManager.find(JsonWorkflowJob.class, 1);
         entityManager.find(JsonCoordinatorAction.class, 1);
         entityManager.find(JsonCoordinatorJob.class, 1);
+        entityManager.find(JsonBundleJob.class, 1);
         entityManager.find(SLAEventBean.class, 1);
         entityManager.find(JsonSLAEvent.class, 1);
 
