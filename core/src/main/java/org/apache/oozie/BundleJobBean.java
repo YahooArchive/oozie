@@ -33,30 +33,31 @@ import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.WritableUtils;
 import org.apache.openjpa.persistence.jdbc.Index;
 
+/**
+ * @author bansalm
+ */
 @Entity
-@NamedQueries({
-    @NamedQuery(name = "UPDATE_BUNDLE_JOB", query = "update BundleJobBean w set w.bundleName = :bundleName, w.bundlePath = :bundlePath, w.conf = :conf, w.externalId = :externalId, w.timeOut = :timeOut, w.authToken = :authToken, w.createdTimestamp = :createdTimestamp, w.endTimestamp = :endTimestamp, w.jobXml = :jobXml, w.lastModifiedTimestamp = :lastModifiedTimestamp, w.origJobXml = :origJobXml, w.startTimestamp = :startTimestamp, w.status = :status, w.timeUnitStr = :timeUnit where w.id = :id"),
+@NamedQueries( {
+        @NamedQuery(name = "UPDATE_BUNDLE_JOB", query = "update BundleJobBean w set w.bundleName = :bundleName, w.bundlePath = :bundlePath, w.conf = :conf, w.externalId = :externalId, w.timeOut = :timeOut, w.authToken = :authToken, w.createdTimestamp = :createdTimestamp, w.endTimestamp = :endTimestamp, w.jobXml = :jobXml, w.lastModifiedTimestamp = :lastModifiedTimestamp, w.origJobXml = :origJobXml, w.startTimestamp = :startTimestamp, w.status = :status, w.timeUnitStr = :timeUnit where w.id = :id"),
 
-    @NamedQuery(name = "UPDATE_BUNDLE_JOB_STATUS", query = "update BundleJobBean w set w.status = :status, w.lastModifiedTimestamp = :lastModifiedTimestamp where w.id = :id"),
+        @NamedQuery(name = "UPDATE_BUNDLE_JOB_STATUS", query = "update BundleJobBean w set w.status = :status, w.lastModifiedTimestamp = :lastModifiedTimestamp where w.id = :id"),
 
-    @NamedQuery(name = "DELETE_BUNDLE_JOB", query = "delete from BundleJobBean w where w.id = :id"),
+        @NamedQuery(name = "DELETE_BUNDLE_JOB", query = "delete from BundleJobBean w where w.id = :id"),
 
-    @NamedQuery(name = "GET_BUNDLE_JOBS", query = "select OBJECT(w) from BundleJobBean w"),
+        @NamedQuery(name = "GET_BUNDLE_JOBS", query = "select OBJECT(w) from BundleJobBean w"),
 
-    @NamedQuery(name = "GET_BUNDLE_JOB", query = "select OBJECT(w) from BundleJobBean w where w.id = :id"),
+        @NamedQuery(name = "GET_BUNDLE_JOB", query = "select OBJECT(w) from BundleJobBean w where w.id = :id"),
 
-    @NamedQuery(name = "GET_BUNDLE_JOBS_COUNT", query = "select count(w) from BundleJobBean w"),
+        @NamedQuery(name = "GET_BUNDLE_JOBS_COUNT", query = "select count(w) from BundleJobBean w"),
 
-    @NamedQuery(name = "GET_BUNDLE_JOBS_COLUMNS", query = "select w.id, w.bundleName, w.status, w.user, w.group, w.startTimestamp, w.endTimestamp, w.bundlePath, w.createdTimestamp, w.timeUnitStr, w.timeOut from BundleJobBean w order by w.createdTimestamp desc"),
+        @NamedQuery(name = "GET_BUNDLE_JOBS_COLUMNS", query = "select w.id, w.bundleName, w.status, w.user, w.group, w.startTimestamp, w.endTimestamp, w.bundlePath, w.createdTimestamp, w.timeUnitStr, w.timeOut from BundleJobBean w order by w.createdTimestamp desc"),
 
-    @NamedQuery(name = "GET_BUNDLE_JOBS_OLDER_THAN", query = "select OBJECT(w) from BundleJobBean w where w.startTimestamp <= :matTime AND (w.status = 'PREP' OR w.status = 'RUNNING')  order by w.lastModifiedTimestamp"),
+        @NamedQuery(name = "GET_BUNDLE_JOBS_OLDER_THAN", query = "select OBJECT(w) from BundleJobBean w where w.startTimestamp <= :matTime AND (w.status = 'PREP' OR w.status = 'RUNNING')  order by w.lastModifiedTimestamp"),
 
-    @NamedQuery(name = "GET_BUNDLE_JOBS_OLDER_THAN_STATUS", query = "select OBJECT(w) from BundleJobBean w where w.status = :status AND w.lastModifiedTimestamp <= :lastModTime order by w.lastModifiedTimestamp")
-  })
-
+        @NamedQuery(name = "GET_BUNDLE_JOBS_OLDER_THAN_STATUS", query = "select OBJECT(w) from BundleJobBean w where w.status = :status AND w.lastModifiedTimestamp <= :lastModTime order by w.lastModifiedTimestamp") })
 public class BundleJobBean extends JsonBundleJob implements Writable {
 
-	@Basic
+    @Basic
     @Index
     @Column(name = "status")
     private String status = BundleJob.Status.PREP.toString();
@@ -105,148 +106,155 @@ public class BundleJobBean extends JsonBundleJob implements Writable {
     @Lob
     private String origJobXml = null;
 
-	
-	
     /**
-	 * @return the authToken
-	 */
-	public String getAuthToken() {
-		return authToken;
-	}
+     * @return the authToken
+     */
+    public String getAuthToken() {
+        return authToken;
+    }
 
-	/**
-	 * @param authToken the authToken to set
-	 */
-	public void setAuthToken(String authToken) {
-		this.authToken = authToken;
-	}
+    /**
+     * @param authToken the authToken to set
+     */
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
+    }
 
-	/**
-	 * @return the kickoffTimestamp
-	 */
-	public java.sql.Timestamp getKickoffTimestamp() {
-		return kickoffTimestamp;
-	}
+    /**
+     * @return the kickoffTimestamp
+     */
+    public java.sql.Timestamp getKickoffTimestamp() {
+        return kickoffTimestamp;
+    }
 
-	/**
-	 * @param kickoffTimestamp the kickoffTimestamp to set
-	 */
-	public void setKickoffTimestamp(java.sql.Timestamp kickoffTimestamp) {
-		super.setKickoffTime(DateUtils.toDate(kickoffTimestamp));
-		this.kickoffTimestamp = kickoffTimestamp;
-	}
+    /**
+     * @param kickoffTimestamp the kickoffTimestamp to set
+     */
+    public void setKickoffTimestamp(java.sql.Timestamp kickoffTimestamp) {
+        super.setKickoffTime(DateUtils.toDate(kickoffTimestamp));
+        this.kickoffTimestamp = kickoffTimestamp;
+    }
 
-	/**
-	 * @return the endTimestamp
-	 */
-	public java.sql.Timestamp getEndTimestamp() {
-		return endTimestamp;
-	}
+    /**
+     * @return the endTimestamp
+     */
+    public java.sql.Timestamp getEndTimestamp() {
+        return endTimestamp;
+    }
 
-	/**
-	 * @param endTimestamp the endTimestamp to set
-	 */
-	public void setEndTimestamp(java.sql.Timestamp endTimestamp) {
-		super.setEndTime(DateUtils.toDate(endTimestamp));
-		this.endTimestamp = endTimestamp;
-	}
+    /**
+     * @param endTimestamp the endTimestamp to set
+     */
+    public void setEndTimestamp(java.sql.Timestamp endTimestamp) {
+        super.setEndTime(DateUtils.toDate(endTimestamp));
+        this.endTimestamp = endTimestamp;
+    }
 
-	/**
-	 * @return the pauseTimestamp
-	 */
-	public java.sql.Timestamp getPauseTimestamp() {
-		return pauseTimestamp;
-	}
+    /**
+     * @return the pauseTimestamp
+     */
+    public java.sql.Timestamp getPauseTimestamp() {
+        return pauseTimestamp;
+    }
 
-	/**
-	 * @param pauseTimestamp the pauseTimestamp to set
-	 */
-	public void setPauseTimestamp(java.sql.Timestamp pauseTimestamp) {
-		super.setPauseTime(DateUtils.toDate(pauseTimestamp));
-		this.pauseTimestamp = pauseTimestamp;
-	}
+    /**
+     * @param pauseTimestamp the pauseTimestamp to set
+     */
+    public void setPauseTimestamp(java.sql.Timestamp pauseTimestamp) {
+        super.setPauseTime(DateUtils.toDate(pauseTimestamp));
+        this.pauseTimestamp = pauseTimestamp;
+    }
 
-	/**
-	 * @return the createdTimestamp
-	 */
-	public java.sql.Timestamp getCreatedTimestamp() {
-		return createdTimestamp;
-	}
+    /**
+     * @return the createdTimestamp
+     */
+    public java.sql.Timestamp getCreatedTimestamp() {
+        return createdTimestamp;
+    }
 
-	/**
-	 * @return the timeUnitStr
-	 */
-	public String getTimeUnitStr() {
-		return timeUnitStr;
-	}
+    /**
+     * @return the timeUnitStr
+     */
+    public String getTimeUnitStr() {
+        return timeUnitStr;
+    }
 
-	/**
-	 * @return the lastModifiedTimestamp
-	 */
-	public java.sql.Timestamp getLastModifiedTimestamp() {
-		return lastModifiedTimestamp;
-	}
+    /**
+     * @return the lastModifiedTimestamp
+     */
+    public java.sql.Timestamp getLastModifiedTimestamp() {
+        return lastModifiedTimestamp;
+    }
 
-	/**
-	 * @param lastModifiedTimestamp the lastModifiedTimestamp to set
-	 */
-	public void setLastModifiedTimestamp(java.sql.Timestamp lastModifiedTimestamp) {
-		this.lastModifiedTimestamp = lastModifiedTimestamp;
-	}
+    /**
+     * @param lastModifiedTimestamp the lastModifiedTimestamp to set
+     */
+    public void setLastModifiedTimestamp(java.sql.Timestamp lastModifiedTimestamp) {
+        this.lastModifiedTimestamp = lastModifiedTimestamp;
+    }
 
-	/**
-	 * @return the suspendedTimestamp
-	 */
-	public Timestamp getSuspendedTimestamp() {
-		return suspendedTimestamp;
-	}
+    /**
+     * @return the suspendedTimestamp
+     */
+    public Timestamp getSuspendedTimestamp() {
+        return suspendedTimestamp;
+    }
 
-	/**
-	 * @param suspendedTimestamp the suspendedTimestamp to set
-	 */
-	public void setSuspendedTimestamp(Timestamp suspendedTimestamp) {
-		this.suspendedTimestamp = suspendedTimestamp;
-	}
+    /**
+     * @param suspendedTimestamp the suspendedTimestamp to set
+     */
+    public void setSuspendedTimestamp(Timestamp suspendedTimestamp) {
+        this.suspendedTimestamp = suspendedTimestamp;
+    }
 
-	/**
-	 * @return the jobXml
-	 */
-	public String getJobXml() {
-		return jobXml;
-	}
+    /**
+     * @return the jobXml
+     */
+    public String getJobXml() {
+        return jobXml;
+    }
 
-	/**
-	 * @param jobXml the jobXml to set
-	 */
-	public void setJobXml(String jobXml) {
-		this.jobXml = jobXml;
-	}
+    /**
+     * @param jobXml the jobXml to set
+     */
+    public void setJobXml(String jobXml) {
+        this.jobXml = jobXml;
+    }
 
-	/**
-	 * @return the origJobXml
-	 */
-	public String getOrigJobXml() {
-		return origJobXml;
-	}
+    /**
+     * @return the origJobXml
+     */
+    public String getOrigJobXml() {
+        return origJobXml;
+    }
 
-	/**
-	 * @param origJobXml the origJobXml to set
-	 */
-	public void setOrigJobXml(String origJobXml) {
-		this.origJobXml = origJobXml;
-	}
+    /**
+     * @param origJobXml the origJobXml to set
+     */
+    public void setOrigJobXml(String origJobXml) {
+        this.origJobXml = origJobXml;
+    }
 
+    /**
+     * @param createTime
+     */
     public void setCreatedTime(Date createTime) {
         this.createdTimestamp = DateUtils.convertDateToTimestamp(createTime);
     }
-	
+
+    /**
+     * @param lastModifiedTime
+     */
     public void setLastModifiedTime(Date lastModifiedTime) {
         this.lastModifiedTimestamp = DateUtils.convertDateToTimestamp(lastModifiedTime);
     }
-    
-	@Override
-	public void write(DataOutput dataOutput) throws IOException {
-		WritableUtils.writeStr(dataOutput, getBundlePath());
+
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.io.Writable#write(java.io.DataOutput)
+     */
+    @Override
+    public void write(DataOutput dataOutput) throws IOException {
+        WritableUtils.writeStr(dataOutput, getBundlePath());
         WritableUtils.writeStr(dataOutput, getBundleName());
         WritableUtils.writeStr(dataOutput, getId());
         WritableUtils.writeStr(dataOutput, getConf());
@@ -258,20 +266,22 @@ public class BundleJobBean extends JsonBundleJob implements Writable {
         WritableUtils.writeStr(dataOutput, getGroup());
         WritableUtils.writeStr(dataOutput, getExternalId());
         dataOutput.writeInt(getTimeout());
-	}
-	
-	@Override
-	public void readFields(DataInput dataInput) throws IOException {
-		
-		setBundlePath(WritableUtils.readStr(dataInput));
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.io.Writable#readFields(java.io.DataInput)
+     */
+    @Override
+    public void readFields(DataInput dataInput) throws IOException {
+
+        setBundlePath(WritableUtils.readStr(dataInput));
         setBundleName(WritableUtils.readStr(dataInput));
         setId(WritableUtils.readStr(dataInput));
         setConf(WritableUtils.readStr(dataInput));
         setStatus(BundleJob.Status.valueOf(WritableUtils.readStr(dataInput)));
         setTimeUnit(BundleJob.Timeunit.valueOf(WritableUtils.readStr(dataInput)));
-        
+
         long d = dataInput.readLong();
-        d = dataInput.readLong();
         if (d != -1) {
             setKickoffTime(new Date(d));
         }
@@ -283,94 +293,99 @@ public class BundleJobBean extends JsonBundleJob implements Writable {
         setGroup(WritableUtils.readStr(dataInput));
         setExternalId(WritableUtils.readStr(dataInput));
         setTimeOut(dataInput.readInt());
-	}
+    }
 
-	
-	@Override
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#getStatus()
+     */
+    @Override
     public Status getStatus() {
         return Status.valueOf(this.status);
     }
 
+    /**
+     * @return status string
+     */
     public String getStatusStr() {
         return status;
     }
-    
-	/* (non-Javadoc)
-	 * @see org.apache.oozie.client.rest.JsonBundleJob#getEndTime()
-	 */
-	@Override
-	public Date getEndTime() {
-		// TODO Auto-generated method stub
-		return DateUtils.toDate(endTimestamp);
-	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.oozie.client.rest.JsonBundleJob#getKickoffTime()
-	 */
-	@Override
-	public Date getKickoffTime() {
-		return DateUtils.toDate(kickoffTimestamp);
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#getEndTime()
+     */
+    @Override
+    public Date getEndTime() {
+        // TODO Auto-generated method stub
+        return DateUtils.toDate(endTimestamp);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.apache.oozie.client.rest.JsonBundleJob#getTimeUnit()
-	 */
-	@Override
-	public Timeunit getTimeUnit() {
-		return Timeunit.valueOf(this.timeUnitStr);
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#getKickoffTime()
+     */
+    @Override
+    public Date getKickoffTime() {
+        return DateUtils.toDate(kickoffTimestamp);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.apache.oozie.client.rest.JsonBundleJob#setEndTime(java.util.Date)
-	 */
-	@Override
-	public void setEndTime(Date endTime) {
-		super.setEndTime(endTime);
-		this.endTimestamp = DateUtils.convertDateToTimestamp(endTime);
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#getTimeUnit()
+     */
+    @Override
+    public Timeunit getTimeUnit() {
+        return Timeunit.valueOf(this.timeUnitStr);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.apache.oozie.client.rest.JsonBundleJob#setKickoffTime(java.util.Date)
-	 */
-	@Override
-	public void setKickoffTime(Date kickoffTime) {
-		super.setKickoffTime(kickoffTime);
-		this.kickoffTimestamp = DateUtils.convertDateToTimestamp(kickoffTimestamp);
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#setEndTime(java.util.Date)
+     */
+    @Override
+    public void setEndTime(Date endTime) {
+        super.setEndTime(endTime);
+        this.endTimestamp = DateUtils.convertDateToTimestamp(endTime);
+    }
 
-	@Override
-	/* (non-Javadoc)
-	 * @see org.apache.oozie.client.rest.JsonBundleJob#getPauseTime()
-	 */
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#setKickoffTime(java.util.Date)
+     */
+    @Override
+    public void setKickoffTime(Date kickoffTime) {
+        super.setKickoffTime(kickoffTime);
+        this.kickoffTimestamp = DateUtils.convertDateToTimestamp(kickoffTimestamp);
+    }
+
+    @Override
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#getPauseTime()
+     */
     public Date getPauseTime() {
         return DateUtils.toDate(pauseTimestamp);
     }
-	
-	/* (non-Javadoc)
-	 * @see org.apache.oozie.client.rest.JsonBundleJob#setPauseTime(java.util.Date)
-	 */
-	@Override
-	public void setPauseTime(Date pauseTime) {
-		super.setPauseTime(pauseTime);
-		this.pauseTimestamp = DateUtils.convertDateToTimestamp(pauseTime);
-	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.oozie.client.rest.JsonBundleJob#setStatus(org.apache.oozie.client.BundleJob.Status)
-	 */
-	@Override
-	public void setStatus(org.apache.oozie.client.BundleJob.Status val) {
-		super.setStatus(val);
-		this.status = val.toString();
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#setPauseTime(java.util.Date)
+     */
+    @Override
+    public void setPauseTime(Date pauseTime) {
+        super.setPauseTime(pauseTime);
+        this.pauseTimestamp = DateUtils.convertDateToTimestamp(pauseTime);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.apache.oozie.client.rest.JsonBundleJob#setTimeUnit(org.apache.oozie.client.BundleJob.Timeunit)
-	 */
-	@Override
-	public void setTimeUnit(Timeunit timeUnit) {
-		super.setTimeUnit(timeUnit);
-		this.timeUnitStr = timeUnit.toString();
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#setStatus(org.apache.oozie.client.BundleJob.Status)
+     */
+    @Override
+    public void setStatus(org.apache.oozie.client.BundleJob.Status val) {
+        super.setStatus(val);
+        this.status = val.toString();
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBundleJob#setTimeUnit(org.apache.oozie.client.BundleJob.Timeunit)
+     */
+    @Override
+    public void setTimeUnit(Timeunit timeUnit) {
+        super.setTimeUnit(timeUnit);
+        this.timeUnitStr = timeUnit.toString();
+    }
 
 }

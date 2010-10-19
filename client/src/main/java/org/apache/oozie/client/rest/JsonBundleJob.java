@@ -23,43 +23,38 @@ import javax.persistence.*;
 
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorJob;
-import org.apache.oozie.client.CoordinatorJob.Execution;
-import org.apache.oozie.client.CoordinatorJob.Status;
-import org.apache.oozie.client.CoordinatorJob.Timeunit;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
  * @author bansalm
- *
  */
 @Entity
 @Table(name = "BUNDLE_JOBS")
 @DiscriminatorColumn(name = "bean_type", discriminatorType = DiscriminatorType.STRING)
+public class JsonBundleJob implements BundleJob, JsonBean {
+    @Id
+    private String id;
 
-public class JsonBundleJob implements BundleJob, JsonBean{
-	@Id
-	private String id;
-	
-	@Basic
+    @Basic
     @Column(name = "bundle_path")
     private String bundlePath = null;
-	
-	@Basic
+
+    @Basic
     @Column(name = "bundle_name")
     private String bundleName = null;
-	
-	@Basic
+
+    @Basic
     @Column(name = "external_id")
     private String externalId = null;
-	
-	@Column(name = "conf")
-	@Lob
-	private String conf = null;
 
-	@Transient
-	private Status status = BundleJob.Status.PREP;
-	
+    @Column(name = "conf")
+    @Lob
+    private String conf = null;
+
+    @Transient
+    private Status status = BundleJob.Status.PREP;
+
     @Transient
     private Date kickoffTime;
 
@@ -71,11 +66,11 @@ public class JsonBundleJob implements BundleJob, JsonBean{
 
     @Transient
     private Timeunit timeUnit = BundleJob.Timeunit.MINUTE;
-    
+
     @Basic
     @Column(name = "time_out")
     private int timeOut = 0;
-	
+
     @Basic
     @Column(name = "user_name")
     private String user = null;
@@ -86,16 +81,19 @@ public class JsonBundleJob implements BundleJob, JsonBean{
 
     @Transient
     private String consoleUrl;
-    
+
     @Transient
     private List<CoordinatorJob> coordJobs;
 
     public JsonBundleJob() {
-    	coordJobs = new ArrayList<CoordinatorJob>();
+        coordJobs = new ArrayList<CoordinatorJob>();
     }
-	
+
+    /**
+     * @param json
+     */
     @SuppressWarnings("unchecked")
-	public JsonBundleJob(JSONObject json) {
+    public JsonBundleJob(JSONObject json) {
         bundlePath = (String) json.get(JsonTags.BUNDLE_JOB_PATH);
         bundleName = (String) json.get(JsonTags.BUNDLE_JOB_NAME);
         id = (String) json.get(JsonTags.BUNDLE_JOB_ID);
@@ -110,9 +108,12 @@ public class JsonBundleJob implements BundleJob, JsonBean{
         user = (String) json.get(JsonTags.BUNDLE_JOB_USER);
         group = (String) json.get(JsonTags.BUNDLE_JOB_GROUP);
         consoleUrl = (String) json.get(JsonTags.BUNDLE_JOB_CONSOLE_URL);
-        coordJobs = JsonCoordinatorJob.fromJSONArray((JSONArray) json.get(JsonTags.BUNDLE_COORDINATOR_JOBS)); 
+        coordJobs = JsonCoordinatorJob.fromJSONArray((JSONArray) json.get(JsonTags.BUNDLE_COORDINATOR_JOBS));
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.rest.JsonBean#toJSONObject()
+     */
     @Override
     @SuppressWarnings("unchecked")
     public JSONObject toJSONObject() {
@@ -131,196 +132,235 @@ public class JsonBundleJob implements BundleJob, JsonBean{
         json.put(JsonTags.BUNDLE_JOB_USER, user);
         json.put(JsonTags.BUNDLE_JOB_GROUP, group);
         json.put(JsonTags.BUNDLE_JOB_CONSOLE_URL, consoleUrl);
-        //json.put(JsonTags.BUNDLE_COORDINATOR_JOBS, JsonCoordinatorJob.toJSONArray(coordJobs));
+        // json.put(JsonTags.BUNDLE_COORDINATOR_JOBS, JsonCoordinatorJob.toJSONArray(coordJobs));
 
         return json;
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getBundleName()
+     */
     @Override
-	public String getBundleName() {
-		return bundleName;
-	}
+    public String getBundleName() {
+        return bundleName;
+    }
 
-	@Override
-	public String getBundlePath() {
-		return bundlePath;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getBundlePath()
+     */
+    @Override
+    public String getBundlePath() {
+        return bundlePath;
+    }
 
-	@Override
-	public String getConf() {
-		return conf;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getConf()
+     */
+    @Override
+    public String getConf() {
+        return conf;
+    }
 
-	@Override
-	public String getConsoleUrl() {
-		return consoleUrl;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getConsoleUrl()
+     */
+    @Override
+    public String getConsoleUrl() {
+        return consoleUrl;
+    }
 
-	@Override
-	public List<CoordinatorJob> getCoordinators() {
-		return (List)coordJobs;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getCoordinators()
+     */
+    @Override
+    public List<CoordinatorJob> getCoordinators() {
+        return (List) coordJobs;
+    }
 
-	@Override
-	public Date getEndTime() {
-		return endTime;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getEndTime()
+     */
+    @Override
+    public Date getEndTime() {
+        return endTime;
+    }
 
-	@Override
-	public String getGroup() {
-		return group;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getGroup()
+     */
+    @Override
+    public String getGroup() {
+        return group;
+    }
 
-	@Override
-	public String getId() {
-		return id;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getId()
+     */
+    @Override
+    public String getId() {
+        return id;
+    }
 
-	@Override
-	public Date getKickoffTime() {
-		return kickoffTime;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getKickoffTime()
+     */
+    @Override
+    public Date getKickoffTime() {
+        return kickoffTime;
+    }
 
-	@Override
-	public Status getStatus() {
-		return status;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getStatus()
+     */
+    @Override
+    public Status getStatus() {
+        return status;
+    }
 
-	@Override
-	public Timeunit getTimeUnit() {
-		return timeUnit;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getTimeUnit()
+     */
+    @Override
+    public Timeunit getTimeUnit() {
+        return timeUnit;
+    }
 
-	@Override
-	public int getTimeout() {
-		return timeOut;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getTimeout()
+     */
+    @Override
+    public int getTimeout() {
+        return timeOut;
+    }
 
-	@Override
-	public String getUser() {
-		return user;
-	}
+    /* (non-Javadoc)
+     * @see org.apache.oozie.client.BundleJob#getUser()
+     */
+    @Override
+    public String getUser() {
+        return user;
+    }
 
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(String id) {
-		this.id = id;
-	}
+    /**
+     * @param id the id to set
+     */
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	/**
-	 * @param bundlePath the bundlePath to set
-	 */
-	public void setBundlePath(String bundlePath) {
-		this.bundlePath = bundlePath;
-	}
+    /**
+     * @param bundlePath the bundlePath to set
+     */
+    public void setBundlePath(String bundlePath) {
+        this.bundlePath = bundlePath;
+    }
 
-	/**
-	 * @param bundleName the bundleName to set
-	 */
-	public void setBundleName(String bundleName) {
-		this.bundleName = bundleName;
-	}
+    /**
+     * @param bundleName the bundleName to set
+     */
+    public void setBundleName(String bundleName) {
+        this.bundleName = bundleName;
+    }
 
-	/**
-	 * @param externalId the externalId to set
-	 */
-	public String getExternalId() {
-		return this.externalId;
-	}
-	
-	/**
-	 * @param externalId the externalId to set
-	 */
-	public void setExternalId(String externalId) {
-		this.externalId = externalId;
-	}
+    /**
+     * @ get the externalId
+     */
+    public String getExternalId() {
+        return this.externalId;
+    }
 
-	/**
-	 * @param conf the conf to set
-	 */
-	public void setConf(String conf) {
-		this.conf = conf;
-	}
+    /**
+     * @param externalId the externalId to set
+     */
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
 
-	/**
-	 * @param status the status to set
-	 */
-	public void setStatus(Status status) {
-		this.status = status;
-	}
+    /**
+     * @param conf the conf to set
+     */
+    public void setConf(String conf) {
+        this.conf = conf;
+    }
 
-	/**
-	 * @param kickoffTime the kickoffTime to set
-	 */
-	public void setKickoffTime(Date kickoffTime) {
-		this.kickoffTime = kickoffTime;
-	}
+    /**
+     * @param status the status to set
+     */
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
-	/**
-	 * @param endTime the endTime to set
-	 */
-	public void setEndTime(Date endTime) {
-		this.endTime = endTime;
-	}
+    /**
+     * @param kickoffTime the kickoffTime to set
+     */
+    public void setKickoffTime(Date kickoffTime) {
+        this.kickoffTime = kickoffTime;
+    }
 
-	/**
-	 * @param pauseTime the pauseTime to get
-	 */
-	public Date getPauseTime() {
+    /**
+     * @param endTime the endTime to set
+     */
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
+
+    /**
+     * @param pauseTime the pauseTime to get
+     */
+    public Date getPauseTime() {
         return pauseTime;
     }
-	
-	/**
-	 * @param pauseTime the pauseTime to set
-	 */
-	public void setPauseTime(Date pauseTime) {
-		this.pauseTime = pauseTime;
-	}
 
-	/**
-	 * @param timeUnit the timeUnit to set
-	 */
-	public void setTimeUnit(Timeunit timeUnit) {
-		this.timeUnit = timeUnit;
-	}
+    /**
+     * @param pauseTime the pauseTime to set
+     */
+    public void setPauseTime(Date pauseTime) {
+        this.pauseTime = pauseTime;
+    }
 
-	/**
-	 * @param timeOut the timeOut to set
-	 */
-	public void setTimeOut(int timeOut) {
-		this.timeOut = timeOut;
-	}
+    /**
+     * @param timeUnit the timeUnit to set
+     */
+    public void setTimeUnit(Timeunit timeUnit) {
+        this.timeUnit = timeUnit;
+    }
 
-	/**
-	 * @param user the user to set
-	 */
-	public void setUser(String user) {
-		this.user = user;
-	}
+    /**
+     * @param timeOut the timeOut to set
+     */
+    public void setTimeOut(int timeOut) {
+        this.timeOut = timeOut;
+    }
 
-	/**
-	 * @param group the group to set
-	 */
-	public void setGroup(String group) {
-		this.group = group;
-	}
+    /**
+     * @param user the user to set
+     */
+    public void setUser(String user) {
+        this.user = user;
+    }
 
-	/**
-	 * @param consoleUrl the consoleUrl to set
-	 */
-	public void setConsoleUrl(String consoleUrl) {
-		this.consoleUrl = consoleUrl;
-	}
+    /**
+     * @param group the group to set
+     */
+    public void setGroup(String group) {
+        this.group = group;
+    }
 
-	/**
-	 * @param coordJobs the coordJobs to set
-	 */
-	public void setCoordJobs(List<CoordinatorJob> coordJobs) {
-		this.coordJobs = coordJobs;
-	}
-	
-	 /**
+    /**
+     * @param consoleUrl the consoleUrl to set
+     */
+    public void setConsoleUrl(String consoleUrl) {
+        this.consoleUrl = consoleUrl;
+    }
+
+    /**
+     * @param coordJobs the coordJobs to set
+     */
+    public void setCoordJobs(List<CoordinatorJob> coordJobs) {
+        this.coordJobs = coordJobs;
+    }
+
+    /**
      * Convert a Bundle job list into a JSONArray.
      *
      * @param application list.

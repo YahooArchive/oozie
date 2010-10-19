@@ -23,7 +23,7 @@ import java.util.List;
  */
 public interface BundleJob {
 
-	/**
+    /**
      * Defines the possible stati of an Oozie Bundle.
      */
     public static enum Status {
@@ -36,7 +36,7 @@ public interface BundleJob {
     public static enum Timeunit {
         MINUTE, HOUR, DAY, WEEK, MONTH, END_OF_DAY, END_OF_MONTH, NONE
     }
-    
+
     /**
      * Return the path to the Oozie Bundle.
      *
@@ -115,9 +115,9 @@ public interface BundleJob {
     String getGroup();
 
     /**
-     * Return the CoordinatorJob.
+     * Return the list of CoordinatorJob.
      *
-     * @return the CoordinatorJob.
+     * @return the list of CoordinatorJob.
      */
     List<CoordinatorJob> getCoordinators();
 

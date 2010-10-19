@@ -23,8 +23,8 @@ public class BundleJobInfo {
     private List<BundleJobBean> jobs;
 
     /**
-     * Create a coordinator info bean.
-     * 
+     * Create a bundle info bean.
+     *
      * @param bundle jobs being returned.
      * @param start bundle jobs offset.
      * @param len number of bundle jobs.
@@ -42,12 +42,14 @@ public class BundleJobInfo {
      *
      * @return the bundle jobs being returned.
      */
-    public List<BundleJobBean> getCoordJobs() {
+    public List<BundleJobBean> getBundleJobs() {
         return jobs;
     }
 
     /**
-     * Return the offset of the bundles being returned. <p/> For pagination purposes.
+     * Return the offset of the bundles being returned.
+     * <p/>
+     * For pagination purposes.
      *
      * @return the offset of the bundle jobs being returned.
      */
@@ -56,7 +58,9 @@ public class BundleJobInfo {
     }
 
     /**
-     * Return the number of the bundle being returned. <p/> For pagination purposes.
+     * Return the number of the bundle being returned.
+     * <p/>
+     * For pagination purposes.
      *
      * @return the number of the bundle jobs being returned.
      */
@@ -65,9 +69,11 @@ public class BundleJobInfo {
     }
 
     /**
-     * Return the total number of workflows. <p/> For pagination purposes.
+     * Return the total number of bundles.
+     * <p/>
+     * For pagination purposes.
      *
-     * @return the total number of coordiantor jobs.
+     * @return the total number of bundle jobs.
      */
     public int getTotal() {
         return total;
