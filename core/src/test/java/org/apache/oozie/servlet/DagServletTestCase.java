@@ -73,6 +73,7 @@ public abstract class DagServletTestCase extends XFsTestCase {
             Services.get().setService(ForTestWorkflowStoreService.class);
             Services.get().setService(MockDagEngineService.class);
             Services.get().setService(MockCoordinatorEngineService.class);
+            Services.get().setService(MockBundleEngineService.class);
             container = new EmbeddedServletContainer("oozie");
             for (int i = 0; i < servletPath.length; i++) {
                 container.addServletEndpoint(servletPath[i], servletClass[i]);

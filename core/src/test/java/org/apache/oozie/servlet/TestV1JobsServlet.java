@@ -107,6 +107,37 @@ public class TestV1JobsServlet extends DagServletTestCase {
             }
         });
     }
+    
+    public void testSubmitBundle() throws Exception {
+        runTest("/v1/jobs", V1JobsServlet.class, IS_SECURITY_ENABLED, new Callable<Void>() {
+            public Void call() throws Exception {
+                MockBundleEngineService.reset();
+
+                String bundleAppPath = getFsTestCaseDir().toString() + "/bundle";
+                FileSystem fs = getFileSystem();
+                Path jobXmlPath = new Path(bundleAppPath, "bundle.xml");
+                fs.create(jobXmlPath);
+
+                int bundleJobCount = MockBundleEngineService.bundleJobs.size();
+                Configuration jobConf = new XConfiguration();
+                jobConf.set(OozieClient.USER_NAME, getTestUser());
+                jobConf.set(OozieClient.GROUP_NAME, getTestGroup());
+                jobConf.set(OozieClient.BUNDLE_APP_PATH, bundleAppPath);
+                injectKerberosInfo(jobConf);
+                Map<String, String> params = new HashMap<String, String>();
+                URL url = createURL("", params);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("content-type", RestConstants.XML_CONTENT_TYPE);
+                conn.setDoOutput(true);
+                jobConf.writeXml(conn.getOutputStream());
+                assertEquals(HttpServletResponse.SC_CREATED, conn.getResponseCode());
+                JSONObject obj = (JSONObject) JSONValue.parse(new InputStreamReader(conn.getInputStream()));
+                assertEquals(MockBundleEngineService.JOB_ID + bundleJobCount, obj.get(JsonTags.JOB_ID));
+                return null;
+            }
+        });
+    }
 
     public void testJobs() throws Exception {
         runTest("/v1/jobs", V1JobsServlet.class, IS_SECURITY_ENABLED, new Callable<Void>() {
@@ -172,5 +203,4 @@ public class TestV1JobsServlet extends DagServletTestCase {
             }
         });
     }
-
 }
