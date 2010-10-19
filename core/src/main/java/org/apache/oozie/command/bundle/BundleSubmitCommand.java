@@ -21,6 +21,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import javax.xml.transform.stream.StreamSource;
@@ -47,6 +48,7 @@ import org.apache.oozie.service.SchemaService.SchemaName;
 import org.apache.oozie.service.UUIDService.ApplicationType;
 import org.apache.oozie.store.BundleStore;
 import org.apache.oozie.store.StoreException;
+import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.IOUtils;
 import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.PropertiesUtils;
@@ -89,8 +91,8 @@ public class BundleSubmitCommand extends BundleCommand<String> {
     /**
      * Constructor to create the Bundle Submit Command.
      *
-     * @param conf : Configuration for Bundle job
-     * @param authToken : To be used for authentication
+     * @param conf Configuration for Bundle job
+     * @param authToken To be used for authentication
      */
     public BundleSubmitCommand(Configuration conf, String authToken) {
         super("bundle_submit", "bundle_submit", 1, XLog.STD);
@@ -98,6 +100,13 @@ public class BundleSubmitCommand extends BundleCommand<String> {
         this.authToken = ParamChecker.notEmpty(authToken, "authToken");
     }
 
+    /**
+     * Constructor to create the Bundle Submit Command.
+     *
+     * @param dryrun If dryrun
+     * @param conf Configuration for Bundle job
+     * @param authToken To be used for authentication
+     */
     public BundleSubmitCommand(boolean dryrun, Configuration conf, String authToken) {
         super("bundle_submit", "bundle_submit", 1, XLog.STD, dryrun);
         this.conf = ParamChecker.notNull(conf, "conf");
@@ -169,16 +178,16 @@ public class BundleSubmitCommand extends BundleCommand<String> {
     private void validateXml(String xmlContent) throws BundleJobException {
         javax.xml.validation.Schema schema = Services.get().get(SchemaService.class).getSchema(SchemaName.BUNDLE);
         Validator validator = schema.newValidator();
-        log.warn("XML " + xmlContent);
+        log.debug("XML " + xmlContent);
         try {
             validator.validate(new StreamSource(new StringReader(xmlContent)));
         }
         catch (SAXException ex) {
-            log.warn("SAXException :", ex);
+            log.error("SAXException :", ex);
             throw new BundleJobException(ErrorCode.E0701, ex.getMessage(), ex);
         }
         catch (IOException ex) {
-            log.warn("IOException :", ex);
+            log.error("IOException :", ex);
             throw new BundleJobException(ErrorCode.E0702, ex.getMessage(), ex);
         }
     }
@@ -214,197 +223,6 @@ public class BundleSubmitCommand extends BundleCommand<String> {
         }
         log.debug("Merged Bundle CONF :" + XmlUtils.prettyPrint(conf).toString());
     }
-
-    /**
-     * Resolve basic entities using job Configuration.
-     *
-     * @param conf :Job configuration
-     * @param appXml : Original job XML
-     * @param coordJob : Coordinator job bean to be populated.
-     * @return Resolved job XML element.
-     * @throws Exception
-     */
-    /*protected Element resolveInitial(Configuration conf, String appXml, CoordinatorJobBean coordJob)
-            throws CoordinatorJobException, Exception {
-        Element eAppXml = XmlUtils.parseXml(appXml);
-        // job's main attributes
-        // frequency
-        String val = resolveAttribute("frequency", eAppXml, evalFreq);
-        int ival = ParamChecker.checkInteger(val, "frequency");
-        ParamChecker.checkGTZero(ival, "frequency");
-        coordJob.setFrequency(ival);
-        TimeUnit tmp = (evalFreq.getVariable("timeunit") == null) ? TimeUnit.MINUTE : ((TimeUnit) evalFreq
-                .getVariable("timeunit"));
-        addAnAttribute("freq_timeunit", eAppXml, tmp.toString()); // TODO: Store
-        // TimeUnit
-        coordJob.setTimeUnit(CoordinatorJob.Timeunit.valueOf(tmp.toString()));
-        // End Of Duration
-        tmp = evalFreq.getVariable("endOfDuration") == null ? TimeUnit.NONE : ((TimeUnit) evalFreq
-                .getVariable("endOfDuration"));
-        addAnAttribute("end_of_duration", eAppXml, tmp.toString());
-        // coordJob.setEndOfDuration(tmp) // TODO: Add new attribute in Job bean
-
-        // start time
-        val = resolveAttribute("start", eAppXml, evalNofuncs);
-        ParamChecker.checkUTC(val, "start");
-        coordJob.setStartTime(DateUtils.parseDateUTC(val));
-        // end time
-        val = resolveAttribute("end", eAppXml, evalNofuncs);
-        ParamChecker.checkUTC(val, "end");
-        coordJob.setEndTime(DateUtils.parseDateUTC(val));
-        // Time zone
-        val = resolveAttribute("timezone", eAppXml, evalNofuncs);
-        ParamChecker.checkTimeZone(val, "timezone");
-        coordJob.setTimeZone(val);
-
-        // controls
-        val = resolveTagContents("timeout", eAppXml.getChild("controls", eAppXml.getNamespace()), evalNofuncs);
-        if (val == "") {
-            val = Services.get().getConf().get(CONF_DEFAULT_TIMEOUT_NORMAL);
-        }
-
-        ival = ParamChecker.checkInteger(val, "timeout");
-        // ParamChecker.checkGEZero(ival, "timeout");
-        coordJob.setTimeout(ival);
-        val = resolveTagContents("concurrency", eAppXml.getChild("controls", eAppXml.getNamespace()), evalNofuncs);
-        if (val == "") {
-            val = "-1";
-        }
-        ival = ParamChecker.checkInteger(val, "concurrency");
-        // ParamChecker.checkGEZero(ival, "concurrency");
-        coordJob.setConcurrency(ival);
-        val = resolveTagContents("execution", eAppXml.getChild("controls", eAppXml.getNamespace()), evalNofuncs);
-        if (val == "") {
-            val = Execution.FIFO.toString();
-        }
-        coordJob.setExecution(Execution.valueOf(val));
-        String[] acceptedVals = { Execution.LIFO.toString(), Execution.FIFO.toString(), Execution.LAST_ONLY.toString() };
-        ParamChecker.isMember(val, acceptedVals, "execution");
-
-        // datasets
-        resolveTagContents("include", eAppXml.getChild("datasets", eAppXml.getNamespace()), evalNofuncs);
-        // for each data set
-        resolveDataSets(eAppXml);
-        HashMap<String, String> dataNameList = new HashMap<String, String>();
-        resolveIOEvents(eAppXml, dataNameList);
-
-        resolveTagContents("app-path", eAppXml.getChild("action", eAppXml.getNamespace()).getChild("workflow",
-                eAppXml.getNamespace()), evalNofuncs);
-        // TODO: If action or workflow tag is missing, NullPointerException will
-        // occur
-        Element configElem = eAppXml.getChild("action", eAppXml.getNamespace()).getChild("workflow",
-                eAppXml.getNamespace()).getChild("configuration", eAppXml.getNamespace());
-        evalData = CoordELEvaluator.createELEvaluatorForDataEcho(conf, "coord-job-submit-data", dataNameList);
-        if (configElem != null) {
-            for (Element propElem : (List<Element>) configElem.getChildren("property", configElem.getNamespace())) {
-                resolveTagContents("name", propElem, evalData);
-                // log.warn("Value :");
-                // Want to check the data-integrity but don't want to modify the
-                // XML
-                // for properties only
-                Element tmpProp = (Element) propElem.clone();
-                resolveTagContents("value", tmpProp, evalData);
-                // val = resolveTagContents("value", propElem, evalData);
-                // log.warn("Value OK :" + val);
-            }
-        }
-        resolveSLA(eAppXml, coordJob);
-        return eAppXml;
-    }
-
-    private void resolveSLA(Element eAppXml, CoordinatorJobBean coordJob) throws CommandException {
-        // String prefix = XmlUtils.getNamespacePrefix(eAppXml,
-        // SchemaService.SLA_NAME_SPACE_URI);
-        Element eSla = eAppXml.getChild("action", eAppXml.getNamespace()).getChild("info",
-                Namespace.getNamespace(SchemaService.SLA_NAME_SPACE_URI));
-
-        if (eSla != null) {
-            String slaXml = XmlUtils.prettyPrint(eSla).toString();
-            try {
-                // EL evaluation
-                slaXml = evalSla.evaluate(slaXml, String.class);
-                // Validate against semantic SXD
-                XmlUtils.validateData(slaXml, SchemaName.SLA_ORIGINAL);
-            }
-            catch (Exception e) {
-                throw new CommandException(ErrorCode.E1004, "Validation ERROR :" + e.getMessage(), e);
-            }
-        }
-    }
-*/
-
-    /**
-     * Add an attribute into XML element.
-     *
-     * @param attrName :attribute name
-     * @param elem : Element to add attribute
-     * @param value :Value of attribute
-     */
-/*    private void addAnAttribute(String attrName, Element elem, String value) {
-        elem.setAttribute(attrName, value);
-    }*/
-
-
-    /**
-     * Resolve the content of a tag.
-     *
-     * @param tagName : Tag name of job XML i.e. <timeout> 10 </timeout>
-     * @param elem : Element where the tag exists.
-     * @param eval :
-     * @return Resolved tag content.
-     * @throws CoordinatorJobException
-     */
-/*    private String resolveTagContents(String tagName, Element elem, ELEvaluator eval) throws CoordinatorJobException {
-        String ret = "";
-        if (elem != null) {
-            for (Element tagElem : (List<Element>) elem.getChildren(tagName, elem.getNamespace())) {
-                if (tagElem != null) {
-                    String updated;
-                    try {
-                        updated = CoordELFunctions.evalAndWrap(eval, tagElem.getText().trim());
-
-                    }
-                    catch (Exception e) {
-                        // e.printStackTrace();
-                        throw new CoordinatorJobException(ErrorCode.E1004, e.getMessage(), e);
-                    }
-                    tagElem.removeContent();
-                    tagElem.addContent(updated);
-                    ret += updated;
-                }
-
-                * else { //TODO: unlike event }
-
-            }
-        }
-        return ret;
-    }
-*/
-    /**
-     * Resolve an attribute value.
-     *
-     * @param attrName : Attribute name.
-     * @param elem : XML Element where attribute is defiend
-     * @param eval : ELEvaluator used to resolve
-     * @return Resolved attribute value
-     * @throws CoordinatorJobException
-     */
-/*    private String resolveAttribute(String attrName, Element elem, ELEvaluator eval) throws CoordinatorJobException {
-        Attribute attr = elem.getAttribute(attrName);
-        String val = null;
-        if (attr != null) {
-            try {
-                val = CoordELFunctions.evalAndWrap(eval, attr.getValue().trim());
-
-            }
-            catch (Exception e) {
-                // e.printStackTrace();
-                throw new CoordinatorJobException(ErrorCode.E1004, e.getMessage(), e);
-            }
-            attr.setValue(val);
-        }
-        return val;
-    }*/
 
     /**
      * Read Bundle definition.
@@ -460,19 +278,31 @@ public class BundleSubmitCommand extends BundleCommand<String> {
      * @param store : Bundle Store to write.
      * @param bundleJob : Bundle job bean
      * @return Job id.
-     * @throws StoreException
+     * @throws Exception
      */
-    private String storeToDB(Element jobXml, BundleStore store, BundleJobBean bundleJob) throws StoreException {
+    private String storeToDB(Element jobXml, BundleStore store, BundleJobBean bundleJob) throws Exception {
         String jobId = Services.get().get(UUIDService.class).generateId(ApplicationType.BUNDLE);
         bundleJob.setId(jobId);
         bundleJob.setAuthToken(this.authToken);
         bundleJob.setBundleName(jobXml.getAttributeValue("name"));
+        bundleJob.setCreatedTime(new Date());
         bundleJob.setBundlePath(conf.get(OozieClient.BUNDLE_APP_PATH));
         bundleJob.setStatus(BundleJob.Status.PREP);
         bundleJob.setUser(conf.get(OozieClient.USER_NAME));
         bundleJob.setGroup(conf.get(OozieClient.GROUP_NAME));
         bundleJob.setConf(XmlUtils.prettyPrint(conf).toString());
         bundleJob.setJobXml(XmlUtils.prettyPrint(jobXml).toString());
+
+        Element controls = jobXml.getChild("controls", jobXml.getNamespace());
+        if (controls != null) {
+            Element kickOffElem = controls.getChild("kick-off-time", jobXml.getNamespace());
+            if (kickOffElem != null) {
+                String kickOffVal = kickOffElem.getValue();
+                if (kickOffVal != null) {
+                    bundleJob.setKickoffTime(DateUtils.parseDateUTC(kickOffVal));
+                }
+            }
+        }
 
         if (!dryrun) {
             store.insertBundleJob(bundleJob);

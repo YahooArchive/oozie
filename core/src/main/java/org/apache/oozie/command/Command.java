@@ -420,9 +420,9 @@ public abstract class Command<T, S extends Store> implements XCallable<T> {
 
 
     /**
-     * Set the log info with the context of the given coordinator bean.
+     * Set the log info with the context of the given bundle bean.
      *
-     * @param cBean coordinator bean.
+     * @param bBean BundleJobBean.
      */
     protected void setLogInfo(BundleJobBean bBean) {
         if (logInfo.getParameter(XLogService.GROUP) == null) {
