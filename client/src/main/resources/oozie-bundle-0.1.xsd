@@ -35,10 +35,11 @@
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="COORDINATOR">
-        <xs:sequence  minOccurs="1" maxOccurs="unbounded">
+        <xs:sequence  minOccurs="1" maxOccurs="1">
             <xs:element name="app-path" type="xs:string" minOccurs="1" maxOccurs="1"/>
             <xs:element name="configuration" type="bundle:CONFIGURATION" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
+        <xs:attribute name="name" type="bundle:IDENTIFIER" use="required"/>
     </xs:complexType>
     <xs:complexType name="CONFIGURATION">
         <xs:sequence>
