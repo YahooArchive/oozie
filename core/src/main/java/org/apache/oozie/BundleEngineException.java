@@ -15,12 +15,12 @@
 package org.apache.oozie;
 
 /**
- * Exception thrown by the {@link CoordinatorEngine}.
+ * Exception thrown by the {@link BundleEngine}.
  */
 public class BundleEngineException extends BaseEngineException {
 
     /**
-     * Create a coordinator engine exception from a XException.
+     * Create a bundle engine exception from a XException.
      *
      * @param cause the XException cause.
      */
@@ -29,7 +29,7 @@ public class BundleEngineException extends BaseEngineException {
     }
 
     /**
-     * Create a coordinator engine exception.
+     * Create a bundle engine exception.
      *
      * @param errorCode error code.
      * @param params parameters for the error code message template.

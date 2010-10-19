@@ -33,7 +33,9 @@ public class ServletUtilities {
         }
     }
     
-    // add bundle appPath
+    // accessory static method to check the app path parameter for the request
+    // used only for job-related request and only one of them should exist
+    // bundle appPath is also checked
     protected static void ValidateAppPath(String wfPath, String coordPath, String bundlePath) throws XServletException {
         int n = 0;
         

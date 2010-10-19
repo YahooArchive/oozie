@@ -19,7 +19,7 @@ import org.apache.oozie.service.Service;
 import org.apache.oozie.service.Services;
 
 /**
- * Service that return a coordinator engine for a user.
+ * Service that return a bundle engine for a user.
  */
 public class BundleEngineService implements Service {
 
@@ -38,7 +38,7 @@ public class BundleEngineService implements Service {
     }
 
     /**
-     * Return the public interface of the Coordinator engine service.
+     * Return the public interface of the Bundle engine service.
      *
      * @return {@link BundleEngineService}.
      */
@@ -47,9 +47,9 @@ public class BundleEngineService implements Service {
     }
 
     /**
-     * Return a Coordinator engine.
+     * Return a Bundle engine.
      *
-     * @param user user for the coordinator engine.
+     * @param user user for the bundle engine.
      * @param authToken the authentication token.
      * @return the bundle engine for the specified user.
      */
@@ -60,9 +60,9 @@ public class BundleEngineService implements Service {
     /**
      * Return a Bundle engine for a system user (no user, no group).
      *
-     * @return a system Coordinator engine.
+     * @return a system Bundle engine.
      */
-    public BundleEngine getSystemCoordinatorEngine() {
+    public BundleEngine getSystemBundleEngine() {
         return new BundleEngine();
     }
 

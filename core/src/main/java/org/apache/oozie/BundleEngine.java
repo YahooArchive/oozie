@@ -55,8 +55,14 @@ public class BundleEngine extends BaseEngine {
      */
     @Override
     public String dryrunSubmit(Configuration conf, boolean startJob) throws BundleEngineException {
-        // TODO Auto-generated method stub
-        return null;
+        BundleSubmitCommand submit = new BundleSubmitCommand(true, conf, getAuthToken());
+        try {
+            String jobId = submit.call();
+            return jobId;
+        }
+        catch (CommandException ex) {
+            throw new BundleEngineException(ex);
+        }
     }
 
     /* (non-Javadoc)
