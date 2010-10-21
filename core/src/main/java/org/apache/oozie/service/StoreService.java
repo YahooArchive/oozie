@@ -123,84 +123,30 @@ public class StoreService implements Service {
         return StoreService.class;
     }
 
+    private JPAService jpaService;
+
     /**
      * Initializes the {@link StoreService}.
      *
      * @param services services instance.
      */
     public void init(Services services) throws ServiceException {
-        Configuration conf = services.getConf();
-        String url = conf.get(CONF_URL, "jdbc:hsqldb:mem:oozie;create=true");
-        String driver = conf.get(CONF_DRIVER, "org.hsqldb.jdbcDriver");
-        String user = conf.get(CONF_USERNAME, "sa");
-        String password = conf.get(CONF_PASSWORD, "").trim();
-        String maxConn = conf.get(CONF_MAX_ACTIVE_CONN, "10").trim();
-        boolean autoSchemaCreation = conf.getBoolean(CONF_CREATE_DB_SCHEMA, true);
-
-        if (!url.startsWith("jdbc:")) {
-            throw new ServiceException(ErrorCode.E0608, url, "invalid JDBC URL, must start with 'jdbc:'");
+        jpaService = Services.get().get(JPAService.class);
+        if (jpaService == null) {
+            throw new ServiceException(ErrorCode.E0610);
         }
-        String dbType = url.substring("jdbc:".length());
-        if (dbType.indexOf(":") <= 0) {
-            throw new ServiceException(ErrorCode.E0608, url, "invalid JDBC URL, missing vendor 'jdbc:[VENDOR]:...'");
-        }
-        dbType = dbType.substring(0, dbType.indexOf(":"));
-
-        String persistentUnit = "oozie-" + dbType;
-
-        //Checking existince of ORM file for DB type
-        String ormFile = "META-INF/" + persistentUnit + "-orm.xml";
-        try {
-            IOUtils.getResourceAsStream(ormFile, -1);
-        }
-        catch (IOException ex) {
-            throw new ServiceException(ErrorCode.E0609, dbType, ormFile);
-        }
-
-        String connProps = "DriverClassName={0},Url={1},Username={2},Password={3},MaxActive={4}";
-        connProps = MessageFormat.format(connProps, driver, url, user, password, maxConn);
-        Properties props = new Properties();
-        props.setProperty("openjpa.ConnectionProperties", connProps);
-        if (autoSchemaCreation) {
-            props.setProperty("openjpa.jdbc.SynchronizeMappings", "buildSchema(ForeignKeys=true)");
-        }
-
-        factory = Persistence.createEntityManagerFactory(persistentUnit, props);
-
-        EntityManager entityManager = getEntityManager();
-        entityManager.find(WorkflowActionBean.class, 1);
-        entityManager.find(WorkflowJobBean.class, 1);
-        entityManager.find(CoordinatorActionBean.class, 1);
-        entityManager.find(CoordinatorJobBean.class, 1);
-        entityManager.find(JsonWorkflowAction.class, 1);
-        entityManager.find(JsonWorkflowJob.class, 1);
-        entityManager.find(JsonCoordinatorAction.class, 1);
-        entityManager.find(JsonCoordinatorJob.class, 1);
-        entityManager.find(SLAEventBean.class, 1);
-        entityManager.find(JsonSLAEvent.class, 1);
-
-        XLog.getLog(getClass()).info(XLog.STD, "All entities initialized");
-        // need to use a pseudo no-op transaction so all entities, datasource
-        // and connection pool are initialized
-        // one time only
-        entityManager.getTransaction().begin();
-        OpenJPAEntityManagerFactorySPI spi = (OpenJPAEntityManagerFactorySPI) factory;
-        XLog.getLog(getClass()).info("JPA configuration: {0}", spi.getConfiguration().getConnectionProperties());
-        entityManager.getTransaction().commit();
-        entityManager.close();
     }
 
     /**
      * Destroy the StoreService
      */
     public void destroy() {
-        factory.close();
     }
 
     /**
      * Return EntityManager
      */
     public EntityManager getEntityManager() {
-        return factory.createEntityManager();
+        return jpaService.getEntityManager();
     }
 }

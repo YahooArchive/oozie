@@ -36,6 +36,7 @@
         <class>org.apache.oozie.client.rest.JsonCoordinatorJob</class>
         <class>org.apache.oozie.client.rest.JsonCoordinatorAction</class>
         <class>org.apache.oozie.client.rest.JsonSLAEvent</class>
+        <class>org.apache.oozie.util.db.ValidateConnectionBean</class>
 
         <properties>
             <property name="openjpa.ConnectionDriverName" value="org.apache.oozie.util.db.InstrumentedBasicDataSource"/>
@@ -52,7 +53,8 @@
                              org.apache.oozie.client.rest.JsonWorkflowJob;
                              org.apache.oozie.client.rest.JsonWorkflowAction;
                              org.apache.oozie.client.rest.JsonCoordinatorJob;
-                             org.apache.oozie.client.rest.JsonCoordinatorAction)"></property>
+                             org.apache.oozie.client.rest.JsonCoordinatorAction;
+                             org.apache.oozie.util.db.ValidateConnectionBean)"></property>
 
             <property name="openjpa.DetachState" value="fetch-groups(DetachedStateField=true)"/>
             <property name="openjpa.LockManager" value="pessimistic"/>
@@ -82,6 +84,7 @@
         <class>org.apache.oozie.client.rest.JsonCoordinatorJob</class>
         <class>org.apache.oozie.client.rest.JsonCoordinatorAction</class>
         <class>org.apache.oozie.client.rest.JsonSLAEvent</class>
+        <class>org.apache.oozie.util.db.ValidateConnectionBean</class>
 
         <properties>
             <property name="openjpa.ConnectionDriverName" value="org.apache.oozie.util.db.InstrumentedBasicDataSource"/>
@@ -97,7 +100,8 @@
                 org.apache.oozie.client.rest.JsonWorkflowJob;
                 org.apache.oozie.client.rest.JsonWorkflowAction;
                 org.apache.oozie.client.rest.JsonCoordinatorJob;
-                org.apache.oozie.client.rest.JsonCoordinatorAction)"></property>
+                org.apache.oozie.client.rest.JsonCoordinatorAction;
+                org.apache.oozie.util.db.ValidateConnectionBean)"></property>
 
             <property name="openjpa.DetachState" value="fetch-groups(DetachedStateField=true)"/>
             <property name="openjpa.LockManager" value="pessimistic"/>
@@ -127,6 +131,7 @@
         <class>org.apache.oozie.client.rest.JsonCoordinatorJob</class>
         <class>org.apache.oozie.client.rest.JsonCoordinatorAction</class>
         <class>org.apache.oozie.client.rest.JsonSLAEvent</class>
+        <class>org.apache.oozie.util.db.ValidateConnectionBean</class>
 
         <properties>
             <property name="openjpa.ConnectionDriverName" value="org.apache.oozie.util.db.InstrumentedBasicDataSource"/>
@@ -142,7 +147,8 @@
                 org.apache.oozie.client.rest.JsonWorkflowJob;
                 org.apache.oozie.client.rest.JsonWorkflowAction;
                 org.apache.oozie.client.rest.JsonCoordinatorJob;
-                org.apache.oozie.client.rest.JsonCoordinatorAction)"></property>
+                org.apache.oozie.client.rest.JsonCoordinatorAction;
+                org.apache.oozie.util.db.ValidateConnectionBean)"></property>
 
             <property name="openjpa.DetachState" value="fetch-groups(DetachedStateField=true)"/>
             <property name="openjpa.LockManager" value="pessimistic"/>
