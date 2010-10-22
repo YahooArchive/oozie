@@ -22,7 +22,7 @@ public class BundleJobException extends XException {
 	private static final long serialVersionUID = 9087252556066046839L;
 
 	/**
-     * Create an Bundle Job exception from a XException.
+     * Create a bundle job exception from a XException.
      *
      * @param cause the XException cause.
      */
@@ -31,7 +31,7 @@ public class BundleJobException extends XException {
     }
 
     /**
-     * Create a Bundle Job exception.
+     * Create a bundle job exception.
      *
      * @param errorCode error code.
      * @param params parameters for the error code message template.

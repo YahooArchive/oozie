@@ -89,6 +89,7 @@ public enum ErrorCode {
     E0607(XLog.OPS, "Other error in operation [{0}], {1}"),
     E0608(XLog.OPS, "JDBC setup error [{0}], {1}"),
     E0609(XLog.OPS, "Missing [{0}] ORM file [{1}]"),
+    E0610(XLog.OPS, "Missing JPAService, StoreService cannot run without a JPAService"),
 
     E0700(XLog.STD, "XML error, {0}"),
     E0701(XLog.STD, "XML schema error, {0}"),
@@ -150,7 +151,7 @@ public enum ErrorCode {
     E1018(XLog.STD, "Coord Job Rerun Error: {0}"),
 
     E1101(XLog.STD, "Could not read the bundle job definition, {0}"),
-    E1102(XLog.STD, "Invalid Bundle application URI [{0}], {1}"),
+    E1102(XLog.STD, "Invalid bundle application URI [{0}], {1}"),
     E1103(XLog.STD, "Invalid bundle application attributes [{0}], {1}"),
 
     ETEST(XLog.STD, "THIS SHOULD HAPPEN ONLY IN TESTING, invalid job id [{0}]"),;

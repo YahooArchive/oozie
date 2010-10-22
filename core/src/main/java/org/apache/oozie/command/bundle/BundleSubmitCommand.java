@@ -228,6 +228,7 @@ public class BundleSubmitCommand extends BundleCommand<String> {
      * Read Bundle definition.
      *
      * @param appPath application path.
+     * @param fileName application fileName
      * @return Bundle definition.
      * @throws BundleJobException thrown if the definition could not be read.
      */
@@ -274,10 +275,10 @@ public class BundleSubmitCommand extends BundleCommand<String> {
     /**
      * Write a Bundle Job into database
      *
-     * @param bJob : XML element of job
+     * @param jobXml : XML element of job
      * @param store : Bundle Store to write.
      * @param bundleJob : Bundle job bean
-     * @return Job id.
+     * @return Job Id
      * @throws Exception
      */
     private String storeToDB(Element jobXml, BundleStore store, BundleJobBean bundleJob) throws Exception {
