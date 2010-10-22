@@ -26,9 +26,6 @@ import org.apache.oozie.client.CoordinatorJob;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-/**
- * @author bansalm
- */
 @Entity
 @Table(name = "BUNDLE_JOBS")
 @DiscriminatorColumn(name = "bean_type", discriminatorType = DiscriminatorType.STRING)
@@ -378,7 +375,7 @@ public class JsonBundleJob implements BundleJob, JsonBean {
     }
 
     /**
-     * Convert a JSONArray into a application list.
+     * Convert a JSONArray into an application list.
      *
      * @param array JSON array.
      * @return the corresponding application list.

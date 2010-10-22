@@ -24,10 +24,10 @@ import java.util.List;
 public interface BundleJob {
 
     /**
-     * Defines the possible stati of an Oozie Bundle.
+     * Defines the possible status of an Oozie Bundle.
      */
     public static enum Status {
-        PREP, PREMATER, RUNNING, SUSPENDED, SUCCEEDED, KILLED, FAILED
+        PREP, RUNNING, SUSPENDED, SUCCEEDED, KILLED, FAILED
     }
 
     /**
