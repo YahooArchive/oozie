@@ -1,3 +1,11 @@
+-- Oozie 2.3.0 release
+
+- GH-0027 support for a share lib directory in HDFS for workflow action binaries
+
+-- Oozie 2.2.2 release
+
+-- Oozie 2.2.1 release
+
 -- Oozie 2.2.0 release
 
 - adding Pig version number to pig execution log in launcher log
