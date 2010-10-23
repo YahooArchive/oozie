@@ -350,7 +350,7 @@ public class BundleJobBean extends JsonBundleJob implements Writable {
     @Override
     public void setKickoffTime(Date kickoffTime) {
         super.setKickoffTime(kickoffTime);
-        this.kickoffTimestamp = DateUtils.convertDateToTimestamp(kickoffTimestamp);
+        this.kickoffTimestamp = DateUtils.convertDateToTimestamp(kickoffTime);
     }
 
     @Override
