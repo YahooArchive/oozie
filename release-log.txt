@@ -1,3 +1,15 @@
+-- Oozie 2.2.3 release
+
+-- Oozie 2.2.2/2.2.1 release
+
+- GH-0055 Oozie should not materialize a coordinator job right after its submission if the job will only run in far future
+- GH-0046 Add support the coordiator job submitted to run in far future
+- GH-0040 coordinator rerun doesn't consider empty output-event
+- GH-0024 leverage Hadoop rules for JT/NN Kerberos principal resolution
+- GH-0034 update/simplify examples
+- GH-0050 Oozie jobs configuration properties with variables should be resolved to concrete values
+- GH-0004 Oozie console references the RowExpander.js file from an incorrect path
+
 -- Oozie 2.2.0 release
 
 - adding Pig version number to pig execution log in launcher log
