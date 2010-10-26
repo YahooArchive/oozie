@@ -33,9 +33,6 @@ import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.WritableUtils;
 import org.apache.openjpa.persistence.jdbc.Index;
 
-/**
- * @author bansalm
- */
 @Entity
 @NamedQueries( {
         @NamedQuery(name = "UPDATE_BUNDLE_JOB", query = "update BundleJobBean w set w.bundleName = :bundleName, w.bundlePath = :bundlePath, w.conf = :conf, w.externalId = :externalId, w.timeOut = :timeOut, w.authToken = :authToken, w.createdTimestamp = :createdTimestamp, w.endTimestamp = :endTimestamp, w.jobXml = :jobXml, w.lastModifiedTimestamp = :lastModifiedTimestamp, w.origJobXml = :origJobXml, w.startTimestamp = :startTimestamp, w.status = :status, w.timeUnitStr = :timeUnit where w.id = :id"),

@@ -1,3 +1,7 @@
+-- Oozie 3.0.0 release
+
+- Adding Bundle Interface and store capability.
+
 -- Oozie 2.2.0 release
 
 - adding Pig version number to pig execution log in launcher log
