@@ -1,5 +1,7 @@
 -- Oozie 2.3.0 release
 
+GH-0091 typos in workflow spec doc
+GH-0137 release-log.txt file misses 2.2.1 & 2.2.2 features/fixes
 GH-0024 leverage Hadoop rules for JT/NN Kerberos principal resolution
 GH-0034 update/simplify examples
 GH-0050 Oozie jobs configuration properties with variables should be resolved to concrete values.
