@@ -19,6 +19,8 @@ import org.apache.oozie.service.InstrumentationService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.Instrumentation;
 
+import java.sql.SQLException;
+
 public class InstrumentedBasicDataSource extends BasicDataSource {
     public static final String INSTR_GROUP = "jdbc";
     public static final String INSTR_NAME = "connections.active";
@@ -27,12 +29,15 @@ public class InstrumentedBasicDataSource extends BasicDataSource {
      * The created datasource instruments the active DB connections.
      */
     public InstrumentedBasicDataSource() {
-        Instrumentation instr = Services.get().get(InstrumentationService.class).get();
-        instr.addSampler(INSTR_GROUP, INSTR_NAME, 60, 1, new Instrumentation.Variable<Long>() {
-            public Long getValue() {
-                return (long) getNumActive();
-            }
-        });
+        InstrumentationService instrumentationService = Services.get().get(InstrumentationService.class);
+        if (instrumentationService != null) {
+            Instrumentation instr = instrumentationService.get();
+            instr.addSampler(INSTR_GROUP, INSTR_NAME, 60, 1, new Instrumentation.Variable<Long>() {
+                public Long getValue() {
+                    return (long) getNumActive();
+                }
+            });
+        }
     }
 
 }

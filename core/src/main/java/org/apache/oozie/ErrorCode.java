@@ -89,6 +89,7 @@ public enum ErrorCode {
     E0607(XLog.OPS, "Other error in operation [{0}], {1}"),
     E0608(XLog.OPS, "JDBC setup error [{0}], {1}"),
     E0609(XLog.OPS, "Missing [{0}] ORM file [{1}]"),
+    E0610(XLog.OPS, "Missing JPAService, StoreService cannot run without a JPAService"),
 
     E0700(XLog.STD, "XML error, {0}"),
     E0701(XLog.STD, "XML schema error, {0}"),
