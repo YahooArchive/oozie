@@ -72,6 +72,7 @@
             org.apache.oozie.service.DagXLogInfoService,
             org.apache.oozie.service.SchemaService,
             org.apache.oozie.service.LiteWorkflowAppService,
+            org.apache.oozie.service.JPAService,
             org.apache.oozie.service.StoreService,
             org.apache.oozie.service.CoordinatorStoreService,
             org.apache.oozie.service.SLAStoreService,
@@ -864,7 +865,7 @@
    <!-- StoreService -->
 
     <property>
-        <name>oozie.service.StoreService.create.db.schema</name>
+        <name>oozie.service.JPAService.create.db.schema</name>
         <value>true</value>
         <description>
             Creates Oozie DB.
@@ -875,7 +876,17 @@
     </property>
 
     <property>
-        <name>oozie.service.StoreService.jdbc.driver</name>
+        <name>oozie.service.JPAService.validate.db.connection</name>
+        <value>false</value>
+        <description>
+            Validates DB connections from the DB connection pool.
+
+            If the 'oozie.service.JPAService.create.db.schema' property is set to true, this property is ignored.
+        </description>
+    </property>
+
+    <property>
+        <name>oozie.service.JPAService.jdbc.driver</name>
         <value>org.hsqldb.jdbcDriver</value>
         <description>
             JDBC driver class.
@@ -883,7 +894,7 @@
     </property>
 
     <property>
-        <name>oozie.service.StoreService.jdbc.url</name>
+        <name>oozie.service.JPAService.jdbc.url</name>
         <value>jdbc:hsqldb:mem:${oozie.db.schema.name};create=true</value>
         <description>
             JDBC URL.
@@ -891,7 +902,7 @@
     </property>
 
     <property>
-        <name>oozie.service.StoreService.jdbc.username</name>
+        <name>oozie.service.JPAService.jdbc.username</name>
         <value>sa</value>
         <description>
             DB user name.
@@ -899,7 +910,7 @@
     </property>
 
     <property>
-        <name>oozie.service.StoreService.jdbc.password</name>
+        <name>oozie.service.JPAService.jdbc.password</name>
         <value> </value>
         <description>
             DB user password.
@@ -913,7 +924,7 @@
     </property>
 
     <property>
-        <name>oozie.service.StoreService.pool.max.active.conn</name>
+        <name>oozie.service.JPAService.pool.max.active.conn</name>
         <value>10</value>
         <description>
              Max number of connections.

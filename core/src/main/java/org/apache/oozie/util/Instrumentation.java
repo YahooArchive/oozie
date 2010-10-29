@@ -784,9 +784,9 @@ public class Instrumentation {
                     samplers.put(group, map);
                 }
             }
-            if (map.containsKey(name)) {
-                throw new RuntimeException(XLog.format("Sampler group=[{0}] name=[{1}] already defined", group, name));
-            }
+//            if (map.containsKey(name)) {
+//                throw new RuntimeException(XLog.format("Sampler group=[{0}] name=[{1}] already defined", group, name));
+//            }
             Sampler sampler = new Sampler(period, interval, variable);
             map.put(name, sampler);
             scheduler.scheduleAtFixedRate(sampler, 0, sampler.getSamplingInterval(), TimeUnit.SECONDS);
