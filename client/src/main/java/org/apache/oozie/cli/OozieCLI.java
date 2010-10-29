@@ -1060,7 +1060,6 @@ public class OozieCLI {
         }
 
         Properties conf = getConfiguration(commandLine);
-        conf.setProperty(XOozieClient.IS_HTTP_SUBMISSION, "true");
         String script = commandLine.getOptionValue(PIGFILE_OPTION);
 
         try {

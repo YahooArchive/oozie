@@ -187,7 +187,7 @@ public abstract class BaseJobServlet extends JsonRestServlet {
      * @throws IOException thrown if normalization can not be done properly.
      */
     public static void normalizeAppPath(Configuration conf) throws IOException {
-        if (conf.get(XOozieClient.IS_HTTP_SUBMISSION) != null) { // do nothing for HTTP submission job;
+        if (conf.get(XOozieClient.IS_PROXY_SUBMISSION) != null) { // do nothing for proxy submission job;
             return;
         }
 
@@ -215,7 +215,7 @@ public abstract class BaseJobServlet extends JsonRestServlet {
         Path appXml = appPath;
         // Normalize appPath here - it will always point to a workflow/coordinator xml definition file;
         if (fileStatus.isDir()) {
-            appXml = new Path(appPath, wfPathStr != null? "workflow.xml" : "coordinator.xml");
+            appXml = new Path(appPath, (wfPathStr != null)? "workflow.xml" : "coordinator.xml");
             normalizedAppPathStr = appXml.toString();
         }
 

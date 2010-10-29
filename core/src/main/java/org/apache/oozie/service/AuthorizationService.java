@@ -289,7 +289,7 @@ public class AuthorizationService implements Service {
                     incrCounter(INSTR_FAILED_AUTH_COUNTER, 1);
                     throw new AuthorizationException(ErrorCode.E0504, appPath);
                 }
-                if (conf.get(XOozieClient.IS_HTTP_SUBMISSION) == null) { // Only further check existence of job definition files for non http submission jobs;
+                if (conf.get(XOozieClient.IS_PROXY_SUBMISSION) == null) { // Only further check existence of job definition files for non proxy submission jobs;
                     if (!fs.isFile(path)) {
                         Path appXml = new Path(path, fileName);
                         if (!fs.exists(appXml)) {

@@ -45,7 +45,7 @@ public class XOozieClient extends OozieClient {
 
     public static final String ARCHIVES = "oozie.archives";
     
-    public static final String IS_HTTP_SUBMISSION = "oozie.httpsubmission";
+    public static final String IS_PROXY_SUBMISSION = "oozie.proxysubmission";
 
     protected XOozieClient() {
     }
@@ -113,7 +113,7 @@ public class XOozieClient extends OozieClient {
             conf.setProperty(LIBPATH, newLibPath);
         }
         
-        conf.setProperty(IS_HTTP_SUBMISSION, "true");
+        conf.setProperty(IS_PROXY_SUBMISSION, "true");
     }
 
     /**
