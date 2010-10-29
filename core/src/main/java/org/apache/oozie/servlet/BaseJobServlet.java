@@ -108,7 +108,7 @@ public abstract class BaseJobServlet extends JsonRestServlet {
             Configuration conf = new XConfiguration(request.getInputStream());
             stopCron();
             checkAuthorizationForApp(getUser(request), conf);
-            JobUtils.normalizeAppPath(conf);
+            JobUtils.normalizeAppPath(conf.get(OozieClient.USER_NAME), conf.get(OozieClient.GROUP_NAME), conf);
             reRunJob(request, response, conf);
             startCron();
             response.setStatus(HttpServletResponse.SC_OK);

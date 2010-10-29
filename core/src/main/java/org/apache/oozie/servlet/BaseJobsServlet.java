@@ -87,7 +87,7 @@ public abstract class BaseJobsServlet extends JsonRestServlet {
 
         validateJobConfiguration(conf);
         BaseJobServlet.checkAuthorizationForApp(getUser(request), conf);
-        JobUtils.normalizeAppPath(conf);
+        JobUtils.normalizeAppPath(conf.get(OozieClient.USER_NAME), conf.get(OozieClient.GROUP_NAME), conf);
 
         JSONObject json = submitJob(request, conf);
         startCron();

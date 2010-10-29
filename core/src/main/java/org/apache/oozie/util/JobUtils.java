@@ -31,13 +31,25 @@ import org.apache.oozie.service.Services;
  */
 public class JobUtils {
     /**
-     * Normalize appPath in job conf - If it's not jobs via proxy submission, after normalization appPath always
-     * points to job's Xml definition file. <p/>
-     *
+     * Normalize appPath in job conf with the provided user/group - If it's not
+     * jobs via proxy submission, after normalization appPath always points to
+     * job's Xml definition file.
+     * <p/>
+     * 
+     * @param user user
+     * @param group group
      * @param conf job configuration.
      * @throws IOException thrown if normalization can not be done properly.
      */
-    public static void normalizeAppPath(Configuration conf) throws IOException {
+    public static void normalizeAppPath(String user, String group, Configuration conf) throws IOException {
+        if (user == null) {
+            throw new IllegalArgumentException("user cannot be null");
+        }
+        
+        if (group == null) {
+            throw new IllegalArgumentException("group cannot be null");
+        }
+        
         if (conf.get(XOozieClient.IS_PROXY_SUBMISSION) != null) { // do nothing for proxy submission job;
             return;
         }
@@ -46,8 +58,6 @@ public class JobUtils {
         String coordPathStr = conf.get(OozieClient.COORDINATOR_APP_PATH);
         String appPathStr = wfPathStr != null ? wfPathStr : coordPathStr;
 
-        String user = conf.get(OozieClient.USER_NAME);
-        String group = conf.get(OozieClient.GROUP_NAME);
         FileSystem fs = null;
         try {
             fs = Services.get().get(HadoopAccessorService.class).createFileSystem(user, group, new Path(appPathStr).toUri(), conf);
