@@ -14,8 +14,8 @@
  */
 package org.apache.oozie.service;
 
+import org.apache.oozie.command.jpa.JPACommand;
 import org.apache.oozie.test.XTestCase;
-import org.apache.oozie.util.db.JPACommand;
 
 import javax.persistence.EntityManager;
 

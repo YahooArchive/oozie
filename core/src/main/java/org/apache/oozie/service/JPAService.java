@@ -26,11 +26,12 @@ import org.apache.oozie.client.rest.JsonCoordinatorJob;
 import org.apache.oozie.client.rest.JsonSLAEvent;
 import org.apache.oozie.client.rest.JsonWorkflowAction;
 import org.apache.oozie.client.rest.JsonWorkflowJob;
+import org.apache.oozie.command.CommandException;
+import org.apache.oozie.command.jpa.JPACommand;
 import org.apache.oozie.util.IOUtils;
 import org.apache.oozie.util.Instrumentable;
 import org.apache.oozie.util.Instrumentation;
 import org.apache.oozie.util.XLog;
-import org.apache.oozie.util.db.JPACommand;
 import org.apache.oozie.util.db.ValidateConnectionBean;
 import org.apache.openjpa.persistence.OpenJPAEntityManagerFactorySPI;
 
@@ -168,8 +169,9 @@ public class JPAService implements Service, Instrumentable {
      *
      * @param command JPACommand to execute.
      * @return return value of the JPACommand.
+     * @throws CommandException 
      */
-    public <T> T execute(JPACommand<T> command) {
+    public <T> T execute(JPACommand<T> command) throws CommandException {
         EntityManager em = factory.createEntityManager();
         Instrumentation.Cron cron = new Instrumentation.Cron();
         try {
