@@ -169,7 +169,7 @@ public class JPAService implements Service, Instrumentable {
      *
      * @param command JPACommand to execute.
      * @return return value of the JPACommand.
-     * @throws CommandException 
+     * @throws CommandException
      */
     public <T> T execute(JPACommand<T> command) throws CommandException {
         EntityManager em = factory.createEntityManager();
@@ -180,7 +180,12 @@ public class JPAService implements Service, Instrumentable {
                 instr.incr(INSTRUMENTATION_GROUP, command.getName(), 1);
             }
             cron.start();
-            return command.execute(em);
+            em.getTransaction().begin();
+            T t = command.execute(em);
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().commit();
+            }
+            return t;
         }
         finally {
             cron.stop();
