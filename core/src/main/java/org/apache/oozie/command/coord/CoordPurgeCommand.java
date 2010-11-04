@@ -16,10 +16,7 @@ package org.apache.oozie.command.coord;
 
 import org.apache.oozie.store.CoordinatorStore;
 import org.apache.oozie.store.StoreException;
-import org.apache.oozie.store.WorkflowStore;
-import org.apache.oozie.store.Store;
 import org.apache.oozie.util.XLog;
-import org.apache.oozie.command.Command;
 import org.apache.oozie.command.CommandException;
 
 public class CoordPurgeCommand extends CoordinatorCommand<Void> {
@@ -34,9 +31,8 @@ public class CoordPurgeCommand extends CoordinatorCommand<Void> {
 
     protected Void call(CoordinatorStore store) throws StoreException, CommandException {
         XLog.getLog(getClass()).debug("STARTED Coord Purge to purge Jobs older than [{0}] days.", olderThan);
-        int actionDeleted = store.purgeActions(this.olderThan, this.limit);
-        int jobsDeleted = store.purgeJobs(this.olderThan, this.limit);
-        XLog.getLog(getClass()).debug("ENDED Coord Purge deleted actions :" + actionDeleted + " and jobs " + jobsDeleted);
+        store.purge(this.olderThan, this.limit);
+        XLog.getLog(getClass()).debug("Coord-Purge succeeded");
         return null;
     }
 
