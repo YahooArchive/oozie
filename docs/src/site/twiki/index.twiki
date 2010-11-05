@@ -46,6 +46,10 @@ Enough reading already? Follow the steps in [[DG_QuickStart][Oozie Quick Start]]
    * [[DG_CustomActionExecutor][Writing a Custom Action Executor]]
    * [[./apidocs/index.html][Oozie Javadocs]]
 
+---+++ Actions Extension
+
+   * [[DG_HiveActionExtension][Hive Action]]
+
 ---++ Administrator Documentation
 
    * [[AG_Install][Oozie Install]]

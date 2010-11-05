@@ -1,5 +1,6 @@
 -- Oozie 2.3.0 Cloudera release
 
+GH-0022 Add Hive action
 Standardize on groupId/artifactId for Hadoop/Pig/Oozie
 Add support for Kerberos HTTP SPNEGO authentication (using Alfredo)
 

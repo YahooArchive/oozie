@@ -16,6 +16,22 @@
 
 <configuration>
 
+    <!-- Uncomment the following  properties to enable Hive actions
+
+    <property>
+        <name>oozie.service.ActionService.executor.ext.classes</name>
+        <value>
+            org.apache.oozie.action.hadoop.HiveActionExecutor
+        </value>
+    </property>
+
+    <property>
+        <name>oozie.service.SchemaService.wf.ext.schemas</name>
+        <value>hive-action-0.2.xsd</value>
+    </property>
+
+    -->
+
 <!--
     Refer to the oozie-default.xml file for the complete list of
     Oozie configuration properties and their default values.

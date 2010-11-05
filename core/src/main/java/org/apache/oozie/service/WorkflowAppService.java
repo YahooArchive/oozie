@@ -95,12 +95,11 @@ public abstract class WorkflowAppService implements Service {
      * @return workflow definition.
      * @throws WorkflowException thrown if the definition could not be read.
      */
-    protected String readDefinition(String appPath, String user, String group, String autToken)
+    protected String readDefinition(String appPath, String user, String group, String autToken, Configuration conf)
             throws WorkflowException {
         try {
             URI uri = new URI(appPath);
-            FileSystem fs = Services.get().get(HadoopAccessorService.class).
-                    createFileSystem(user, group, uri, new Configuration());
+            FileSystem fs = Services.get().get(HadoopAccessorService.class).createFileSystem(user, group, uri, conf);
             Reader reader = new InputStreamReader(fs.open(new Path(uri.getPath())));
             StringWriter writer = new StringWriter();
             IOUtils.copyCharStream(reader, writer);
