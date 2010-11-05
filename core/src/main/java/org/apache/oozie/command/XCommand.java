@@ -168,7 +168,7 @@ public abstract class XCommand<T> implements XCallable<T> {
             instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".lockTimeOut", 1);
             throw new CommandException(ErrorCode.E0606, this.toString(), getLockTimeOut());
         }
-        getLog().debug("Acquired lock for [{0}]", getEntityKey());
+        LOG.debug("Acquired lock for [{0}]", getEntityKey());
     }
 
     /**
@@ -177,7 +177,7 @@ public abstract class XCommand<T> implements XCallable<T> {
     private void releaseLock() {
         if (lock != null) {
             lock.release();
-            getLog().debug("Released lock for [{0}]", getEntityKey());
+            LOG.debug("Released lock for [{0}]", getEntityKey());
         }
     }
 
@@ -208,33 +208,34 @@ public abstract class XCommand<T> implements XCallable<T> {
                         acquireLock();
                         acquireLockCron.stop();
                     }
-                    finally {
-                        instrumentation.addCron(INSTRUMENTATION_GROUP, getName() + ".acquireLock", acquireLockCron);
+                    catch (Exception ex) {
+                        instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);
+                        throw ex;
                     }
                 }
-                getLog().debug("Load state for [{0}]", getEntityKey());
+                LOG.debug("Load state for [{0}]", getEntityKey());
                 loadState();
-                getLog().debug("Precondition check for command [{0}] key [{1}]", getName(), getEntityKey());
+                LOG.debug("Precondition check for command [{0}] key [{1}]", getName(), getEntityKey());
                 verifyPrecondition();
-                getLog().debug("Execute command [{0}] key [{1}]", getName(), getEntityKey());
+                LOG.debug("Execute command [{0}] key [{1}]", getName(), getEntityKey());
                 Instrumentation.Cron executeCron = new Instrumentation.Cron();
                 T ret;
                 try {
                     executeCron.start();
                     ret = execute();
-                }
-                finally {
                     executeCron.stop();
-                    instrumentation.addCron(INSTRUMENTATION_GROUP, getName() + ".execute", executeCron);
+                }
+                catch (Exception ex) {
+                    instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);
+                    throw ex;
                 }
                 if (commandQueue != null) {
                     CallableQueueService callableQueueService = Services.get().get(CallableQueueService.class);
                     for (Map.Entry<Long, List<XCommand<T>>> entry : commandQueue.entrySet()) {
-                        getLog().debug("Queuing [{0}] commands with delay [{1}]ms", entry.getValue().size(),
-                                entry.getKey());
+                        LOG.debug("Queuing [{0}] commands with delay [{1}]ms", entry.getValue().size(), entry.getKey());
                         if (!callableQueueService.queueSerial(entry.getValue(), entry.getKey())) {
-                            getLog().warn("Could not queue [{0}] commands with delay [{1}]ms, queue full",
-                                    entry.getValue().size(), entry.getKey());
+                            LOG.warn("Could not queue [{0}] commands with delay [{1}]ms, queue full", entry.getValue()
+                                    .size(), entry.getKey());
                         }
                     }
                 }
@@ -257,19 +258,6 @@ public abstract class XCommand<T> implements XCallable<T> {
     }
 
     /**
-     * Return the {link XLog} instance used by the command.
-     * <p/>
-     * The log instance belongs to the {link XCommand}.
-     * <p/>
-     * Subclasses should override this method if the want to use a different log instance.
-     * 
-     * @return the log instance.
-     */
-    protected XLog getLog() {
-        return LOG;
-    }
-
-    /**
      * Return the time out when acquiring a lock.
      * <p/>
      * The value is loaded from the Oozie configuration, the property {link #DEFAULT_LOCK_TIMEOUT}.
@@ -287,11 +275,9 @@ public abstract class XCommand<T> implements XCallable<T> {
      * <p/>
      * Subclasses should override this method if they require locking.
      * 
-     * @return <code>false</code>
+     * @return <code>true/false</code>
      */
-    protected boolean isLockRequired() {
-        return false;
-    }
+    protected abstract boolean isLockRequired();
 
     /**
      * Return the entity key for the command.
