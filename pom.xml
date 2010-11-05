@@ -95,9 +95,25 @@
         </repository>
 
         <repository>
-            <id>cdh.thirdparty.repo</id>
-            <url>https://repository.cloudera.com/content/repositories/third-party</url>
-            <name>Cloudera Third Party Repository</name>
+           <id>datanucleus</id>
+           <url>http://www.datanucleus.org/downloads/maven2</url>
+           <name>Datanucleus</name>
+           <snapshots>
+              <enabled>false</enabled>
+           </snapshots>
+        </repository>
+        <repository>
+           <id>java.net repository</id>
+           <url>http://download.java.net/maven/2</url>
+           <snapshots>
+              <enabled>false</enabled>
+           </snapshots>
+        </repository>
+
+        <repository>
+            <id>cdh.repo</id>
+            <url>https://repository.cloudera.com/content/groups/cloudera-repos</url>
+            <name>Cloudera Repositories</name>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -229,6 +245,12 @@
             </dependency>
 
             <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.4</version>
+            </dependency>
+
+            <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
                 <version>1.3</version>
@@ -312,6 +334,18 @@
                         <artifactId>junit</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.thrift</groupId>
+                <artifactId>thrift</artifactId>
+                <version>0.5.0-cdh</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hadoop.hive</groupId>
+                <artifactId>hive-cli</artifactId>
+                <version>0.7.0-CDH3B4</version>
             </dependency>
 
             <dependency>
@@ -556,6 +590,8 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
+                    <!-- This switches off DataNucleus enhancer which is ON by default -->
+                    <compilerArgument>-proc:none</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>
@@ -563,7 +599,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <forkMode>${oozie.test.forkMode}</forkMode>
-                    <argLine>-Xmx1024m</argLine>
+                    <argLine>-Xmx1024m -da</argLine>
                     <systemPropertiesVariables>
                         <hadoop.log.dir>/tmp</hadoop.log.dir>
                     </systemPropertiesVariables>

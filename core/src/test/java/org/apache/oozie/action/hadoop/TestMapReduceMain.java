@@ -52,6 +52,7 @@ public class TestMapReduceMain extends MainTestCase {
 
         jobConf.set("user.name", getTestUser());
         jobConf.set("hadoop.job.ugi", getTestUser() + "," + getTestGroup());
+
         injectKerberosInfo(jobConf);
         
         File actionXml = new File(getTestCaseDir(), "action.xml");

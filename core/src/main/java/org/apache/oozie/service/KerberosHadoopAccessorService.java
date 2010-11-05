@@ -126,6 +126,7 @@ public class KerberosHadoopAccessorService extends HadoopAccessorService {
             UserGroupInformation ugi = getUGI(user);
             JobClient jobClient = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
                 public JobClient run() throws Exception {
+                    validateConf(conf);
                     return new JobClient(conf);
                 }
             });
@@ -159,6 +160,7 @@ public class KerberosHadoopAccessorService extends HadoopAccessorService {
                 public FileSystem run() throws Exception {
                     Configuration defaultConf = new Configuration();
                     XConfiguration.copy(conf, defaultConf);
+                    validateConf(conf);
                     return FileSystem.get(defaultConf);
                 }
             });
@@ -197,6 +199,7 @@ public class KerberosHadoopAccessorService extends HadoopAccessorService {
                     defaultConf.set(WorkflowAppService.HADOOP_NN_KERBEROS_NAME, "hdfs/_HOST@" + localRealm);
 
                     XConfiguration.copy(conf, defaultConf);
+                    validateConf(conf);
                     return FileSystem.get(uri, defaultConf);
                 }
             });
@@ -223,6 +226,7 @@ public class KerberosHadoopAccessorService extends HadoopAccessorService {
                     //Doing this NOP add first to have the FS created and cached
                     DistributedCache.addFileToClassPath(file, defaultConf);
 
+                    validateConf(conf);
                     DistributedCache.addFileToClassPath(file, conf);
                     return null;
                 }
@@ -233,6 +237,15 @@ public class KerberosHadoopAccessorService extends HadoopAccessorService {
             throw new IOException(ex);
         }
 
+    }
+
+    private void validateConf(Configuration conf) throws HadoopAccessorException {
+        if (conf.get(WorkflowAppService.HADOOP_JT_KERBEROS_NAME) == null) {
+            throw new HadoopAccessorException(ErrorCode.E0903);
+        }
+        if (conf.get(WorkflowAppService.HADOOP_NN_KERBEROS_NAME) == null) {
+            throw new HadoopAccessorException(ErrorCode.E0904);
+        }
     }
 
 }
