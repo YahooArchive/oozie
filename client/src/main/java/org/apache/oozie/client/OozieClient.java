@@ -114,6 +114,10 @@ public class OozieClient {
     public static final String CHANGE_VALUE_PAUSETIME = "pausetime";
 
     public static final String CHANGE_VALUE_CONCURRENCY = "concurrency";
+    
+    public static final String LIBPATH = "oozie.libpath";
+
+    public static final String USE_SYSTEM_LIBPATH = "oozie.use.system.libpath";
 
     public static enum SYSTEM_MODE {
         NORMAL, NOWEBSERVICE, SAFEMODE

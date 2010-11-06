@@ -20,8 +20,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.oozie.client.OozieClient;
-import org.apache.oozie.client.XOozieClient;
-import org.apache.oozie.command.CommandException;
 import org.apache.oozie.workflow.WorkflowApp;
 import org.apache.oozie.workflow.WorkflowException;
 import org.apache.oozie.util.IOUtils;
@@ -43,6 +41,11 @@ import java.util.Map;
  * Service that provides application workflow definition reading from the path and creation of the proto configuration.
  */
 public abstract class WorkflowAppService implements Service {
+
+    public static final String CONF_PREFIX = Service.CONF_PREFIX + "WorkflowAppService.";
+
+    public static final String SYSTEM_LIB_PATH = CONF_PREFIX + "system.libpath";
+
     public static final String APP_LIB_PATH_LIST = "oozie.wf.application.lib";
 
     public static final String HADOOP_UGI = "hadoop.job.ugi";
@@ -53,12 +56,18 @@ public abstract class WorkflowAppService implements Service {
 
     public static final String HADOOP_NN_KERBEROS_NAME = "dfs.namenode.kerberos.principal";
 
+    private Path systemLibPath;
+
     /**
      * Initialize the workflow application service.
      *
      * @param services services instance.
      */
     public void init(Services services) {
+        String path = services.getConf().get(SYSTEM_LIB_PATH, " ");
+        if (path.trim().length() > 0) {
+            systemLibPath = new Path(path.trim());
+        }
     }
 
     /**
@@ -92,7 +101,7 @@ public abstract class WorkflowAppService implements Service {
             URI uri = new URI(appPath);
             FileSystem fs = Services.get().get(HadoopAccessorService.class).
                     createFileSystem(user, group, uri, new Configuration());
-            Reader reader = new InputStreamReader(fs.open(new Path(uri.getPath(), "workflow.xml")));
+            Reader reader = new InputStreamReader(fs.open(new Path(uri.getPath())));
             StringWriter writer = new StringWriter();
             IOUtils.copyCharStream(reader, writer);
             return writer.toString();
@@ -118,10 +127,12 @@ public abstract class WorkflowAppService implements Service {
      *
      * @param jobConf job configuration.
      * @param authToken authentication token.
+     * @param isWorkflowJob indicates if the job is a workflow job or not.
      * @return proto configuration.
      * @throws WorkflowException thrown if the proto action configuration could not be created.
      */
-    public XConfiguration createProtoActionConf(Configuration jobConf, String authToken) throws WorkflowException {
+    public XConfiguration createProtoActionConf(Configuration jobConf, String authToken, boolean isWorkflowJob)
+            throws WorkflowException {
         XConfiguration conf = new XConfiguration();
         try {
             String user = jobConf.get(OozieClient.USER_NAME);
@@ -142,14 +153,25 @@ public abstract class WorkflowAppService implements Service {
             FileSystem fs = Services.get().get(HadoopAccessorService.class).createFileSystem(user, group, uri, conf);
 
             Path appPath = new Path(uri.getPath());
-            XLog.getLog(getClass()).debug("jobConf.libPath = " + jobConf.get(XOozieClient.LIBPATH));
+            XLog.getLog(getClass()).debug("jobConf.libPath = " + jobConf.get(OozieClient.LIBPATH));
             XLog.getLog(getClass()).debug("jobConf.appPath = " + appPath);
 
             List<String> filePaths = null;
-            if (jobConf.get(XOozieClient.LIBPATH) != null) { // This is a HTTP submission job;
-                filePaths = getLibFiles(fs, appPath);
-            } else {
-                filePaths = getLibFiles(fs, new Path(appPath + "/lib"));
+            if (isWorkflowJob) {
+                filePaths = getLibFiles(fs, new Path(appPath.getParent(), "lib"));
+                if (jobConf.get(OozieClient.LIBPATH) != null) {
+                    Path libPath = new Path(jobConf.get(OozieClient.LIBPATH));
+                    List<String> libPaths = getLibFiles(fs, libPath);
+                    filePaths.addAll(libPaths);
+                }
+            }
+            else {
+                filePaths = getLibFiles(fs, new Path(appPath.getParent(), "lib"));
+            }
+
+            if (systemLibPath != null && jobConf.getBoolean(OozieClient.USE_SYSTEM_LIBPATH, false)) {
+                List<String> libPaths = getLibFiles(fs, systemLibPath);
+                filePaths.addAll(libPaths);
             }
 
             conf.setStrings(APP_LIB_PATH_LIST, filePaths.toArray(new String[filePaths.size()]));
