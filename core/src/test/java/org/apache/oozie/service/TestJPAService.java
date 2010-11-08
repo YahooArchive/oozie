@@ -42,7 +42,6 @@ public class TestJPAService extends XTestCase {
         @Override
         public String execute(EntityManager em) {
             assertNotNull(em);
-            em.getTransaction().begin();
             return "ret";
         }
     }
@@ -52,5 +51,5 @@ public class TestJPAService extends XTestCase {
         String ret = jpaService.execute(new MyJPACommand());
         assertEquals("ret", ret);
     }
-    
+
 }
