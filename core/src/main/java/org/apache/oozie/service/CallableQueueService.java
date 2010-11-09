@@ -269,7 +269,7 @@ public class CallableQueueService implements Service, Instrumentable {
 
     /**
      * Convenience method for instrumentation counters.
-     * 
+     *
      * @param name counter name.
      * @param count count to increment the counter.
      */
@@ -358,7 +358,7 @@ public class CallableQueueService implements Service, Instrumentable {
 
     /**
      * Return the public interface for command queue service.
-     * 
+     *
      * @return {@link CallableQueueService}.
      */
     @Override
@@ -389,7 +389,7 @@ public class CallableQueueService implements Service, Instrumentable {
 
     /**
      * Queue a callable for asynchronous execution.
-     * 
+     *
      * @param callable callable to queue.
      * @return <code>true</code> if the callable was queued, <code>false</code> if the queue is full and the callable
      *         was not queued.
@@ -416,7 +416,7 @@ public class CallableQueueService implements Service, Instrumentable {
 
     /**
      * Queue a callable for asynchronous execution sometime in the future.
-     * 
+     *
      * @param callable callable to queue for delayed execution
      * @param delay time, in milliseconds, that the callable should be delayed.
      * @return <code>true</code> if the callable was queued, <code>false</code> if the queue is full and the callable
@@ -475,7 +475,7 @@ public class CallableQueueService implements Service, Instrumentable {
 
     /**
      * Instruments the callable queue service.
-     * 
+     *
      * @param instr instance to instrument the callable queue service to.
      */
     public void instrument(Instrumentation instr) {
@@ -495,7 +495,7 @@ public class CallableQueueService implements Service, Instrumentable {
 
     /**
      * Get the list of strings of queue dump
-     * 
+     *
      * @return the list of string that representing each CallableWrapper
      */
     public List<String> getQueueDump() {
