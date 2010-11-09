@@ -207,6 +207,7 @@ public abstract class XCommand<T> implements XCallable<T> {
                         acquireLockCron.start();
                         acquireLock();
                         acquireLockCron.stop();
+                        instrumentation.addCron(INSTRUMENTATION_GROUP, getName() + ".acquireLock", acquireLockCron);
                     }
                     catch (Exception ex) {
                         instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);
@@ -224,6 +225,7 @@ public abstract class XCommand<T> implements XCallable<T> {
                     executeCron.start();
                     ret = execute();
                     executeCron.stop();
+                    instrumentation.addCron(INSTRUMENTATION_GROUP, getName() + ".execute", executeCron);
                 }
                 catch (Exception ex) {
                     instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);

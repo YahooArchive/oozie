@@ -219,7 +219,7 @@
 
     <property>
         <name>oozie.service.CallableQueueService.queue.size</name>
-        <value>1000</value>
+        <value>10000</value>
         <description>Max callable queue size</description>
     </property>
 
