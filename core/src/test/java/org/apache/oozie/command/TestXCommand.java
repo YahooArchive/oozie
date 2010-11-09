@@ -55,19 +55,6 @@ public class TestXCommand extends XTestCase {
             this.mark_fail = mark_fail;
         }
 
-        /*
-         * public AXCommand(boolean lockRequired, boolean
-         * eagerVerifyPrecondition) { super("name", "type", 1);
-         * this.lockRequired = lockRequired; this.eagerVerifyPrecondition =
-         * eagerVerifyPrecondition; }
-         * 
-         * public AXCommand(boolean lockRequired, boolean
-         * eagerVerifyPrecondition,boolean VerifyPrecondition) { super("name",
-         * "type", 1); this.lockRequired = lockRequired;
-         * this.eagerVerifyPrecondition = eagerVerifyPrecondition;
-         * this.verifyPrecondition = VerifyPrecondition; }
-         */
-
         @Override
         protected long getLockTimeOut() {
             assertEquals(5 * 1000, super.getLockTimeOut());
