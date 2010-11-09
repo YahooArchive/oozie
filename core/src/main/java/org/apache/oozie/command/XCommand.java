@@ -14,11 +14,17 @@
  */
 package org.apache.oozie.command;
 
+import org.apache.oozie.CoordinatorActionBean;
+import org.apache.oozie.CoordinatorJobBean;
 import org.apache.oozie.ErrorCode;
+import org.apache.oozie.WorkflowActionBean;
+import org.apache.oozie.WorkflowJobBean;
 import org.apache.oozie.service.CallableQueueService;
+import org.apache.oozie.service.DagXLogInfoService;
 import org.apache.oozie.service.InstrumentationService;
 import org.apache.oozie.service.MemoryLocksService;
 import org.apache.oozie.service.Services;
+import org.apache.oozie.service.XLogService;
 import org.apache.oozie.util.Instrumentation;
 import org.apache.oozie.util.MemoryLocks;
 import org.apache.oozie.util.XCallable;
@@ -60,6 +66,15 @@ public abstract class XCommand<T> implements XCallable<T> {
     private MemoryLocks.LockToken lock;
     private boolean used;
     private Map<Long, List<XCommand<T>>> commandQueue;
+    protected boolean dryrun = false;
+    protected Instrumentation instrumentation;
+
+    XLog.Info logInfo;
+
+    /**
+     * The instrumentation group used for Jobs.
+     */
+    private static final String INSTRUMENTATION_JOB_GROUP = "jobs";
 
     /**
      * Create a command.
@@ -73,6 +88,21 @@ public abstract class XCommand<T> implements XCallable<T> {
         this.type = type;
         this.priority = priority;
         createdTime = System.currentTimeMillis();
+    }
+
+    /**
+     * @param name command name.
+     * @param type command type.
+     * @param priority command priority.
+     * @param dryrun indicates if dryrun option is enabled. if enabled bundle will show a diagnostic output without
+     *        really running the job
+     */
+    public XCommand(String name, String type, int priority, boolean dryrun) {
+        this.name = name;
+        this.type = type;
+        this.priority = priority;
+        createdTime = System.currentTimeMillis();
+        this.dryrun = dryrun;
     }
 
     /**
@@ -284,7 +314,7 @@ public abstract class XCommand<T> implements XCallable<T> {
     /**
      * Return the entity key for the command.
      * <p/>
-     * 
+     *
      * @return the entity key for the command.
      */
     protected abstract String getEntityKey();
@@ -307,7 +337,7 @@ public abstract class XCommand<T> implements XCallable<T> {
      * This implementation does a NOP.
      * <p/>
      * A trivial implementation is calling {link #verifyPrecondition}.
-     * 
+     *
      * @throws CommandException thrown if the precondition is not met.
      */
     protected void eagerVerifyPrecondition() throws CommandException {
@@ -324,7 +354,7 @@ public abstract class XCommand<T> implements XCallable<T> {
     /**
      * Verify the precondition for the command after a lock has been obtain, just before executing the command.
      * <p/>
-     * 
+     *
      * @throws CommandException thrown if the precondition is not met.
      */
     protected abstract void verifyPrecondition() throws CommandException;
@@ -335,11 +365,143 @@ public abstract class XCommand<T> implements XCallable<T> {
      * This method will be invoked after the {link #loadState} and {link #verifyPrecondition} methods.
      * <p/>
      * If the command requires locking, this method will be invoked ONLY if the lock has been acquired.
-     * 
+     *
      * @return a return value from the execution of the command, only meaningful if the command is executed
      *         synchronously.
      * @throws CommandException thrown if the command execution failed.
      */
     protected abstract T execute() throws CommandException;
+
+    /**
+     * Set the log info with the context of the given coordinator bean.
+     *
+     * @param cBean coordinator bean.
+     */
+    protected void setLogInfo(CoordinatorJobBean cBean) {
+        if (logInfo.getParameter(XLogService.GROUP) == null) {
+            logInfo.setParameter(XLogService.GROUP, cBean.getGroup());
+        }
+        if (logInfo.getParameter(XLogService.USER) == null) {
+            logInfo.setParameter(XLogService.USER, cBean.getUser());
+        }
+        logInfo.setParameter(DagXLogInfoService.JOB, cBean.getId());
+        logInfo.setParameter(DagXLogInfoService.TOKEN, "");
+        logInfo.setParameter(DagXLogInfoService.APP, cBean.getAppName());
+        XLog.Info.get().setParameters(logInfo);
+    }
+
+    /**
+     * Set the log info with the context of the given coordinator action bean.
+     *
+     * @param action action bean.
+     */
+    protected void setLogInfo(CoordinatorActionBean action) {
+        logInfo.setParameter(DagXLogInfoService.JOB, action.getJobId());
+        // logInfo.setParameter(DagXLogInfoService.TOKEN, action.getLogToken());
+        logInfo.setParameter(DagXLogInfoService.ACTION, action.getId());
+        XLog.Info.get().setParameters(logInfo);
+    }
+
+    /**
+     * Set the log info with the context of the given workflow bean.
+     *
+     * @param workflow workflow bean.
+     */
+    protected void setLogInfo(WorkflowJobBean workflow) {
+        if (logInfo.getParameter(XLogService.GROUP) == null) {
+            logInfo.setParameter(XLogService.GROUP, workflow.getGroup());
+        }
+        if (logInfo.getParameter(XLogService.USER) == null) {
+            logInfo.setParameter(XLogService.USER, workflow.getUser());
+        }
+        logInfo.setParameter(DagXLogInfoService.JOB, workflow.getId());
+        logInfo.setParameter(DagXLogInfoService.TOKEN, workflow.getLogToken());
+        logInfo.setParameter(DagXLogInfoService.APP, workflow.getAppName());
+        XLog.Info.get().setParameters(logInfo);
+    }
+
+    /**
+     * Set the log info with the context of the given action bean.
+     *
+     * @param action action bean.
+     */
+    protected void setLogInfo(WorkflowActionBean action) {
+        logInfo.setParameter(DagXLogInfoService.JOB, action.getJobId());
+        logInfo.setParameter(DagXLogInfoService.TOKEN, action.getLogToken());
+        logInfo.setParameter(DagXLogInfoService.ACTION, action.getId());
+        XLog.Info.get().setParameters(logInfo);
+    }
+
+    /**
+     * Reset the action bean information from the log info.
+     */
+    // TODO check if they are used, else delete
+    protected void resetLogInfoAction() {
+        logInfo.clearParameter(DagXLogInfoService.ACTION);
+        XLog.Info.get().clearParameter(DagXLogInfoService.ACTION);
+    }
+
+    /**
+     * Reset the workflow bean information from the log info.
+     */
+    // TODO check if they are used, else delete
+    protected void resetLogInfoWorkflow() {
+        logInfo.clearParameter(DagXLogInfoService.JOB);
+        logInfo.clearParameter(DagXLogInfoService.APP);
+        logInfo.clearParameter(DagXLogInfoService.TOKEN);
+        XLog.Info.get().clearParameter(DagXLogInfoService.JOB);
+        XLog.Info.get().clearParameter(DagXLogInfoService.APP);
+        XLog.Info.get().clearParameter(DagXLogInfoService.TOKEN);
+    }
+
+    /**
+     * Convenience method to increment counters.
+     *
+     * @param group the group name.
+     * @param name the counter name.
+     * @param count increment count.
+     */
+    private void incrCounter(String group, String name, int count) {
+        if (instrumentation != null) {
+            instrumentation.incr(group, name, count);
+        }
+    }
+
+    /**
+     * Used to increment command counters.
+     *
+     * @param count the increment count.
+     */
+    protected void incrCommandCounter(int count) {
+        incrCounter(INSTRUMENTATION_GROUP, name, count);
+    }
+
+    /**
+     * Used to increment job counters. The counter name s the same as the command name.
+     *
+     * @param count the increment count.
+     */
+    protected void incrJobCounter(int count) {
+        incrJobCounter(name, count);
+    }
+
+    /**
+     * Used to increment job counters.
+     *
+     * @param name the job name.
+     * @param count the increment count.
+     */
+    protected void incrJobCounter(String name, int count) {
+        incrCounter(INSTRUMENTATION_JOB_GROUP, name, count);
+    }
+
+    /**
+     * Return the {@link Instrumentation} instance in use.
+     *
+     * @return the {@link Instrumentation} instance in use.
+     */
+    protected Instrumentation getInstrumentation() {
+        return instrumentation;
+    }
 
 }

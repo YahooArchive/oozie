@@ -98,7 +98,7 @@ public class CallableQueueService implements Service, Instrumentable {
                 throw new IllegalStateException("It should not happen");
             }
             else {
-                int i = counter.decrementAndGet();
+                counter.decrementAndGet();
             }
         }
     }
