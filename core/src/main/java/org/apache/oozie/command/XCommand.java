@@ -279,6 +279,12 @@ public abstract class XCommand<T> implements XCallable<T> {
                 }
             }
         }
+        catch(VerifyXCommandException vex){
+            T ret = null;
+            LOG.warn(vex.getCause().getLocalizedMessage().toString() + "Error Code: "+ vex.getErrorCode().toString());
+            instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);
+            return ret;
+        }
         catch (Exception ex) {
             instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);
             throw ex;
@@ -328,7 +334,7 @@ public abstract class XCommand<T> implements XCallable<T> {
      * <p/>
      * A trivial implementation is calling {link #loadState}.
      */
-    protected void eagerLoadState() {
+    protected void eagerLoadState() throws CommandException{
     }
 
     /**
@@ -340,7 +346,7 @@ public abstract class XCommand<T> implements XCallable<T> {
      *
      * @throws CommandException thrown if the precondition is not met.
      */
-    protected void eagerVerifyPrecondition() throws CommandException {
+    protected void eagerVerifyPrecondition() throws CommandException,VerifyXCommandException {
     }
 
     /**
@@ -349,7 +355,7 @@ public abstract class XCommand<T> implements XCallable<T> {
      * Subclasses must implement this method and load the state needed to do the precondition check and execute the
      * command.
      */
-    protected abstract void loadState();
+    protected abstract void loadState() throws CommandException;
 
     /**
      * Verify the precondition for the command after a lock has been obtain, just before executing the command.
@@ -357,7 +363,7 @@ public abstract class XCommand<T> implements XCallable<T> {
      *
      * @throws CommandException thrown if the precondition is not met.
      */
-    protected abstract void verifyPrecondition() throws CommandException;
+    protected abstract void verifyPrecondition() throws CommandException,VerifyXCommandException;
 
     /**
      * Command execution body.
