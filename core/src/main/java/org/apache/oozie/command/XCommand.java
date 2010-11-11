@@ -279,10 +279,10 @@ public abstract class XCommand<T> implements XCallable<T> {
                 }
             }
         }
-        catch(VerifyXCommandException vex){
+        catch(PreconditionException vex){
             T ret = null;
             LOG.warn(vex.getCause().getLocalizedMessage().toString() + "Error Code: "+ vex.getErrorCode().toString());
-            instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);
+            instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".preconditionfailed", 1);
             return ret;
         }
         catch (Exception ex) {
@@ -346,7 +346,7 @@ public abstract class XCommand<T> implements XCallable<T> {
      *
      * @throws CommandException thrown if the precondition is not met.
      */
-    protected void eagerVerifyPrecondition() throws CommandException,VerifyXCommandException {
+    protected void eagerVerifyPrecondition() throws CommandException,PreconditionException {
     }
 
     /**
@@ -363,7 +363,7 @@ public abstract class XCommand<T> implements XCallable<T> {
      *
      * @throws CommandException thrown if the precondition is not met.
      */
-    protected abstract void verifyPrecondition() throws CommandException,VerifyXCommandException;
+    protected abstract void verifyPrecondition() throws CommandException,PreconditionException;
 
     /**
      * Command execution body.
