@@ -3,6 +3,7 @@ package org.apache.oozie.command.coord;
 import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.command.CommandException;
+import org.apache.oozie.command.PreconditionException;
 import org.apache.oozie.command.jpa.CoordActionGetCommand;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
@@ -51,7 +52,7 @@ public class CoordActionInfoXCommand extends CoordinatorXCommand<CoordinatorActi
      * @see org.apache.oozie.command.XCommand#loadState()
      */
     @Override
-    protected void loadState() {
+    protected void loadState() throws CommandException{
 
     }
 
@@ -59,7 +60,7 @@ public class CoordActionInfoXCommand extends CoordinatorXCommand<CoordinatorActi
      * @see org.apache.oozie.command.XCommand#verifyPrecondition()
      */
     @Override
-    protected void verifyPrecondition() throws CommandException {
+    protected void verifyPrecondition() throws CommandException,PreconditionException {
 
     }
 
