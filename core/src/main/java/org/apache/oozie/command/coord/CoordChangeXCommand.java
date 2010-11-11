@@ -10,6 +10,7 @@ import org.apache.oozie.XException;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.command.CommandException;
+import org.apache.oozie.command.PreconditionException;
 import org.apache.oozie.command.jpa.CoordJobGetCommand;
 import org.apache.oozie.command.jpa.CoordJobUpdateCommand;
 import org.apache.oozie.service.JPAService;
@@ -126,7 +127,7 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
      * @see org.apache.oozie.command.XCommand#eagerVerifyPrecondition()
      */
     @Override
-    protected void eagerVerifyPrecondition() throws CommandException {
+    protected void eagerVerifyPrecondition() throws CommandException,PreconditionException {
         super.eagerVerifyPrecondition();
         parseChangeValue(this.changeValue);
     }
@@ -218,8 +219,6 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
         try {
             setLogInfo(this.coordJob);
 
-            check(this.coordJob, newEndTime, newConcurrency, newPauseTime);
-
             if (newEndTime != null) {
                 this.coordJob.setEndTime(newEndTime);
                 if (this.coordJob.getStatus() == CoordinatorJob.Status.SUCCEEDED) {
@@ -265,28 +264,23 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
      * @see org.apache.oozie.command.XCommand#loadState()
      */
     @Override
-    protected void loadState() {
+    protected void loadState() throws CommandException{
+        JPAService jpaService = Services.get().get(JPAService.class);
+
+        if (jpaService != null) {
+            this.coordJob = jpaService.execute(new CoordJobGetCommand(jobId));
+        }
+        else {
+            LOG.error(ErrorCode.E0610);
+        }
     }
 
     /* (non-Javadoc)
      * @see org.apache.oozie.command.XCommand#verifyPrecondition()
      */
     @Override
-    protected void verifyPrecondition() throws CommandException {
-        try {
-            JPAService jpaService = Services.get().get(JPAService.class);
-
-            if (jpaService != null) {
-                this.coordJob = jpaService.execute(new CoordJobGetCommand(jobId));
-                check(this.coordJob, newEndTime, newConcurrency, newPauseTime);
-            }
-            else {
-                LOG.error(ErrorCode.E0610);
-            }
-        }
-        catch (XException ex) {
-            throw new CommandException(ex);
-        }
+    protected void verifyPrecondition() throws CommandException,PreconditionException {
+        check(this.coordJob, newEndTime, newConcurrency, newPauseTime);
     }
 
     /* (non-Javadoc)
