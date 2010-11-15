@@ -33,7 +33,6 @@ import org.apache.oozie.client.SLAEvent.SlaAppType;
 import org.apache.oozie.client.SLAEvent.Status;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.PreconditionException;
-import org.apache.oozie.command.coord.CoordActionUpdateCommand;
 import org.apache.oozie.command.jpa.WorkflowActionGetCommand;
 import org.apache.oozie.command.jpa.WorkflowActionUpdateCommand;
 import org.apache.oozie.command.jpa.WorkflowJobGetCommand;
@@ -42,8 +41,6 @@ import org.apache.oozie.service.ActionService;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.service.UUIDService;
-import org.apache.oozie.store.StoreException;
-import org.apache.oozie.store.WorkflowStore;
 import org.apache.oozie.util.ELEvaluationException;
 import org.apache.oozie.util.Instrumentation;
 import org.apache.oozie.util.XLog;
@@ -246,7 +243,7 @@ public class ActionStartXCommand extends WorkflowActionXCommand<Void> {
                 case FAILED:
                     try {
                         failJob(context);
-                        queue(new CoordActionUpdateXCommand(wfJob));
+                        //TODO queue(new CoordActionUpdateXCommand(wfJob));
                         SLADbXOperations.writeStausEvent(wfAction.getSlaXml(), wfAction.getId(), Status.FAILED,
                                 SlaAppType.WORKFLOW_ACTION);
                         SLADbXOperations.writeStausEvent(wfJob.getSlaXml(), wfJob.getId(), Status.FAILED,
@@ -267,13 +264,13 @@ public class ActionStartXCommand extends WorkflowActionXCommand<Void> {
     }
 
     private void handleError(ActionExecutorContext context, WorkflowJobBean workflow, WorkflowActionBean action)
-            throws CommandException, StoreException {
+            throws CommandException {
         failJob(context);
         jpaService.execute(new WorkflowActionUpdateCommand(action));
         jpaService.execute(new WorkflowJobUpdateCommand(workflow));
         SLADbXOperations.writeStausEvent(action.getSlaXml(), action.getId(), Status.FAILED, SlaAppType.WORKFLOW_ACTION);
         SLADbXOperations.writeStausEvent(workflow.getSlaXml(), workflow.getId(), Status.FAILED, SlaAppType.WORKFLOW_JOB);
-        queue(new CoordActionUpdateXCommand(workflow));
+        //TODO queue(new CoordActionUpdateXCommand(workflow));
         return;
     }
 
