@@ -51,7 +51,7 @@ import org.apache.oozie.util.XConfiguration;
 import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.XmlUtils;
-import org.apache.oozie.util.db.SLADbOperations;
+import org.apache.oozie.util.db.SLADbXOperations;
 import org.apache.openjpa.lib.log.Log;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -120,10 +120,10 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
         if ((wfAction == null) || (wfAction.isComplete() && wfAction.isPending())) {
             if (wfJob.getStatus() != WorkflowJob.Status.RUNNING
                     && wfJob.getStatus() != WorkflowJob.Status.PREP) {
-                throw new PreconditionException(ErrorCode.E0812, wfJob.getStatusStr());
+                throw new PreconditionException(ErrorCode.E0813, wfJob.getStatusStr());
             }
         } else {
-            throw new PreconditionException(ErrorCode.E0813, actionId, wfAction.getStatusStr(), wfAction.isPending());
+            throw new PreconditionException(ErrorCode.E0814, actionId, wfAction.getStatusStr(), wfAction.isPending());
         }
     }
 
@@ -142,7 +142,7 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
                 wfJob.setWorkflowInstance(workflowInstance);
                 // 1. Add SLA status event for WF-JOB with status STARTED
                 // 2. Add SLA registration events for all WF_ACTIONS
-                SLADbOperations.writeStausEvent(wfJob.getSlaXml(), jobId, Status.STARTED, SlaAppType.WORKFLOW_JOB);
+                SLADbXOperations.writeStausEvent(wfJob.getSlaXml(), jobId, Status.STARTED, SlaAppType.WORKFLOW_JOB);
                 writeSLARegistrationForAllActions(workflowInstance.getApp().getDefinition(), wfJob
                         .getUser(), wfJob.getGroup(), wfJob.getConf());
                 queue(new NotificationXCommand(wfJob));
@@ -179,7 +179,7 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
                 WorkflowActionBean actionToFail = jpaService.execute(new WorkflowActionGetCommand(actionToFailId));
                 actionToFail.resetPending();
                 actionToFail.setStatus(WorkflowActionBean.Status.FAILED);
-                SLADbOperations.writeStausEvent(wfAction.getSlaXml(), wfAction.getId(), Status.FAILED, SlaAppType.WORKFLOW_ACTION);
+                SLADbXOperations.writeStausEvent(wfAction.getSlaXml(), wfAction.getId(), Status.FAILED, SlaAppType.WORKFLOW_ACTION);
                 jpaService.execute(new WorkflowActionUpdateCommand(actionToFail));
             }
 
@@ -200,7 +200,7 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
                 default: // TODO SUSPENDED
                     break;
             }
-            SLADbOperations.writeStausEvent(wfJob.getSlaXml(), jobId, slaStatus, SlaAppType.WORKFLOW_JOB);
+            SLADbXOperations.writeStausEvent(wfJob.getSlaXml(), jobId, slaStatus, SlaAppType.WORKFLOW_JOB);
             queue(new NotificationXCommand(wfJob));
             if (wfJob.getStatus() == WorkflowJob.Status.SUCCEEDED) {
                 incrJobCounter(INSTR_SUCCEEDED_JOBS_COUNTER_NAME, 1);
@@ -227,7 +227,7 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
                             .getDefinition(), wfJob.getConf());
                     newAction.setSlaXml(actionSlaXml);
                     jpaService.execute(new WorkflowActionInsertCommand(newAction));
-                    queue(new WorkflowActionStartXCommand(newAction.getId(), newAction.getType()));
+                    queue(new ActionStartXCommand(newAction.getId(), newAction.getType()));
                 }
             }
         }
@@ -295,7 +295,7 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
                     eSla = XmlUtils.parseXml(slaXml);
                     String actionId = Services.get().get(UUIDService.class).generateChildId(jobId,
                                                                                             action.getAttributeValue("name") + "");
-                    SLADbOperations.writeSlaRegistrationEvent(eSla, actionId, SlaAppType.WORKFLOW_ACTION, user, group);
+                    SLADbXOperations.writeSlaRegistrationEvent(eSla, actionId, SlaAppType.WORKFLOW_ACTION, user, group);
                 }
             }
         }

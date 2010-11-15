@@ -34,7 +34,7 @@ import org.apache.oozie.workflow.WorkflowInstance;
 import org.apache.oozie.workflow.lite.LiteWorkflowInstance;
 import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.XLog;
-import org.apache.oozie.util.db.SLADbOperations;
+import org.apache.oozie.util.db.SLADbXOperations;
 
 import java.util.Date;
 import java.util.List;
@@ -102,7 +102,7 @@ public class WorkflowKillXCommand extends WorkflowXCommand<Void> {
         if (wfJob.getStatus() != WorkflowJob.Status.FAILED) {
             incrJobCounter(1);
             wfJob.setStatus(WorkflowJob.Status.KILLED);
-            SLADbOperations.writeStausEvent(wfJob.getSlaXml(), wfJob.getId(), Status.KILLED,
+            SLADbXOperations.writeStausEvent(wfJob.getSlaXml(), wfJob.getId(), Status.KILLED,
                     SlaAppType.WORKFLOW_JOB);
             try {
                 wfJob.getWorkflowInstance().kill();
@@ -130,7 +130,7 @@ public class WorkflowKillXCommand extends WorkflowXCommand<Void> {
 
                 action.setStatus(WorkflowActionBean.Status.KILLED);
                 action.resetPending();
-                SLADbOperations.writeStausEvent(action.getSlaXml(), action.getId(), Status.KILLED,
+                SLADbXOperations.writeStausEvent(action.getSlaXml(), action.getId(), Status.KILLED,
                         SlaAppType.WORKFLOW_ACTION);
                 jpaService.execute(new WorkflowActionUpdateCommand(action));
             }
