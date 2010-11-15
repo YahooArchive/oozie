@@ -116,6 +116,8 @@ public enum ErrorCode {
     E0722(XLog.OPS, "Action signals can only be OK or ERROR, action node [{0}]"),
     E0723(XLog.STD, "Unsupported action type, node [{0}] type [{1}]"),
     E0724(XLog.STD, "Invalid node name, {0}"),
+    E0725(XLog.STD, "Workflow instance can not be killed, {0}"),
+    E0726(XLog.STD, "Workflow action can not be killed, {0}"),
 
     E0800(XLog.STD, "Action it is not running its in [{1}] state, action [{0}]"),
     E0801(XLog.STD, "Workflow already running, workflow [{0}]"),
@@ -126,6 +128,16 @@ public enum ErrorCode {
     E0806(XLog.STD, "Action did not complete in previous run, action [{0}]"),
     E0807(XLog.STD, "Some skip actions were not executed [{0}]"),
     E0808(XLog.STD, "Disallowed user property [{0}]"),
+    E0809(XLog.STD, "Workflow action is not eligible to start [{0}]"),
+    E0810(XLog.STD, "Job state is not [{0}]. Skipping ActionStart Execution"),
+    E0811(XLog.STD, "Job state is not [{0}]. Skipping ActionEnd Execution"),
+    E0812(XLog.STD, "Action pending=[{0}], status=[{1}]. Skipping ActionEnd Execution"),
+    E0813(XLog.STD, "Workflow not RUNNING, current status [{0}]"),
+    E0814(XLog.STD, "SignalCommand for action id=[{0}] is already processed, status=[{1}], , pending=[{2}]"),
+    E0815(XLog.STD, "Action pending=[{0}], status=[{1}]. Skipping ActionCheck Execution"),
+    E0816(XLog.STD, "Action pending=[{0}], status=[{1}]. Skipping ActionStart Execution"),
+    E0817(XLog.STD, "The wf action [{0}] has been udated recently. Ignoring ActionCheck."),
+    E0818(XLog.STD, "Action [{0}] status is running but WF Job [{1}] status is [{2}]. Expected status is RUNNING."),
 
     E0900(XLog.OPS, "Jobtracker [{0}] not allowed, not in Oozie's whitelist"),
     E0901(XLog.OPS, "Namenode [{0}] not allowed, not in Oozie's whitelist"),
@@ -149,6 +161,9 @@ public enum ErrorCode {
     E1016(XLog.STD, "Cannot change a killed coordinator job"),
     E1017(XLog.STD, "Cannot change a workflow job"),
     E1018(XLog.STD, "Coord Job Rerun Error: {0}"),
+
+    E1101(XLog.STD, "SLA Nominal time is required."),
+    E1102(XLog.STD, "SLA should-start can't be empty."),
 
     ETEST(XLog.STD, "THIS SHOULD HAPPEN ONLY IN TESTING, invalid job id [{0}]"),;
 
