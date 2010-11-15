@@ -15,35 +15,26 @@
 package org.apache.oozie.command.wf;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.client.SLAEvent.SlaAppType;
 import org.apache.oozie.client.SLAEvent.Status;
-import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.WorkflowJobBean;
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.XException;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.PreconditionException;
-import org.apache.oozie.command.coord.CoordActionReadyCommand;
-import org.apache.oozie.command.coord.CoordActionUpdateCommand;
 import org.apache.oozie.command.jpa.WorkflowActionGetCommand;
 import org.apache.oozie.command.jpa.WorkflowActionInsertCommand;
 import org.apache.oozie.command.jpa.WorkflowActionUpdateCommand;
 import org.apache.oozie.command.jpa.WorkflowJobGetCommand;
 import org.apache.oozie.command.jpa.WorkflowJobUpdateCommand;
-import org.apache.oozie.coord.CoordELFunctions;
-import org.apache.oozie.coord.CoordinatorJobException;
 import org.apache.oozie.service.ELService;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.SchemaService;
 import org.apache.oozie.service.Services;
-import org.apache.oozie.service.StoreService;
 import org.apache.oozie.service.UUIDService;
 import org.apache.oozie.service.WorkflowStoreService;
-import org.apache.oozie.store.CoordinatorStore;
-import org.apache.oozie.store.StoreException;
 import org.apache.oozie.workflow.WorkflowException;
 import org.apache.oozie.workflow.WorkflowInstance;
 import org.apache.oozie.util.ELEvaluator;
@@ -52,9 +43,7 @@ import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.XmlUtils;
 import org.apache.oozie.util.db.SLADbXOperations;
-import org.apache.openjpa.lib.log.Log;
 import org.jdom.Element;
-import org.jdom.JDOMException;
 import org.jdom.Namespace;
 
 import java.io.StringReader;
@@ -136,7 +125,12 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
         boolean skipAction = false;
         if (wfAction == null) {
             if (wfJob.getStatus() == WorkflowJob.Status.PREP) {
-                completed = workflowInstance.start();
+                try {
+                    completed = workflowInstance.start();
+                }
+                catch (WorkflowException e) {
+                  throw new CommandException(e);
+                }
                 wfJob.setStatus(WorkflowJob.Status.RUNNING);
                 wfJob.setStartTime(new Date());
                 wfJob.setWorkflowInstance(workflowInstance);
@@ -157,7 +151,12 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
             if (skipVar != null) {
                 skipAction = skipVar.equals("true");
             }
-            completed = workflowInstance.signal(wfAction.getExecutionPath(), wfAction.getSignalValue());
+            try {
+                completed = workflowInstance.signal(wfAction.getExecutionPath(), wfAction.getSignalValue());
+            }
+            catch (WorkflowException e) {
+                throw new CommandException(e);
+            }
             wfJob.setWorkflowInstance(workflowInstance);
             wfAction.resetPending();
             if (!skipAction) {
@@ -236,9 +235,10 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
         XLog.getLog(getClass()).debug("Updated the workflow status to " + wfJob.getId() + "  status ="+ wfJob.getStatusStr());
         if (wfJob.getStatus() != WorkflowJob.Status.RUNNING
                 && wfJob.getStatus() != WorkflowJob.Status.SUSPENDED) {
-            queue(new CoordActionUpdateXCommand(wfJob));
+            //TODO queue(new CoordActionUpdateXCommand(wfJob));
         }
         LOG.debug("ENDED SignalCommand for jobid=" + jobId + ", actionId=" + actionId);
+        return null;
     }
 
     public static ELEvaluator createELEvaluatorForGroup(Configuration conf, String group) {
