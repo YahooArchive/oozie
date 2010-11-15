@@ -34,7 +34,7 @@ import org.apache.oozie.service.UUIDService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.Instrumentation;
-import org.apache.oozie.util.db.SLADbOperations;
+import org.apache.oozie.util.db.SLADbXOperations;
 
 /**
  * Kill workflow action and invoke action executor to kill the underlying context.
@@ -119,7 +119,7 @@ public class WorkflowActionKillXCommand extends WorkflowActionXCommand<Void> {
                 jpaService.execute(new WorkflowActionUpdateCommand(wfAction));
                 jpaService.execute(new WorkflowJobUpdateCommand(wfJob));
                 // Add SLA status event (KILLED) for WF_ACTION
-                SLADbOperations.writeStausEvent(wfAction.getSlaXml(), wfAction.getId(), Status.KILLED,
+                SLADbXOperations.writeStausEvent(wfAction.getSlaXml(), wfAction.getId(), Status.KILLED,
                         SlaAppType.WORKFLOW_ACTION);
                 queue(new NotificationXCommand(wfJob, wfAction));
             }
@@ -132,7 +132,7 @@ public class WorkflowActionKillXCommand extends WorkflowActionXCommand<Void> {
                 jpaService.execute(new WorkflowActionUpdateCommand(wfAction));
                 jpaService.execute(new WorkflowJobUpdateCommand(wfJob));
                 // What will happen to WF and COORD_ACTION, NOTIFICATION?
-                SLADbOperations.writeStausEvent(wfAction.getSlaXml(), wfAction.getId(), Status.FAILED,
+                SLADbXOperations.writeStausEvent(wfAction.getSlaXml(), wfAction.getId(), Status.FAILED,
                         SlaAppType.WORKFLOW_ACTION);
                 XLog.getLog(getClass()).warn("Exception while executing kill(). Error Code [{0}], Message[{1}]",
                         ex.getErrorCode(), ex.getMessage(), ex);
