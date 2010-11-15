@@ -65,7 +65,7 @@ public abstract class XCommand<T> implements XCallable<T> {
     private long createdTime;
     private MemoryLocks.LockToken lock;
     private boolean used;
-    private Map<Long, List<XCommand<T>>> commandQueue;
+    private Map<Long, List<XCommand<?>>> commandQueue;
     protected boolean dryrun = false;
     protected Instrumentation instrumentation;
 
@@ -156,7 +156,7 @@ public abstract class XCommand<T> implements XCallable<T> {
      * 
      * @param command command to queue.
      */
-    protected void queue(XCommand<T> command) {
+    protected void queue(XCommand<?> command) {
         queue(command, 0);
     }
 
@@ -171,13 +171,13 @@ public abstract class XCommand<T> implements XCallable<T> {
      * @param command command to queue.
      * @param msDelay delay in milliseconds.
      */
-    protected void queue(XCommand<T> command, long msDelay) {
+    protected void queue(XCommand<?> command, long msDelay) {
         if (commandQueue == null) {
-            commandQueue = new HashMap<Long, List<XCommand<T>>>();
+            commandQueue = new HashMap<Long, List<XCommand<?>>>();
         }
-        List<XCommand<T>> list = commandQueue.get(msDelay);
+        List<XCommand<?>> list = commandQueue.get(msDelay);
         if (list == null) {
-            list = new ArrayList<XCommand<T>>();
+            list = new ArrayList<XCommand<?>>();
             commandQueue.put(msDelay, list);
         }
         list.add(command);
@@ -263,7 +263,7 @@ public abstract class XCommand<T> implements XCallable<T> {
                 }
                 if (commandQueue != null) {
                     CallableQueueService callableQueueService = Services.get().get(CallableQueueService.class);
-                    for (Map.Entry<Long, List<XCommand<T>>> entry : commandQueue.entrySet()) {
+                    for (Map.Entry<Long, List<XCommand<?>>> entry : commandQueue.entrySet()) {
                         LOG.debug("Queuing [{0}] commands with delay [{1}]ms", entry.getValue().size(), entry.getKey());
                         if (!callableQueueService.queueSerial(entry.getValue(), entry.getKey())) {
                             LOG.warn("Could not queue [{0}] commands with delay [{1}]ms, queue full", entry.getValue()
