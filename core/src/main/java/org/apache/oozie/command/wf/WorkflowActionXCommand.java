@@ -24,27 +24,19 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.DagELFunctions;
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.WorkflowJobBean;
-import org.apache.oozie.XException;
 import org.apache.oozie.action.ActionExecutor;
 import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.command.CommandException;
-import org.apache.oozie.command.jpa.CoordActionUpdateCommand;
-import org.apache.oozie.command.jpa.CoordJobUpdateCommand;
-import org.apache.oozie.command.jpa.WorkflowJobUpdateCommand;
 import org.apache.oozie.service.CallbackService;
 import org.apache.oozie.service.ELService;
 import org.apache.oozie.service.HadoopAccessorException;
 import org.apache.oozie.service.HadoopAccessorService;
-import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
-import org.apache.oozie.store.StoreException;
-import org.apache.oozie.store.WorkflowStore;
 import org.apache.oozie.util.ELEvaluator;
 import org.apache.oozie.util.Instrumentation;
 import org.apache.oozie.util.XConfiguration;
@@ -129,10 +121,13 @@ public abstract class WorkflowActionXCommand<T> extends WorkflowXCommand<Void> {
         action.resetPendingOnly();
         LOG.warn("Suspending Workflow Job id=" + id);
         try {
-            SuspendXCommand.suspendJob(workflow, id, action.getId());
+            new SuspendXCommand(id).call();
         }
         catch (WorkflowException e) {
             throw new CommandException(e);
+        }
+        catch (Exception e) {
+            throw new CommandException(ErrorCode.E0727,e.getMessage());
         }
     }
 
@@ -208,10 +203,10 @@ public abstract class WorkflowActionXCommand<T> extends WorkflowXCommand<Void> {
     }
 
     public static class ActionExecutorContext implements ActionExecutor.Context {
-        private WorkflowJobBean workflow;
+        private final WorkflowJobBean workflow;
         private Configuration protoConf;
-        private WorkflowActionBean action;
-        private boolean isRetry;
+        private final WorkflowActionBean action;
+        private final boolean isRetry;
         private boolean started;
         private boolean ended;
         private boolean executed;
