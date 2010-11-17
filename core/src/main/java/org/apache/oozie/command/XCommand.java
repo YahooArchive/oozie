@@ -279,11 +279,10 @@ public abstract class XCommand<T> implements XCallable<T> {
                 }
             }
         }
-        catch(PreconditionException vex){
-            T ret = null;
-            LOG.warn(vex.getCause().getLocalizedMessage().toString() + "Error Code: "+ vex.getErrorCode().toString());
+        catch(PreconditionException pex){
+            LOG.warn(pex.getMessage().toString() + "Error Code: "+ pex.getErrorCode().toString());
             instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".preconditionfailed", 1);
-            return ret;
+            return null;
         }
         catch (Exception ex) {
             instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);
