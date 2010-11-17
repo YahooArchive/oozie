@@ -18,12 +18,11 @@ import java.util.Date;
 
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.client.WorkflowAction;
-import org.apache.oozie.command.CommandException;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
-import org.apache.oozie.test.XFsTestCase;
+import org.apache.oozie.test.XDataTestCase;
 
-public class TestWorkflowActionGetCommand extends XFsTestCase {
+public class TestWorkflowActionGetCommand extends XDataTestCase {
     Services services;
 
     @Override
@@ -40,11 +39,11 @@ public class TestWorkflowActionGetCommand extends XFsTestCase {
         super.tearDown();
     }
 
-    public void testCoordJobGet() throws Exception {
+    public void testWfJobGet() throws Exception {
         String jobId = "00000-" + new Date().getTime() + "-TestWorkflowActionGetCommand-W";
         int actionNum = 1;
         String actionId = jobId + "@" + actionNum;
-        insertWfAction(jobId, actionId);
+        addRecordToWfActionTable(jobId, actionNum, WorkflowAction.Status.PREP);
         _testGetAction(actionId);
     }
 
@@ -57,23 +56,4 @@ public class TestWorkflowActionGetCommand extends XFsTestCase {
         assertEquals(ret.getId(), actionId);
     }
 
-    private void insertWfAction(String jobId, String actionId) throws Exception {
-        WorkflowActionBean wfAction = new WorkflowActionBean();
-        wfAction.setId(actionId);
-        wfAction.setJobId(jobId);
-        wfAction.setName("actionName");
-        wfAction.setStatus(WorkflowAction.Status.PREP);
-
-        try {
-            JPAService jpaService = Services.get().get(JPAService.class);
-            assertNotNull(jpaService);
-            WorkflowActionInsertCommand actionInsertCmd = new WorkflowActionInsertCommand(wfAction);
-            jpaService.execute(actionInsertCmd);
-        }
-        catch (CommandException ce) {
-            ce.printStackTrace();
-            fail("Unable to insert the test workflow action record to table");
-            throw ce;
-        }
-    }
 }
