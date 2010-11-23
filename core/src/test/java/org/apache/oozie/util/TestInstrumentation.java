@@ -33,6 +33,7 @@ public class TestInstrumentation extends XTestCase {
         assertEquals(0, cron.getTotal());
 
         cron.start();
+        long s = System.currentTimeMillis();
         Thread.sleep(INTERVAL);
         cron.stop();
         long now = System.currentTimeMillis();
@@ -42,15 +43,24 @@ public class TestInstrumentation extends XTestCase {
         assertEquals("", INTERVAL, cron.getOwn(), TOLERANCE);
         assertEquals("", cron.getTotal(), cron.getOwn(), TOLERANCE);
 
+        long realDelay = System.currentTimeMillis() - s;
+        s = System.currentTimeMillis();
         Thread.sleep(INTERVAL);
 
         cron.start();
+
+        realDelay += System.currentTimeMillis() - s;
+
+        s = System.currentTimeMillis();
         Thread.sleep(INTERVAL);
         cron.stop();
         now = System.currentTimeMillis();
+
+        realDelay += System.currentTimeMillis() - s;
+
         assertEquals("", start, cron.getStart(), TOLERANCE);
         assertEquals("", now, cron.getEnd(), TOLERANCE);
-        assertEquals("", INTERVAL * 3, cron.getTotal(), TOLERANCE);
+        assertEquals("", realDelay, cron.getTotal(), TOLERANCE);
         assertEquals("", INTERVAL * 2, cron.getOwn(), TOLERANCE);
     }
 
