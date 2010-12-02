@@ -30,10 +30,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Extends Hadoop Configuration providing a new constructor which reads an XML configuration from an InputStream. <p/>
@@ -94,6 +95,83 @@ public class XConfiguration extends Configuration {
             props.setProperty(entry.getKey(), entry.getValue());
         }
         return props;
+    }
+
+    // overriding get() & substitueVars from Configuration to honor defined variables
+    // over system properties
+
+    //wee need this because substituteVars() is a private method and does not behave like virtual
+    //in Configuration
+    /**
+     * Get the value of the <code>name</code> property, <code>null</code> if
+     * no such property exists.
+     *
+     * Values are processed for <a href="#VariableExpansion">variable expansion</a>
+     * before being returned.
+     *
+     * @param name the property name.
+     * @return the value of the <code>name</code> property,
+     *         or null if no such property exists.
+     */
+    public String get(String name) {
+      return substituteVars(getRaw(name));
+    }
+
+    /**
+     * Get the value of the <code>name</code> property. If no such property
+     * exists, then <code>defaultValue</code> is returned.
+     *
+     * @param name property name.
+     * @param defaultValue default value.
+     * @return property value, or <code>defaultValue</code> if the property
+     *         doesn't exist.
+     */
+    public String get(String name, String defaultValue) {
+        String value = getRaw(name);
+        if (value == null) {
+            value = defaultValue;
+        }
+        else {
+            value = substituteVars(value);
+        }
+        return value;
+    }
+
+    private static Pattern varPat = Pattern.compile("\\$\\{[^\\}\\$\u0020]+\\}");
+    private static int MAX_SUBST = 20;
+
+    private String substituteVars(String expr) {
+        if (expr == null) {
+            return null;
+        }
+        Matcher match = varPat.matcher("");
+        String eval = expr;
+        for (int s = 0; s < MAX_SUBST; s++) {
+            match.reset(eval);
+            if (!match.find()) {
+                return eval;
+            }
+            String var = match.group();
+            var = var.substring(2, var.length() - 1); // remove ${ .. }
+
+            // original code
+            // String val = getRaw(var);
+            // if (val == null) {
+            //     val = System.getProperty(var);
+            // }
+
+            String val = getRaw(var);
+            if (val == null) {
+                val = System.getProperty(var);
+            }
+
+            if (val == null) {
+                return eval; // return literal ${var}: var is unbound
+            }
+            // substitute
+            eval = eval.substring(0, match.start()) + val + eval.substring(match.end());
+        }
+        throw new IllegalStateException("Variable substitution depth too large: " + MAX_SUBST + " " + expr);
     }
 
     /**
