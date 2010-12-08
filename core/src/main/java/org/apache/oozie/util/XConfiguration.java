@@ -113,6 +113,7 @@ public class XConfiguration extends Configuration {
      * @return the value of the <code>name</code> property,
      *         or null if no such property exists.
      */
+    @Override
     public String get(String name) {
       return substituteVars(getRaw(name));
     }
@@ -126,6 +127,7 @@ public class XConfiguration extends Configuration {
      * @return property value, or <code>defaultValue</code> if the property
      *         doesn't exist.
      */
+    @Override
     public String get(String name, String defaultValue) {
         String value = getRaw(name);
         if (value == null) {
