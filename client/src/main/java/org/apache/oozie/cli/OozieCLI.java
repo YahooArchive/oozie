@@ -102,6 +102,8 @@ public class OozieCLI {
     public static final String STATUS_OPTION = "status";
     public static final String LOCAL_TIME_OPTION = "localtime";
     public static final String QUEUE_DUMP_OPTION = "queuedump";
+    public static final String UNIQUE_DUMP_OPTION = "uniquedump";
+    public static final String UNIQUE_FLUSH_OPTION = "uniqueflush";
     public static final String RERUN_ACTION_OPTION = "action";
     public static final String RERUN_DATE_OPTION = "date";
     public static final String RERUN_REFRESH_OPTION = "refresh";
@@ -164,6 +166,8 @@ public class OozieCLI {
         Option status = new Option(STATUS_OPTION, false, "show the current system status");
         Option version = new Option(VERSION_OPTION, false, "show Oozie server build version");
         Option queuedump = new Option(QUEUE_DUMP_OPTION, false, "show Oozie server queue elements");
+        Option uniquedump = new Option(UNIQUE_DUMP_OPTION, false, "show Oozie server uniqueness map elements");
+        Option uniqueflush = new Option(UNIQUE_FLUSH_OPTION, false, "flush Oozie server uniqueness map elements");
         Options adminOptions = new Options();
         adminOptions.addOption(oozie);
         OptionGroup group = new OptionGroup();
@@ -171,6 +175,8 @@ public class OozieCLI {
         group.addOption(status);
         group.addOption(version);
         group.addOption(queuedump);
+        group.addOption(uniquedump);
+        group.addOption(uniqueflush);
         adminOptions.addOptionGroup(group);
         return adminOptions;
     }
@@ -935,6 +941,22 @@ public class OozieCLI {
                 else {
                     System.out.println("QueueDump is null!");
                 }
+            }
+            else if (options.contains(UNIQUE_DUMP_OPTION)) {
+                System.out.println("[Server Uniqueness Map Dump]:");
+                List<String> list = wc.getUniqueDump();
+                if (list != null && list.size() != 0) {
+                    for (String str: list) {
+                        System.out.println(str);
+                    }
+                }
+                else {
+                    System.out.println("Uniqueness Map dump is null!");
+                }
+            }
+            else if (options.contains(UNIQUE_FLUSH_OPTION)) {
+                String result = wc.flushUniqueDump();
+                System.out.println(result);
             }
         }
         catch (OozieClientException ex) {

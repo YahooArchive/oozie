@@ -235,4 +235,18 @@ public class TestV1AdminServlet extends DagServletTestCase {
         });
 
     }
+
+    public void testV1UniqueFlush() throws Exception {
+        runTest("/v1/admin/*", V1AdminServlet.class, IS_SECURITY_ENABLED, new Callable<Void>() {
+            public Void call() throws Exception {
+                URL url = createURL(RestConstants.ADMIN_UNIQUE_FLUSH_RESOURCE, Collections.EMPTY_MAP);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                assertEquals(HttpServletResponse.SC_OK, conn.getResponseCode());
+                assertTrue(conn.getHeaderField("content-type").startsWith(RestConstants.JSON_CONTENT_TYPE));
+                return null;
+            }
+        });
+
+    }
 }

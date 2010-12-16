@@ -1159,6 +1159,72 @@ public class OozieClient {
         return new GetQueueDump().call();
     }
 
+    private class GetUniqueDump extends ClientCallable<List<String>> {
+        GetUniqueDump() {
+            super("GET", RestConstants.ADMIN, RestConstants.ADMIN_UNIQUE_DUMP_RESOURCE, prepareParams());
+        }
+
+        @Override
+        protected List<String> call(HttpURLConnection conn) throws IOException, OozieClientException {
+            if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
+                Reader reader = new InputStreamReader(conn.getInputStream());
+                JSONObject json = (JSONObject) JSONValue.parse(reader);
+                JSONArray array = (JSONArray) json.get(JsonTags.UNIQUE_MAP_DUMP);
+
+                List<String> list = new ArrayList<String>();
+                for (Object o : array) {
+                    JSONObject entry = (JSONObject) o;
+                    if (entry.get(JsonTags.UNIQUE_ENTRY_DUMP) != null) {
+                        String value = (String) entry.get(JsonTags.UNIQUE_ENTRY_DUMP);
+                        list.add(value);
+                    }
+                }
+                return list;
+            }
+            else {
+                handleError(conn);
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Return the Oozie unique map dump
+     *
+     * @return the list of strings of callable key in uniqueness map
+     * @throws OozieClientException throw if it the unique map dump could not be retrieved.
+     */
+    public List<String> getUniqueDump() throws OozieClientException {
+        return new GetUniqueDump().call();
+    }
+
+    private class FlushUniqueDump extends ClientCallable<String> {
+        FlushUniqueDump() {
+            super("POST", RestConstants.ADMIN, RestConstants.ADMIN_UNIQUE_FLUSH_RESOURCE, prepareParams());
+        }
+
+        @Override
+        protected String call(HttpURLConnection conn) throws IOException, OozieClientException {
+            if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
+                return "Unique Map is flushed.";
+            }
+            else {
+                handleError(conn);
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Flush the Oozie unique map
+     *
+     * @throws OozieClientException throw if it the unique map could not be flushed.
+     */
+    public String flushUniqueDump() throws OozieClientException {
+        return new FlushUniqueDump().call();
+    }
+
+
     /**
      * Check if the string is not null or not empty.
      *

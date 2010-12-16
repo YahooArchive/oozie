@@ -106,4 +106,20 @@ public class V0AdminServlet extends BaseAdminServlet {
     protected void getQueueDump(JSONObject json) throws XServletException {
         throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ErrorCode.E0301);
     }
+
+    /* (non-Javadoc)
+     * @see org.apache.oozie.servlet.BaseAdminServlet#flushUniqueMap()
+     */
+    @Override
+    protected void flushUniqueMap() throws XServletException {
+        throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ErrorCode.E0301);
+    }
+
+    /* (non-Javadoc)
+     * @see org.apache.oozie.servlet.BaseAdminServlet#getUniqueDump(org.json.simple.JSONObject)
+     */
+    @Override
+    protected void getUniqueDump(JSONObject json) throws XServletException {
+        throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ErrorCode.E0301);
+    }
 }

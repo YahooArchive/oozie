@@ -1,3 +1,7 @@
+-- Oozie 2.2.4 release
+
+GH-0066 Add Uniqueness functionality to queue
+
 -- Oozie 2.2.3 release
 
 GH-0055 Oozie should not materialize a coordinator job right after its submission if the job will only run in far future

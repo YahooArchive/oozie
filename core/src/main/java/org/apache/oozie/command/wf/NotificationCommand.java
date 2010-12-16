@@ -17,9 +17,7 @@ package org.apache.oozie.command.wf;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.WorkflowJobBean;
-import org.apache.oozie.command.Command;
 import org.apache.oozie.store.WorkflowStore;
-import org.apache.oozie.store.Store;
 import org.apache.oozie.util.XLog;
 
 import java.io.IOException;
@@ -59,6 +57,7 @@ public class NotificationCommand extends WorkflowCommand<Void> {
         }
     }
 
+    @Override
     public Void call(WorkflowStore store) {
         if (url != null) {
             try {

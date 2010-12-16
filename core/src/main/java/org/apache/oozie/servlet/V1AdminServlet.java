@@ -34,7 +34,7 @@ public class V1AdminServlet extends BaseAdminServlet {
 
     private static final long serialVersionUID = 1L;
     private static final String INSTRUMENTATION_NAME = "v1admin";
-    private static final ResourceInfo RESOURCES_INFO[] = new ResourceInfo[7];
+    private static final ResourceInfo RESOURCES_INFO[] = new ResourceInfo[9];
 
     static {
         RESOURCES_INFO[0] = new ResourceInfo(RestConstants.ADMIN_STATUS_RESOURCE, Arrays.asList("PUT", "GET"),
@@ -51,6 +51,10 @@ public class V1AdminServlet extends BaseAdminServlet {
         RESOURCES_INFO[5] = new ResourceInfo(RestConstants.ADMIN_BUILD_VERSION_RESOURCE, Arrays.asList("GET"),
                 Collections.EMPTY_LIST);
         RESOURCES_INFO[6] = new ResourceInfo(RestConstants.ADMIN_QUEUE_DUMP_RESOURCE, Arrays.asList("GET"),
+                Collections.EMPTY_LIST);
+        RESOURCES_INFO[7] = new ResourceInfo(RestConstants.ADMIN_UNIQUE_DUMP_RESOURCE, Arrays.asList("GET"),
+                Collections.EMPTY_LIST);
+        RESOURCES_INFO[8] = new ResourceInfo(RestConstants.ADMIN_UNIQUE_FLUSH_RESOURCE, Arrays.asList("POST"),
                 Collections.EMPTY_LIST);
     }
 
@@ -115,6 +119,36 @@ public class V1AdminServlet extends BaseAdminServlet {
             array.add(jObject);
         }
         json.put(JsonTags.QUEUE_DUMP, array);
+    }
+
+    /**
+     * Get a json array of unique map dump
+     *
+     * @param JSONObject the result json object that contains a JSONArray for the unique map dump
+     *
+     * @see org.apache.oozie.servlet.BaseAdminServlet#getUniqueDump(org.json.simple.JSONObject)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void getUniqueDump(JSONObject json) throws XServletException {
+        List<String> list = Services.get().get(CallableQueueService.class).getUniqueDump();
+        JSONArray array = new JSONArray();
+        for (String str: list) {
+            JSONObject jObject = new JSONObject();
+            jObject.put(JsonTags.UNIQUE_ENTRY_DUMP, str);
+            array.add(jObject);
+        }
+        json.put(JsonTags.UNIQUE_MAP_DUMP, array);
+    }
+
+    /**
+     * Flush unique map
+     *
+     * @throws XServletException
+     */
+    @Override
+    protected void flushUniqueMap() throws XServletException {
+        Services.get().get(CallableQueueService.class).flushUniqueMap();
     }
 
 }
