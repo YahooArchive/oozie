@@ -76,14 +76,12 @@
         </dependency>
 
         <dependency>
-            <!-- groupId to be correct by GH-0226 -->
-            <groupId>com.yahoo.hadoop</groupId>
+            <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <!-- groupId to be correct by GH-0226 -->
-            <groupId>com.yahoo.hadoop</groupId>
+            <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-test</artifactId>
             <scope>test</scope>
         </dependency>

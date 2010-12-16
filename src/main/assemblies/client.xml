@@ -53,6 +53,7 @@
             <scope>compile</scope>
             <excludes>
                 <exclude>javax.persistence:persistence-api</exclude>
+                <exclude>*:*:pom</exclude>
             </excludes>
         </dependencySet>
     </dependencySets>

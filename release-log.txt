@@ -1,3 +1,8 @@
+-- Oozie 2.3.0 Cloudera release
+
+Standardize on groupId/artifactId for Hadoop/Pig/Oozie
+Add support for Kerberos HTTP SPNEGO authentication (using Alfredo)
+
 -- Oozie 2.3.0 release
 
 GH-0236 add support for -Dname=value to oozie CLI and make -config optional
