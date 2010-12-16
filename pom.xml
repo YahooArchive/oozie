@@ -78,13 +78,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>central</id>
-            <url>http://repo1.maven.org/maven2</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+
         <repository>
             <id>Codehaus repository</id>
             <url>http://repository.codehaus.org/</url>
@@ -95,6 +89,23 @@
         <repository>
             <id>yahoo.github</id>
             <url>http://yahoo.github.com/maven/repository</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+
+        <repository>
+            <id>cdh.thirdparty.repo</id>
+            <url>https://repository.cloudera.com/content/repositories/third-party</url>
+            <name>Cloudera Third Party Repository</name>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>cdh.snapshots.repo</id>
+            <url>https://repository.cloudera.com/content/repositories/snapshots</url>
+            <name>Cloudera Snapshots Repository</name>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -224,10 +235,11 @@
             </dependency>
             
             <dependency>
-                <!-- groupId to be correct by GH-0226 -->
-                <groupId>com.yahoo.hadoop</groupId>
+                <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-core</artifactId>
-                <version>0.20.104.2</version>
+
+                <!-- TODO: for now using CDH versions are there are no Apache/Yahoo versions avail -->
+                <version>0.20.2-CDH3B4</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.commons</groupId>
@@ -237,10 +249,11 @@
             </dependency>
 
             <dependency>
-                <!-- groupId to be correct by GH-0226 -->
-                <groupId>com.yahoo.hadoop</groupId>
+                <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-test</artifactId>
-                <version>0.20.104.2</version>
+
+                <!-- TODO: for now using CDH versions are there are no Apache/Yahoo versions avail -->
+                <version>0.20.2-CDH3B4</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.commons</groupId>
@@ -262,10 +275,11 @@
             </dependency>
 
             <dependency>
-                <!-- groupId to be correct by GH-0226 -->
-                <groupId>com.yahoo.hadoop</groupId>
+                <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-streaming</artifactId>
-                <version>0.20.104.2</version>
+
+                <!-- TODO: for now using CDH versions are there are no Apache/Yahoo versions avail -->
+                <version>0.20.2-CDH3B4</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.commons</groupId>
@@ -275,17 +289,12 @@
             </dependency>
 
             <dependency>
-                <!-- groupId to be correct by GH-0226 -->
-                <groupId>com.yahoo.hadoop</groupId>
+                <groupId>org.apache.pig</groupId>
                 <artifactId>pig</artifactId>
-                <version>0.7.0</version>
+
+                <!-- TODO: for now using CDH versions are there are no Apache/Yahoo versions avail -->
+                <version>0.8.0-CDH3B4</version>
                 <exclusions>
-                    <exclusion>
-                        <!-- groupId to be correct by GH-0226 -->
-                        <groupId>com.yahoo.hadoop</groupId>
-                        <artifactId>hadoop-core</artifactId>
-                    </exclusion>
-                    <!-- this exclusion to be removed by GH-0226 -->
                     <exclusion>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-core</artifactId>
@@ -478,6 +487,13 @@
                     <!-- Don't change version as doc generation may fail -->
                     <!-- (using custom doxia for twiki pages generation) -->
                     <version>2.0-beta-6</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.doxia</groupId>
+                            <artifactId>doxia-module-confluence</artifactId>
+                            <version>1.0-alpha-11</version>
+                       </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

@@ -33,6 +33,7 @@
             <unpack>false</unpack>
             <excludes>
                 <exclude>${project.groupId}:oozie-sharelib</exclude>
+                <exclude>*:*:pom</exclude>
             </excludes>
             <useTransitiveDependencies/>
         </dependencySet>

@@ -134,7 +134,7 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>com.yahoo.hadoop</groupId>
+                    <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-core</artifactId>
                     <scope>compile</scope>
                     <exclusions>
