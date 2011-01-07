@@ -1175,5 +1175,11 @@
             library path are used.
         </description>
     </property>
+    
+    <!-- authentication.providers -->
+    <property>
+        <name>authentication.providers</name>
+        <value>org.apache.hadoop.http.authentication.server.simple.SimpleAuthenticationHeaderProvider</value>
+    </property>
 
 </configuration>

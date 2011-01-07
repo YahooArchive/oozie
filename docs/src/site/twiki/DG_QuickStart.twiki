@@ -48,19 +48,19 @@ if necessary use =sudo -u OOZIE_USER= when invoking the scripts.
 Use the =oozie-setup.sh= script to add the Hadoop JARs and the ExtJS library to Oozie.
 
 <verbatim>
-$ oozie bin/oozie-setup.sh -hadoop 0.20.200 ${HADOOP_HOME} -extjs /tmp/ext-2.2.zip
+$ bin/oozie-setup.sh -hadoop 0.20.200 ${HADOOP_HOME} -extjs /tmp/ext-2.2.zip
 </verbatim>
 
 To start Oozie as a daemon process run:
 
 <verbatim>
-$ oozie bin/oozie-start.sh
+$ bin/oozie-start.sh
 </verbatim>
 
 To start Oozie as a foreground process run:
 
 <verbatim>
-$ oozie bin/oozie-run.sh
+$ bin/oozie-run.sh
 </verbatim>
 
 Check the Oozie log file =logs/oozie.log= to ensure Oozie started properly.

@@ -76,11 +76,24 @@
         </dependency>
 
         <dependency>
+            <groupId>com.yahoo.oozie</groupId>
+            <artifactId>oozie-authentication</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+           <groupId>org.slf4j</groupId>
+           <artifactId>slf4j-log4j12</artifactId>
+           <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
             <!-- groupId to be correct by GH-0226 -->
             <groupId>com.yahoo.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <!-- groupId to be correct by GH-0226 -->
             <groupId>com.yahoo.hadoop</groupId>
@@ -92,12 +105,6 @@
             <groupId>com.yahoo.oozie</groupId>
             <artifactId>oozie-sharelib</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-           <groupId>org.slf4j</groupId>
-           <artifactId>slf4j-log4j12</artifactId>
-           <scope>test</scope>
         </dependency>
 
         <dependency>

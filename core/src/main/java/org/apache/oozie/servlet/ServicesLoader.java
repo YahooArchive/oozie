@@ -14,6 +14,8 @@
  */
 package org.apache.oozie.servlet;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.http.authentication.web.listener.AppAuthApplicationListener;
 import org.apache.oozie.service.ServiceException;
 import org.apache.oozie.service.Services;
 
@@ -23,7 +25,7 @@ import javax.servlet.ServletContextEvent;
 /**
  * Webapp context listener that initializes Oozie {@link Services}.
  */
-public class ServicesLoader implements ServletContextListener {
+public class ServicesLoader extends AppAuthApplicationListener {
     private static Services services;
 
     /**
@@ -35,6 +37,7 @@ public class ServicesLoader implements ServletContextListener {
         try {
             services = new Services();
             services.init();
+            super.contextInitialized(event);
         }
         catch (ServiceException ex) {
             throw new RuntimeException(ex);
@@ -48,6 +51,23 @@ public class ServicesLoader implements ServletContextListener {
      */
     public void contextDestroyed(ServletContextEvent event) {
         services.destroy();
+    }
+
+    @Override
+    protected Configuration initializeAuthConfiguration() {
+        Configuration configuration = services.getConf();
+        return configuration;
+    }
+
+    @Override
+    protected Configuration initializeApplicationConfiguration() {
+        Configuration configuration = services.getConf();
+        return configuration;
+    }
+
+    @Override
+    protected void initializeUGI() {
+        // no-op
     }
 
 }

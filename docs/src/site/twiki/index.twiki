@@ -44,6 +44,7 @@ Enough reading already? Follow the steps in [[DG_QuickStart][Oozie Quick Start]]
    * [[DG_UsingHadoopKerberos][Using a Hadoop cluster with Kerberos Authentication]]
 
    * [[DG_CustomActionExecutor][Writing a Custom Action Executor]]
+   * [[OozieAuthSpec][Writing a Custom Authentication]]
    * [[./apidocs/index.html][Oozie Javadocs]]
 
 ---++ Administrator Documentation
