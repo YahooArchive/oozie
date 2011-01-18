@@ -52,6 +52,13 @@ public interface WorkflowAction {
     String getName();
 
     /**
+     * Return the action name.
+     *
+     * @return the action name.
+     */
+    String getAuth();
+    
+    /**
      * Return the action type.
      *
      * @return the action type.
