@@ -18,10 +18,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +41,6 @@ import org.apache.oozie.CoordinatorJobBean;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.WorkflowJobBean;
 import org.apache.oozie.service.Services;
-import org.apache.oozie.service.StoreService;
 import org.apache.oozie.service.WorkflowAppService;
 import org.apache.oozie.store.CoordinatorStore;
 import org.apache.oozie.store.StoreException;
@@ -130,6 +125,8 @@ public abstract class XTestCase extends TestCase {
         setSystemProperty(Services.OOZIE_HOME_ENV, testCaseDir);
         testCaseConfDir = createTestCaseSubDir("conf");
 
+        setOozieSiteProp();
+
         //setting up custom Oozie site for testing if avail
         String customOozieSite = System.getProperty("oozie.test.config.file", "");
         if (!customOozieSite.equals("")) {
@@ -164,6 +161,13 @@ public abstract class XTestCase extends TestCase {
         if (System.getProperty("hadoop20", "false").equals("false")) {
             System.setProperty("oozie.services.ext", "org.apache.oozie.service.KerberosHadoopAccessorService");
         }
+    }
+
+    /**
+     * Set 'oozie.test.config.file' to custom oozie-site for test cases
+     * @throws Exception
+     */
+    protected void setOozieSiteProp() throws Exception {
     }
 
     /**
