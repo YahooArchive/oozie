@@ -16,6 +16,7 @@ package org.apache.oozie.workflow.lite;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.oozie.util.ParamChecker;
+import org.apache.oozie.util.XLog;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,6 +31,7 @@ public class NodeDef implements Writable {
     private Class<? extends NodeHandler> handlerClass;
     private String conf;
     private List<String> transitions = new ArrayList<String>();
+    private String auth;
 
     NodeDef() {
     }
@@ -41,6 +43,14 @@ public class NodeDef implements Writable {
         this.transitions = Collections.unmodifiableList(ParamChecker.notEmptyElements(transitions, "transitions"));
     }
 
+    NodeDef(String name, String conf, Class<? extends NodeHandler> handlerClass, List<String> transitions,String auth) {
+        this.name = ParamChecker.notEmpty(name, "name");
+        this.conf = conf;
+        this.handlerClass = ParamChecker.notNull(handlerClass, "handlerClass");
+        this.transitions = Collections.unmodifiableList(ParamChecker.notEmptyElements(transitions, "transitions"));
+        this.auth = auth;
+    }
+    
     public boolean equals(NodeDef other) {
         return !(other == null || getClass() != other.getClass() || !getName().equals(other.getName()));
     }
@@ -51,6 +61,15 @@ public class NodeDef implements Writable {
 
     public String getName() {
         return name;
+    }
+
+    /**
+     * @return the auth
+     */
+    public String getAuth() {
+        XLog.getLog(getClass()).debug("NAME: "+this.name+"Returning Auth: " + auth);
+        return auth;
+        
     }
 
     public Class<? extends NodeHandler> getHandlerClass() {
@@ -69,6 +88,7 @@ public class NodeDef implements Writable {
     @SuppressWarnings("unchecked")
     public void readFields(DataInput dataInput) throws IOException {
         name = dataInput.readUTF();
+        auth = dataInput.readUTF();
         String handlerClassName = dataInput.readUTF();
         if ((handlerClassName != null) && (handlerClassName.length() > 0)) {
             try {
@@ -92,6 +112,8 @@ public class NodeDef implements Writable {
     @Override
     public void write(DataOutput dataOutput) throws IOException {
         dataOutput.writeUTF(name);
+        dataOutput.writeUTF(auth);
+        XLog.getLog(getClass()).debug("write: Name:" + name +" auth: "+ auth);
         dataOutput.writeUTF(handlerClass.getName());
         if (conf != null) {
             dataOutput.writeUTF(conf);
