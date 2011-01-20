@@ -50,7 +50,6 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.service.HadoopAccessorException;
 import org.apache.oozie.service.HadoopAccessorService;
-import org.apache.oozie.service.SchemaService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.service.WorkflowAppService;
 import org.apache.oozie.servlet.CallbackServlet;
@@ -62,7 +61,6 @@ import org.apache.oozie.util.XmlUtils;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Namespace;
-import org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIdentifier;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 
@@ -434,8 +432,7 @@ public class JavaActionExecutor extends ActionExecutor {
                 launcherJobConf.set("mapred.child.java.opts", opts);
             }
 
-            // properties from action that are needed by the launcher (QUEUE
-            // NAME)
+            // properties from action that are needed by the launcher (QUEUE NAME)
             // maybe we should add queue to the WF schema, below job-tracker
             for (String name : SPECIAL_PROPERTIES) {
                 String value = actionConf.get(name);
@@ -474,6 +471,7 @@ public class JavaActionExecutor extends ActionExecutor {
         injectCallback(context, launcherConf);
     }
 
+    @SuppressWarnings("deprecation")
     void submitLauncher(Context context, WorkflowAction action) throws ActionExecutorException {
         JobClient jobClient = null;
         boolean exception = false;
@@ -494,22 +492,23 @@ public class JavaActionExecutor extends ActionExecutor {
             // setting the group owning the Oozie job to allow anybody in that
             // group to kill the jobs.
             actionConf.set("mapreduce.job.acl-modify-job", context.getWorkflow().getGroup());
-            
+
             // Setting the authentication properties in launcher conf
             setAuthenticationProperty(context, action,actionConf);
-            
+
+            // Adding if action need to set more authentication tokens
             JobConf credentialsConf = new JobConf();
             Configuration launcherConf = createBaseHadoopConf(context, actionXml);
-            setupLauncherConf(launcherConf, actionXml, appPath, context);
             XConfiguration.copy(launcherConf, credentialsConf);
-            setAuthenticationTokens(credentialsConf,context, action);
-            //insert conf to action conf from credentialsJobConf
+            setAuthenticationTokens(credentialsConf, context, action);
+
+            //insert conf to action conf from credentialsConf
             for (Entry<String, String> entry : credentialsConf) {
                 if(actionConf.get(entry.getKey()) == null){
                     actionConf.set(entry.getKey(), entry.getValue());
                 }
             }
-            
+
             JobConf launcherJobConf = createLauncherConf(context, action, actionXml, actionConf);
             injectLauncherCallback(context, launcherJobConf);
             XLog.getLog(getClass()).debug("Creating Job Client for action " + action.getId());
@@ -537,8 +536,8 @@ public class JavaActionExecutor extends ActionExecutor {
                         + launcherJobConf.get(WorkflowAppService.HADOOP_JT_KERBEROS_NAME));
                 log.debug(WorkflowAppService.HADOOP_NN_KERBEROS_NAME + " = "
                         + launcherJobConf.get(WorkflowAppService.HADOOP_NN_KERBEROS_NAME));
-                // Adding if action need to set more authentication tokens
-                //setAuthenticationTokens(launcherJobConf,context, action);
+
+                //insert credentials tokens to launcher job conf
                 for(Token<? extends TokenIdentifier> tk : credentialsConf.getCredentials().getAllTokens()){
                     log.debug("ADDING TOKEN: "+ tk.getKind().toString());
                     launcherJobConf.getCredentials().addToken(tk.getKind(), tk);
@@ -576,7 +575,7 @@ public class JavaActionExecutor extends ActionExecutor {
             }
         }
     }
-    
+
     void setAuthenticationProperty(Context context, WorkflowAction action,Configuration actionConf) throws Exception{
         if(context != null && action != null){
             HashMap<String,CredentialsProperties> authProperties = getActionsAuthenticationProperties(context, action);
@@ -600,9 +599,9 @@ public class JavaActionExecutor extends ActionExecutor {
             log.warn("context or action is null");
         }
     }
-    
+
     void setAuthenticationTokens(JobConf jobconf,Context context, WorkflowAction action) throws Exception{
-       
+
         if(context != null && action != null){
             String getAuthinAction = action.getAuth();
             log.debug("Auth token"+action.getAuth()+"For action name : "+action.getName());
@@ -624,11 +623,11 @@ public class JavaActionExecutor extends ActionExecutor {
                 else{
                     log.warn("Authentication properties are null for: "+ str[i]);
                 }
-            }   
+            }
         }
-       
+
     }
-    
+
     HashMap<String,CredentialsProperties> getActionsAuthenticationProperties(Context context, WorkflowAction action) throws Exception{
         HashMap<String,CredentialsProperties> props = new HashMap<String,CredentialsProperties>();
         if(context != null && action != null){
@@ -638,17 +637,17 @@ public class JavaActionExecutor extends ActionExecutor {
             for (int i = 0;i<str.length;++i){
                 CredentialsProperties authprop = getActionAuthenticationProperties(context,str[i]);
                 props.put(str[i], authprop);
-            }   
+            }
         }
         else{
             log.warn("context or action is null");
         }
         return props;
     }
-    
+
     CredentialsProperties getActionAuthenticationProperties(Context context, String nameauth) throws Exception
     {
-        CredentialsProperties authprop = null;        
+        CredentialsProperties authprop = null;
         String workflowXml = ((WorkflowJobBean)context.getWorkflow()).getWorkflowInstance().getApp().getDefinition();
         Element elementJob = XmlUtils.parseXml(workflowXml);
         Element authentications = elementJob.getChild("authentications",elementJob.getNamespace());
