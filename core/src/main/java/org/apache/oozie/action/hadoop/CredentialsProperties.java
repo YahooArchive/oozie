@@ -16,12 +16,12 @@ package org.apache.oozie.action.hadoop;
 
 import java.util.HashMap;
 
-public class AutheticationProperties {
+public class CredentialsProperties {
     String name;
     String type;
     HashMap<String, String> properties;
 
-    public AutheticationProperties(String name, String type) {
+    public CredentialsProperties(String name, String type) {
         this.name = name;
         this.type = type;
         properties = new HashMap<String, String>();

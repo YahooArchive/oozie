@@ -15,14 +15,15 @@
 package org.apache.oozie.action.hadoop;
 
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.oozie.action.ActionExecutor.Context;
 import org.apache.oozie.client.WorkflowAction;
 import org.jdom.Element;
 
-public abstract class Authentication {
+public abstract class Credentials {
 
     /**
      * @param jobconf
      * @param props
      */
-    public abstract void addtoJobConf(JobConf jobconf, AutheticationProperties props);
+    public abstract void addtoJobConf(JobConf jobconf, CredentialsProperties props,Context context);
 }

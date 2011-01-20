@@ -21,15 +21,15 @@ import org.apache.oozie.service.ServiceException;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.XLog;
 
-public class AuthenticationProvider {
-    Authentication auth;
+public class CredentialsProvider {
+    Credentials auth;
     String type;
     private static final String AUTH_KEY = "oozie.authentications.authenticator";
 
     /**
      * @param type
      */
-    public AuthenticationProvider(String type) {
+    public CredentialsProvider(String type) {
         this.type = type;
         this.auth = null;
         XLog.getLog(getClass()).debug("Authenticator Provider is created for Type: " + type);
@@ -39,7 +39,7 @@ public class AuthenticationProvider {
      * @return
      * @throws Exception
      */
-    public Authentication createAuthenticator() throws Exception {
+    public Credentials createAuthenticator() throws Exception {
         Configuration conf;
         String type;
         String classname;
@@ -63,7 +63,7 @@ public class AuthenticationProvider {
                             throw ex;
                         }
 
-                        auth = (Authentication) ReflectionUtils.newInstance(klass, null);
+                        auth = (Credentials) ReflectionUtils.newInstance(klass, null);
                         XLog.getLog(getClass()).debug("CLASS OBJECT CREATED");
                     }
                 }

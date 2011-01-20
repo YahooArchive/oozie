@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -61,6 +62,9 @@ import org.apache.oozie.util.XmlUtils;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Namespace;
+import org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIdentifier;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 
 public class JavaActionExecutor extends ActionExecutor {
 
@@ -494,6 +498,18 @@ public class JavaActionExecutor extends ActionExecutor {
             // Setting the authentication properties in launcher conf
             setAuthenticationProperty(context, action,actionConf);
             
+            JobConf credentialsConf = new JobConf();
+            Configuration launcherConf = createBaseHadoopConf(context, actionXml);
+            setupLauncherConf(launcherConf, actionXml, appPath, context);
+            XConfiguration.copy(launcherConf, credentialsConf);
+            setAuthenticationTokens(credentialsConf,context, action);
+            //insert conf to action conf from credentialsJobConf
+            for (Entry<String, String> entry : credentialsConf) {
+                if(actionConf.get(entry.getKey()) == null){
+                    actionConf.set(entry.getKey(), entry.getValue());
+                }
+            }
+            
             JobConf launcherJobConf = createLauncherConf(context, action, actionXml, actionConf);
             injectLauncherCallback(context, launcherJobConf);
             XLog.getLog(getClass()).debug("Creating Job Client for action " + action.getId());
@@ -522,7 +538,11 @@ public class JavaActionExecutor extends ActionExecutor {
                 log.debug(WorkflowAppService.HADOOP_NN_KERBEROS_NAME + " = "
                         + launcherJobConf.get(WorkflowAppService.HADOOP_NN_KERBEROS_NAME));
                 // Adding if action need to set more authentication tokens
-                setAuthenticationTokens(launcherJobConf,context, action);
+                //setAuthenticationTokens(launcherJobConf,context, action);
+                for(Token<? extends TokenIdentifier> tk : credentialsConf.getCredentials().getAllTokens()){
+                    log.debug("ADDING TOKEN: "+ tk.getKind().toString());
+                    launcherJobConf.getCredentials().addToken(tk.getKind(), tk);
+                }
                 runningJob = jobClient.submitJob(launcherJobConf);
                 if (runningJob == null) {
                     throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "JA017",
@@ -559,10 +579,10 @@ public class JavaActionExecutor extends ActionExecutor {
     
     void setAuthenticationProperty(Context context, WorkflowAction action,Configuration actionConf) throws Exception{
         if(context != null && action != null){
-            HashMap<String,AutheticationProperties> authProperties = getActionsAuthenticationProperties(context, action);
+            HashMap<String,CredentialsProperties> authProperties = getActionsAuthenticationProperties(context, action);
             if(authProperties != null){
                 for (String key: authProperties.keySet()){
-                    AutheticationProperties prop = authProperties.get(key);
+                    CredentialsProperties prop = authProperties.get(key);
                     if(prop != null){
                         log.debug("Properties set for Action: " + action.getId());
                         for(String property : prop.getProperties().keySet()){
@@ -589,13 +609,13 @@ public class JavaActionExecutor extends ActionExecutor {
             String[] str = getAuthinAction.split(",");
             for (int i = 0;i<str.length;++i){
                 log.debug("Auth token for: " + str[i]);
-                AutheticationProperties authprop = getActionAuthenticationProperties(context,str[i]);
+                CredentialsProperties authprop = getActionAuthenticationProperties(context,str[i]);
                 if(authprop != null){
-                    AuthenticationProvider authprovider= new AuthenticationProvider(authprop.getType());
-                    Authentication auth;
+                    CredentialsProvider authprovider= new CredentialsProvider(authprop.getType());
+                    Credentials auth;
                     auth = authprovider.createAuthenticator();
                     if(auth != null){
-                        auth.addtoJobConf(jobconf, authprop);
+                        auth.addtoJobConf(jobconf, authprop,context);
                         log.debug("Adding to job conf ...");
                     }else{
                         log.debug("Authentication object is null");
@@ -609,14 +629,14 @@ public class JavaActionExecutor extends ActionExecutor {
        
     }
     
-    HashMap<String,AutheticationProperties> getActionsAuthenticationProperties(Context context, WorkflowAction action) throws Exception{
-        HashMap<String,AutheticationProperties> props = new HashMap<String,AutheticationProperties>();
+    HashMap<String,CredentialsProperties> getActionsAuthenticationProperties(Context context, WorkflowAction action) throws Exception{
+        HashMap<String,CredentialsProperties> props = new HashMap<String,CredentialsProperties>();
         if(context != null && action != null){
             String getAuthinAction = action.getAuth();
             log.debug("Auth token"+action.getAuth()+"For action name : "+action.getName());
             String[] str = getAuthinAction.split(",");
             for (int i = 0;i<str.length;++i){
-                AutheticationProperties authprop = getActionAuthenticationProperties(context,str[i]);
+                CredentialsProperties authprop = getActionAuthenticationProperties(context,str[i]);
                 props.put(str[i], authprop);
             }   
         }
@@ -626,9 +646,9 @@ public class JavaActionExecutor extends ActionExecutor {
         return props;
     }
     
-    AutheticationProperties getActionAuthenticationProperties(Context context, String nameauth) throws Exception
+    CredentialsProperties getActionAuthenticationProperties(Context context, String nameauth) throws Exception
     {
-        AutheticationProperties authprop = null;        
+        CredentialsProperties authprop = null;        
         String workflowXml = ((WorkflowJobBean)context.getWorkflow()).getWorkflowInstance().getApp().getDefinition();
         Element elementJob = XmlUtils.parseXml(workflowXml);
         Element authentications = elementJob.getChild("authentications",elementJob.getNamespace());
@@ -637,8 +657,8 @@ public class JavaActionExecutor extends ActionExecutor {
                 String name = authentication.getAttributeValue("name");
                 String type = authentication.getAttributeValue("type");
                 log.debug("getActionAuthenticationProperties: Name: "+name + "Type: "+type);
-                if(type.equalsIgnoreCase(nameauth)){
-                    authprop = new AutheticationProperties(name, type);
+                if(name.equalsIgnoreCase(nameauth)){
+                    authprop = new CredentialsProperties(name, type);
                     for(Element property : (List<Element>)authentication.getChildren("property",authentication.getNamespace())){
                         authprop.getProperties().put(property.getChildText("name",property.getNamespace()), property.getChildText("value",property.getNamespace()));
                         log.debug("getActionAuthenticationProperties: Properties name "+property.getChildText("name",property.getNamespace())+"Properties Value : "+ property.getChildText("value",property.getNamespace()));

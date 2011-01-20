@@ -41,6 +41,7 @@ public class NodeDef implements Writable {
         this.conf = conf;
         this.handlerClass = ParamChecker.notNull(handlerClass, "handlerClass");
         this.transitions = Collections.unmodifiableList(ParamChecker.notEmptyElements(transitions, "transitions"));
+        this.auth = "null";
     }
 
     NodeDef(String name, String conf, Class<? extends NodeHandler> handlerClass, List<String> transitions,String auth) {
@@ -48,7 +49,12 @@ public class NodeDef implements Writable {
         this.conf = conf;
         this.handlerClass = ParamChecker.notNull(handlerClass, "handlerClass");
         this.transitions = Collections.unmodifiableList(ParamChecker.notEmptyElements(transitions, "transitions"));
-        this.auth = auth;
+        if(auth != null){
+            this.auth = auth;
+        }
+        else{
+            this.auth = "null";
+        }
     }
     
     public boolean equals(NodeDef other) {
@@ -67,9 +73,7 @@ public class NodeDef implements Writable {
      * @return the auth
      */
     public String getAuth() {
-        XLog.getLog(getClass()).debug("NAME: "+this.name+"Returning Auth: " + auth);
         return auth;
-        
     }
 
     public Class<? extends NodeHandler> getHandlerClass() {
