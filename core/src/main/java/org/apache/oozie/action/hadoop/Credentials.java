@@ -24,6 +24,7 @@ public abstract class Credentials {
     /**
      * @param jobconf
      * @param props
+     * @throws Exception 
      */
-    public abstract void addtoJobConf(JobConf jobconf, CredentialsProperties props,Context context);
+    public abstract void addtoJobConf(JobConf jobconf, CredentialsProperties props,Context context) throws Exception;
 }
