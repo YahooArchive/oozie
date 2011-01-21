@@ -116,7 +116,11 @@ public class NodeDef implements Writable {
     @Override
     public void write(DataOutput dataOutput) throws IOException {
         dataOutput.writeUTF(name);
-        dataOutput.writeUTF(auth);
+        if(auth != null){
+            dataOutput.writeUTF(auth);
+        }else{
+            dataOutput.writeUTF("null");
+        }
         XLog.getLog(getClass()).debug("write: Name:" + name +" auth: "+ auth);
         dataOutput.writeUTF(handlerClass.getName());
         if (conf != null) {
