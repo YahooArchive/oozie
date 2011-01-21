@@ -24,7 +24,7 @@ import org.apache.oozie.util.XLog;
 public class CredentialsProvider {
     Credentials auth;
     String type;
-    private static final String AUTH_KEY = "oozie.authentications.authenticator";
+    private static final String AUTH_KEY = "oozie.credentials.credentialclasses";
 
     /**
      * @param type
@@ -32,7 +32,7 @@ public class CredentialsProvider {
     public CredentialsProvider(String type) {
         this.type = type;
         this.auth = null;
-        XLog.getLog(getClass()).debug("Authenticator Provider is created for Type: " + type);
+        XLog.getLog(getClass()).debug("Credentials Provider is created for Type: " + type);
     }
 
     /**
@@ -47,7 +47,7 @@ public class CredentialsProvider {
         if (conf.get(AUTH_KEY, "").trim().length() > 0) {
             for (String function : conf.getStrings(AUTH_KEY)) {
                 function = Trim(function);
-                XLog.getLog(getClass()).debug("Creating autheticator for class" + function);
+                XLog.getLog(getClass()).debug("Creating Credentials for class" + function);
                 String[] str = function.split("=");
                 if (str.length > 0) {
                     type = str[0];
