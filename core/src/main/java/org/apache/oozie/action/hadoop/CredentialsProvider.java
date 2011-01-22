@@ -16,8 +16,6 @@ package org.apache.oozie.action.hadoop;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.oozie.ErrorCode;
-import org.apache.oozie.service.ServiceException;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.XLog;
 
@@ -25,6 +23,7 @@ public class CredentialsProvider {
     Credentials auth;
     String type;
     private static final String AUTH_KEY = "oozie.credentials.credentialclasses";
+    private static final XLog LOG = XLog.getLog(CredentialsProvider.class);
 
     /**
      * @param type
@@ -32,11 +31,13 @@ public class CredentialsProvider {
     public CredentialsProvider(String type) {
         this.type = type;
         this.auth = null;
-        XLog.getLog(getClass()).debug("Credentials Provider is created for Type: " + type);
+        LOG.debug("Credentials Provider is created for Type: " + type);
     }
 
     /**
-     * @return
+     * Create Credentials object
+     *
+     * @return Credentials object
      * @throws Exception
      */
     public Credentials createAuthenticator() throws Exception {
@@ -47,24 +48,23 @@ public class CredentialsProvider {
         if (conf.get(AUTH_KEY, "").trim().length() > 0) {
             for (String function : conf.getStrings(AUTH_KEY)) {
                 function = Trim(function);
-                XLog.getLog(getClass()).debug("Creating Credentials for class" + function);
+                LOG.debug("Creating Credentials class for : " + function);
                 String[] str = function.split("=");
                 if (str.length > 0) {
                     type = str[0];
                     classname = str[1];
-                    XLog.getLog(getClass()).debug("createAuthenticator: type: " + type + "Class Name: " + classname);
+                    LOG.debug("Creating Credentials type : '" + type + "', class Name : '" + classname + "'");
                     if (this.type.equalsIgnoreCase(str[0])) {
-                        Class klass = null;
+                        Class<?> klass = null;
                         try {
                             klass = Thread.currentThread().getContextClassLoader().loadClass(classname);
                         }
                         catch (ClassNotFoundException ex) {
-                            XLog.getLog(getClass()).debug("Exception while loading the class" + ex.getMessage());
+                            LOG.warn("Exception while loading the class", ex);
                             throw ex;
                         }
 
                         auth = (Credentials) ReflectionUtils.newInstance(klass, null);
-                        XLog.getLog(getClass()).debug("CLASS OBJECT CREATED");
                     }
                 }
             }
@@ -73,8 +73,10 @@ public class CredentialsProvider {
     }
 
     /**
+     * To trim string
+     *
      * @param str
-     * @return
+     * @return trim string
      */
     public String Trim(String str) {
         if (str != null) {

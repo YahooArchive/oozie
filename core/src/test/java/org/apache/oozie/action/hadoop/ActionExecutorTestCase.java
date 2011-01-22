@@ -191,7 +191,14 @@ public abstract class ActionExecutorTestCase extends XFsTestCase {
         return protoConf;
     }
 
-    // it contains one action with no configuration.
+    /**
+     * Return a workflow job which contains one action with no configuration.
+     *
+     * @param protoConf
+     * @param actionName
+     * @return workflow job bean
+     * @throws Exception
+     */
     protected WorkflowJobBean createBaseWorkflow(XConfiguration protoConf, String actionName) throws Exception {
         Path appUri = getAppPath();
         WorkflowApp app = new LiteWorkflowApp("testApp", "<workflow-app/>", new StartNodeDef("end"))
@@ -212,14 +219,22 @@ public abstract class ActionExecutorTestCase extends XFsTestCase {
         return workflow;
     }
 
-    // it contains one action with no configuration.
-    protected WorkflowJobBean createBaseWorkflowWithCredentials(XConfiguration protoConf, String actionName) throws Exception {
+    /**
+     * Return a workflow job which contains one action with no configuration and workflow contains credentials information.
+     *
+     * @param protoConf
+     * @param actionName
+     * @return workflow job bean
+     * @throws Exception
+     */
+    protected WorkflowJobBean createBaseWorkflowWithCredentials(XConfiguration protoConf, String actionName)
+            throws Exception {
         Path appUri = getAppPath();
-        Reader reader = IOUtils.getResourceAsReader("coord-rerun-job.xml", -1);
+        Reader reader = IOUtils.getResourceAsReader("wf-credentials.xml", -1);
         String wfxml = IOUtils.getReaderAsString(reader, -1);
 
-        WorkflowApp app = new LiteWorkflowApp("test-wf-cred", wfxml, new StartNodeDef("end"))
-                .addNode(new EndNodeDef("end"));
+        WorkflowApp app = new LiteWorkflowApp("test-wf-cred", wfxml, new StartNodeDef("start")).addNode(new EndNodeDef(
+                "end"));
         XConfiguration wfConf = new XConfiguration();
         wfConf.set(OozieClient.USER_NAME, getTestUser());
         wfConf.set(OozieClient.GROUP_NAME, getTestGroup());
@@ -236,7 +251,8 @@ public abstract class ActionExecutorTestCase extends XFsTestCase {
         return workflow;
     }
 
-    private WorkflowJobBean createWorkflow(WorkflowApp app, Configuration conf, XConfiguration protoConf, String authToken) throws Exception {
+    private WorkflowJobBean createWorkflow(WorkflowApp app, Configuration conf, XConfiguration protoConf,
+            String authToken) throws Exception {
         WorkflowLib workflowLib = Services.get().get(WorkflowStoreService.class).getWorkflowLibWithNoDB();
         WorkflowInstance wfInstance;
         wfInstance = workflowLib.createInstance(app, conf);

@@ -589,7 +589,7 @@ public class JavaActionExecutor extends ActionExecutor {
                         log.debug("Credential Properties set for Action: " + action.getId());
                         for (String property : prop.getProperties().keySet()) {
                             actionConf.set(property, prop.getProperties().get(property));
-                            log.debug("property :" + property + " Value: " + prop.getProperties().get(property));
+                            log.debug("property : '" + property + "', value : '" + prop.getProperties().get(property) + "'");
                         }
                     }
                 }
@@ -660,16 +660,16 @@ public class JavaActionExecutor extends ActionExecutor {
                     .getNamespace())) {
                 String name = authentication.getAttributeValue("name");
                 String type = authentication.getAttributeValue("type");
-                log.debug("getCredProperties: Name: " + name + "Type: " + type);
+                log.debug("getCredProperties: Name: " + name + ", Type: " + type);
                 if (name.equalsIgnoreCase(credName)) {
                     credProp = new CredentialsProperties(name, type);
                     for (Element property : (List<Element>) authentication.getChildren("property", authentication
                             .getNamespace())) {
                         credProp.getProperties().put(property.getChildText("name", property.getNamespace()),
                                 property.getChildText("value", property.getNamespace()));
-                        log.debug("getCredProperties: Properties name "
-                                + property.getChildText("name", property.getNamespace()) + "Properties Value : "
-                                + property.getChildText("value", property.getNamespace()));
+                        log.debug("getCredProperties: Properties name :'"
+                                + property.getChildText("name", property.getNamespace()) + "', Value : '"
+                                + property.getChildText("value", property.getNamespace()) + "'");
                     }
                 }
             }
