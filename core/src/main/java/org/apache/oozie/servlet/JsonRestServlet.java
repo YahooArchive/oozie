@@ -268,47 +268,52 @@ public abstract class JsonRestServlet extends HttpServlet {
                               ErrorCode.E0002.getTemplate());
             return;
         }
-        Instrumentation.Cron cron = new Instrumentation.Cron();
-        requestCron.set(cron);
-        try {
-            cron.start();
-            validateRestUrl(request.getMethod(), getResourceName(request), request.getParameterMap());
-            XLog.Info.get().clear();
-            String user = getUser(request);
-            XLog.Info.get().setParameter(XLogService.USER, user);
-            TOTAL_REQUESTS_SAMPLER_COUNTER.incrementAndGet();
-            samplerCounter.incrementAndGet();
-            super.service(request, response);
+        if (request.getMethod().equals("OPTIONS")) {
+            doOptions(request, response);
         }
-        catch (XServletException ex) {
-            XLog log = XLog.getLog(getClass());
-            log.warn("URL[{0} {1}] error[{2}], {3}", request.getMethod(), getRequestUrl(request), ex.getErrorCode(), ex
-                    .getMessage(), ex);
-            request.setAttribute(AUDIT_ERROR_MESSAGE, ex.getMessage());
-            request.setAttribute(AUDIT_ERROR_CODE, ex.getErrorCode().toString());
-            request.setAttribute(AUDIT_HTTP_STATUS_CODE, ex.getHttpStatusCode());
-            incrCounter(INSTR_TOTAL_FAILED_REQUESTS_COUNTER, 1);
-            sendErrorResponse(response, ex.getHttpStatusCode(), ex.getErrorCode().toString(), ex.getMessage());
-        }
-        catch (RuntimeException ex) {
-            XLog log = XLog.getLog(getClass());
-            log.error("URL[{0} {1}] error, {2}", request.getMethod(), getRequestUrl(request), ex.getMessage(), ex);
-            incrCounter(INSTR_TOTAL_FAILED_REQUESTS_COUNTER, 1);
-            throw ex;
-        }
-        finally {
-            logAuditInfo(request);
-            TOTAL_REQUESTS_SAMPLER_COUNTER.decrementAndGet();
-            incrCounter(INSTR_TOTAL_REQUESTS_COUNTER, 1);
-            samplerCounter.decrementAndGet();
-            XLog.Info.remove();
-            cron.stop();
-            // TODO
-            incrCounter(instrumentationName, 1);
-            incrCounter(instrumentationName + "-" + request.getMethod(), 1);
-            addCron(instrumentationName, cron);
-            addCron(instrumentationName + "-" + request.getMethod(), cron);
-            requestCron.remove();
+        else {
+            Instrumentation.Cron cron = new Instrumentation.Cron();
+            requestCron.set(cron);
+            try {
+                cron.start();
+                validateRestUrl(request.getMethod(), getResourceName(request), request.getParameterMap());
+                XLog.Info.get().clear();
+                String user = getUser(request);
+                XLog.Info.get().setParameter(XLogService.USER, user);
+                TOTAL_REQUESTS_SAMPLER_COUNTER.incrementAndGet();
+                samplerCounter.incrementAndGet();
+                super.service(request, response);
+            }
+            catch (XServletException ex) {
+                XLog log = XLog.getLog(getClass());
+                log.warn("URL[{0} {1}] error[{2}], {3}", request.getMethod(), getRequestUrl(request), ex.getErrorCode(), ex
+                        .getMessage(), ex);
+                request.setAttribute(AUDIT_ERROR_MESSAGE, ex.getMessage());
+                request.setAttribute(AUDIT_ERROR_CODE, ex.getErrorCode().toString());
+                request.setAttribute(AUDIT_HTTP_STATUS_CODE, ex.getHttpStatusCode());
+                incrCounter(INSTR_TOTAL_FAILED_REQUESTS_COUNTER, 1);
+                sendErrorResponse(response, ex.getHttpStatusCode(), ex.getErrorCode().toString(), ex.getMessage());
+            }
+            catch (RuntimeException ex) {
+                XLog log = XLog.getLog(getClass());
+                log.error("URL[{0} {1}] error, {2}", request.getMethod(), getRequestUrl(request), ex.getMessage(), ex);
+                incrCounter(INSTR_TOTAL_FAILED_REQUESTS_COUNTER, 1);
+                throw ex;
+            }
+            finally {
+                logAuditInfo(request);
+                TOTAL_REQUESTS_SAMPLER_COUNTER.decrementAndGet();
+                incrCounter(INSTR_TOTAL_REQUESTS_COUNTER, 1);
+                samplerCounter.decrementAndGet();
+                XLog.Info.remove();
+                cron.stop();
+                // TODO
+                incrCounter(instrumentationName, 1);
+                incrCounter(instrumentationName + "-" + request.getMethod(), 1);
+                addCron(instrumentationName, cron);
+                addCron(instrumentationName + "-" + request.getMethod(), cron);
+                requestCron.remove();
+            }
         }
     }
 
@@ -491,11 +496,6 @@ public abstract class JsonRestServlet extends HttpServlet {
      */
     public static final String AUTH_TOKEN = "oozie.auth.token";
 
-    /**
-     * Request attribute constant for the user name.
-     */
-    public static final String USER_NAME = "oozie.user.name";
-
     protected static final String UNDEF = "?";
 
     /**
@@ -516,7 +516,7 @@ public abstract class JsonRestServlet extends HttpServlet {
      * @return the user name, <code>null</code> if there is none.
      */
     protected String getUser(HttpServletRequest request) {
-        String userName = (String) request.getAttribute(USER_NAME);
+        String userName = request.getRemoteUser();
         return (userName != null) ? userName : UNDEF;
     }
 

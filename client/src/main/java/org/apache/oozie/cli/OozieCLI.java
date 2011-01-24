@@ -14,11 +14,14 @@
  */
 package org.apache.oozie.cli;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,6 +40,8 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import com.cloudera.alfredo.client.AuthenticatedURL;
+import com.cloudera.alfredo.client.Authenticator;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
@@ -68,6 +73,23 @@ import org.xml.sax.SAXException;
 public class OozieCLI {
     public static final String ENV_OOZIE_URL = "OOZIE_URL";
     public static final String WS_HEADER_PREFIX = "header:";
+
+    /**
+     * Java system property that, if set, it make OozieCLI to skip authentication.
+     */
+    public static final String SKIP_AUTH_SYS_PROP = "skip.auth";
+
+    /**
+     * Java system property to specify a custom Authenticator implementation.
+     */
+    public static final String AUTHENTICATOR_CLASS_SYS_PROP = "authenticator.class";
+
+    /**
+     * Java system property that, if set, will stop OozieCLI for using a file to store the authentication token.
+     * <p/>
+     * If the file exists, it will be deleted.
+     */
+    public static final String SKIP_AUTH_FILE_SYS_PROP = "skip.auth.file";
 
     public static final String HELP_CMD = "help";
     public static final String VERSION_CMD = "version";
@@ -115,7 +137,12 @@ public class OozieCLI {
 
     private static final String[] OOZIE_HELP = {
             "the env variable '" + ENV_OOZIE_URL + "' is used as default value for the '-" + OOZIE_OPTION + "' option",
-            "custom headers for Oozie web services can be specified using '-D" + WS_HEADER_PREFIX + "NAME=VALUE'" };
+            "custom headers for Oozie web services can be specified using '-D" + WS_HEADER_PREFIX + "NAME=VALUE'",
+            "'-Dskip.auth' disables authentication, it must be used when the Oozie server is version 2.3 or earlier",
+            "'-Dskip.auth.file' disables storing authentication in the '~/.oozie-auth-token' file",
+            "'-Dauthenticator.class=CLASS' is used to specify a custom authenticator implementation"
+    };
+
 
     private static final String RULER;
     private static final int LINE_WIDTH = 132;
@@ -135,11 +162,28 @@ public class OozieCLI {
      * <p/>
      * Upon completion this method exits the JVM with '0' (success) or '-1'
      * (failure).
+     * <p/>
+     * Unless the {@link #SKIP_AUTH_SYS_PROP} system property is set, this method
+     * will invoke the {@link #readAuthToken()} and the {@link #writeAuthToken()} methods
+     * to reuse the authentication token across user CLI invocations.
      *
      * @param args options and arguments for the Oozie CLI.
      */
     public static void main(String[] args) {
-        System.exit(new OozieCLI().run(args));
+        int exit = -1;
+        OozieCLI cli = new OozieCLI();
+        if (!System.getProperties().containsKey(SKIP_AUTH_SYS_PROP)) {
+            cli.readAuthToken();
+        }
+        try {
+            exit = cli.run(args);
+        }
+        finally {
+            if (!System.getProperties().containsKey(SKIP_AUTH_SYS_PROP)) {
+                cli.writeAuthToken();
+            }
+        }
+        System.exit(exit);
     }
 
     /**
@@ -288,16 +332,19 @@ public class OozieCLI {
     }
 
     /**
-     * Run a CLI programmatically.
+     * Run a CLI programmatically without authentication setup.
      * <p/>
      * It does not exit the JVM.
      * <p/>
      * A CLI instance can be used only once.
+     * <p/>
+     * This method does not invoke the {@link #readAuthToken()} and {@link #writeAuthToken()} methods.
+     * If required, they should be invoked before and after.
      *
      * @param args options and arguments for the Oozie CLI.
      * @return '0' (success), '-1' (failure).
      */
-    public synchronized int run(String[] args) {
+    protected synchronized int runWithoutAuth(String[] args) {
         if (used) {
             throw new IllegalStateException("CLI instance already used");
         }
@@ -357,6 +404,34 @@ public class OozieCLI {
             ex.printStackTrace();
             System.err.println(ex.getMessage());
             return -1;
+        }
+    }
+
+    /**
+     * Run a CLI programmatically with authentication setup, unless disabled via System Property.
+     * <p/>
+     * It does not exit the JVM.
+     * <p/>
+     * A CLI instance can be used only once.
+     * <p/>
+     * This method does not invoke the {@link #readAuthToken()} and {@link #writeAuthToken()} methods.
+     * If required, they should be invoked before and after.
+     *
+     * @param args options and arguments for the Oozie CLI.
+     * @return '0' (success), '-1' (failure).
+     */
+    public synchronized int run(String[] args) {
+        OozieCLI cli = new OozieCLI();
+        if (!System.getProperties().containsKey(SKIP_AUTH_SYS_PROP)) {
+            cli.readAuthToken();
+        }
+        try {
+            return cli.runWithoutAuth(args);
+        }
+        finally {
+            if (!System.getProperties().containsKey(SKIP_AUTH_SYS_PROP)) {
+                cli.writeAuthToken();
+            }
         }
     }
 
@@ -486,6 +561,116 @@ public class OozieCLI {
         }
     }
 
+    protected static final File AUTH_TOKEN_FILE = new File(System.getProperty("user.home"), ".oozie-auth-token");
+
+    private AuthenticatedURL.Token authTokenOrig = null;
+    private AuthenticatedURL.Token authToken = null;
+
+    /**
+     * Delete the file storing the authentication token if it exists.
+     */
+    protected void deleteAuthToken() {
+        AUTH_TOKEN_FILE.delete();
+    }
+
+    /**
+     * Return the current authentication token, this method is for testing purposes only.
+     *
+     * @return the current authentication token.
+     */
+    AuthenticatedURL.Token getAuthToken() {
+        return authToken;
+    }
+
+    /**
+     * Read a authenthication token from a previous interaction from ".oozie-auth-token" file
+     * in the user home directory.
+     * <p/>
+     * If the file does not exist or could not be read the authentication token will be empty.
+     */
+    protected void readAuthToken() {
+        authToken = new AuthenticatedURL.Token();
+        if (System.getProperties().containsKey(SKIP_AUTH_FILE_SYS_PROP)) {
+            AUTH_TOKEN_FILE.delete();
+        }
+        else if (AUTH_TOKEN_FILE.exists()) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(AUTH_TOKEN_FILE));
+                String line = reader.readLine();
+                reader.close();
+                if (line != null) {
+                    authTokenOrig = new AuthenticatedURL.Token(line);
+                    authToken = new AuthenticatedURL.Token(line);
+                }
+            }
+            catch (IOException ex) {
+                //NOP
+            }
+        }
+    }
+
+    /**
+     * Write the current authenthication token to the ".oozie-auth-token" file in the user home directory.
+     * <p/>
+     * If the authentication token is not set and the file exists, the file is deleted.
+     * <p/>
+     * The file is written with user only read/write permissions.
+     * <p/>
+     * If the file cannot be updated or the user only ready/write permissions the file is removed
+     * (if it already existed).
+     */
+    protected void writeAuthToken() {
+        if (!System.getProperties().containsKey(SKIP_AUTH_FILE_SYS_PROP)) {
+            try {
+                if (!authToken.isSet()) {
+                    AUTH_TOKEN_FILE.delete();
+                }
+                else {
+                    if (!authToken.equals(authTokenOrig)) {
+                        Writer writer = new FileWriter(AUTH_TOKEN_FILE);
+                        writer.write(authToken.toString());
+                        writer.close();
+                        //sets read-write permissions to owner only
+                        AUTH_TOKEN_FILE.setReadable(false, false);
+                        AUTH_TOKEN_FILE.setReadable(true, true);
+                        AUTH_TOKEN_FILE.setWritable(true, true);
+                    }
+                }
+            }
+            catch (SecurityException ex) {
+                //if read-write permissions to owner could not be set
+                AUTH_TOKEN_FILE.delete();
+            }
+            catch (IOException ex) {
+                    //NOP
+            }
+        }
+    }
+
+    /**
+     * Return the custom Authenticator to use.
+     * <p/>
+     * It looks for value of the {@link #AUTHENTICATOR_CLASS_SYS_PROP} Java system property.
+     *
+     * @return the custom Authenticator to use, <code>NULL</code> if none.
+     * @throws OozieCLIException
+     */
+    protected Authenticator getAuthenticator() throws OozieCLIException {
+        Authenticator authenticator = null;
+        String className = System.getProperty(AUTHENTICATOR_CLASS_SYS_PROP);
+        if (className != null) {
+            try {
+                Class klass = Thread.currentThread().getContextClassLoader().loadClass(className);
+                authenticator = (Authenticator) klass.newInstance();
+            }
+            catch (Exception ex) {
+                throw new OozieCLIException("Could not instantiate Authenticator [" + className + "], " +
+                                            ex.getMessage(), ex);
+            }
+        }
+        return authenticator;
+    }
+
     /**
      * Create a OozieClient. <p/> It injects any '-Dheader:' as header to the the {@link
      * org.apache.oozie.client.OozieClient}.
@@ -497,6 +682,8 @@ public class OozieCLI {
      */
     protected OozieClient createOozieClient(CommandLine commandLine) throws OozieCLIException {
         OozieClient wc = new OozieClient(getOozieUrl(commandLine));
+        wc.setAuthToken(authToken);
+        wc.setAuthenticator(getAuthenticator());
         addHeader(wc);
         return wc;
     }
@@ -512,6 +699,8 @@ public class OozieCLI {
      */
     protected XOozieClient createXOozieClient(CommandLine commandLine) throws OozieCLIException {
         XOozieClient wc = new XOozieClient(getOozieUrl(commandLine));
+        wc.setAuthToken(authToken);
+        wc.setAuthenticator(getAuthenticator());
         addHeader(wc);
         return wc;
     }
@@ -520,6 +709,7 @@ public class OozieCLI {
 
     private void jobCommand(CommandLine commandLine) throws IOException, OozieCLIException {
         XOozieClient wc = createXOozieClient(commandLine);
+        wc.setAuthToken(authToken);
 
         List<String> options = new ArrayList<String>();
         for (Option option : commandLine.getOptions()) {

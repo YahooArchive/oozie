@@ -59,11 +59,17 @@ public abstract class DagServletTestCase extends XFsTestCase {
     @SuppressWarnings("unchecked")
     protected void runTest(String servletPath, Class servletClass, boolean securityEnabled, Callable<Void> assertions)
             throws Exception {
-        runTest(new String[]{servletPath}, new Class[]{servletClass}, securityEnabled, assertions);
+        runTest(new String[]{servletPath}, new Class[]{servletClass}, new String[0], new Class[0], securityEnabled,
+                assertions);
     }
 
-    protected void runTest(String[] servletPath, Class[] servletClass, boolean securityEnabled,
-                           Callable<Void> assertions) throws Exception {
+    protected void runTest(String[] servletPath, Class[] servletClass,
+                           boolean securityEnabled, Callable<Void> assertions) throws Exception {
+        runTest(servletPath, servletClass, new String[0], new Class[0], securityEnabled, assertions);
+    }
+
+    protected void runTest(String[] servletPath, Class[] servletClass, String[] filterPath, Class[] filterClass,
+                           boolean securityEnabled, Callable<Void> assertions) throws Exception {
         Services services = new Services();
         this.servletPath = servletPath[0];
         try {
@@ -76,6 +82,9 @@ public abstract class DagServletTestCase extends XFsTestCase {
             container = new EmbeddedServletContainer("oozie");
             for (int i = 0; i < servletPath.length; i++) {
                 container.addServletEndpoint(servletPath[i], servletClass[i]);
+            }
+            for (int i = 0; i < filterPath.length; i++) {
+                container.addFilter(filterPath[i], filterClass[i]);
             }
             container.start();
             assertions.call();

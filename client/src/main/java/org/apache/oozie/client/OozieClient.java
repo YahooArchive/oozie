@@ -38,6 +38,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import com.cloudera.alfredo.client.AuthenticatedURL;
+import com.cloudera.alfredo.client.AuthenticationException;
+import com.cloudera.alfredo.client.Authenticator;
 import org.apache.oozie.BuildInfo;
 import org.apache.oozie.client.rest.JsonCoordinatorAction;
 import org.apache.oozie.client.rest.JsonCoordinatorJob;
@@ -127,8 +130,8 @@ public class OozieClient {
     private String protocolUrl;
     private boolean validatedVersion = false;
     private Map<String, String> headers = new HashMap<String, String>();
-
-
+    private AuthenticatedURL.Token authToken = null;
+    private Authenticator authenticator = null;
 
     protected OozieClient() {
     }
@@ -143,6 +146,39 @@ public class OozieClient {
         if (!this.baseUrl.endsWith("/")) {
             this.baseUrl += "/";
         }
+    }
+
+    /**
+     * Set a custom Authenticator to use for authenticating against the Oozie server.
+     * <p/>
+     * If not set a default Authenticator will be used.
+     *
+     * @param authenticator authenticator to use.
+     */
+    public void setAuthenticator(Authenticator authenticator) {
+        this.authenticator = authenticator;
+    }
+
+    /**
+     * Return the Authenticator being used for authenticating against the Oozie server.
+     * <p/>
+     * If NULL a default Authenticator is being used.
+     *
+     * @return the authenticator being used.
+     */
+    public Authenticator getAuthenticator() {
+        return authenticator;
+    }
+
+    /**
+     * Set the authentication token to use when connecting to the Oozie server.
+     * <p/>
+     * If an authentication token is not set, authentication will not be attempted against the Oozie server.
+     *
+     * @param authToken the authentication token.
+     */
+    public void setAuthToken(AuthenticatedURL.Token authToken) {
+        this.authToken = authToken;
     }
 
     /**
@@ -315,15 +351,26 @@ public class OozieClient {
      * @throws OozieClientException
      */
     protected HttpURLConnection createConnection(URL url, String method) throws IOException, OozieClientException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod(method);
-        if (method.equals("POST") || method.equals("PUT")) {
-            conn.setDoOutput(true);
+        try {
+            HttpURLConnection conn;
+            if (authToken == null) {
+                conn = (HttpURLConnection) url.openConnection();
+            }
+            else {
+                conn = new AuthenticatedURL(authenticator).openConnection(url, authToken);
+            }
+            conn.setRequestMethod(method);
+            if (method.equals("POST") || method.equals("PUT")) {
+                conn.setDoOutput(true);
+            }
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                conn.setRequestProperty(header.getKey(), header.getValue());
+            }
+            return conn;
         }
-        for (Map.Entry<String, String> header : headers.entrySet()) {
-            conn.setRequestProperty(header.getKey(), header.getValue());
+        catch (AuthenticationException ex) {
+            throw new OozieClientException(OozieClientException.AUTHENTICATION, ex);
         }
-        return conn;
     }
 
     protected abstract class ClientCallable<T> implements Callable<T> {
