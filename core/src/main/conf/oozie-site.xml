@@ -252,7 +252,19 @@
         <description>
             The signature secret for signing the authentication tokens.
             If not set a random secret is generated at startup time.
+            In order to authentiation to work correctly across multiple hosts
+            the secret must be the same across al the hosts.
         </description>
+    </property>
+
+    <property>
+      <name>oozie.authentication.cookie.domain</name>
+      <value></value>
+      <description>
+        The domain to use for the HTTP cookie that stores the authentication token.
+        In order to authentiation to work correctly across multiple hosts
+        the domain must be correctly set.
+      </description>
     </property>
 
     <property>

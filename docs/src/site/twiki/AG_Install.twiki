@@ -185,6 +185,7 @@ Oozie user authentication is configured using the following configuration proper
   oozie.authentication.type=simple
   oozie.authentication.token.validity=36000
   oozie.authentication.signature.secret=
+  oozie.authentication.cookie.domain=
   oozie.authentication.simple.anonymous.allowed=true
   oozie.authentication.kerberos.principal=HTTP/localhost@${local.realm}
   oozie.authentication.kerberos.keytab=${oozie.service.HadoopAccessorService.keytab.file}
@@ -198,6 +199,10 @@ to be renewed.
 
 The =signature.secret= is the signature secret for signing the authentication tokens. If not set a random
 secret is generated at startup time.
+
+The =oozie.authentication.cookie.domain= The domain to use for the HTTP cookie that stores the
+authentication token. In order to authentiation to work correctly across all Hadoop nodes web-consoles
+the domain must be correctly set.
 
 The =simple.anonymous.allowed= indicates if anonymous requests are allowed. This setting is meaningful
 only when using 'simple' authentication.
