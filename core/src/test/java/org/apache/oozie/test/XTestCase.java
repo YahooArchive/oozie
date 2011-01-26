@@ -125,8 +125,6 @@ public abstract class XTestCase extends TestCase {
         setSystemProperty(Services.OOZIE_HOME_ENV, testCaseDir);
         testCaseConfDir = createTestCaseSubDir("conf");
 
-        setOozieSiteProp();
-
         //setting up custom Oozie site for testing if avail
         String customOozieSite = System.getProperty("oozie.test.config.file", "");
         if (!customOozieSite.equals("")) {
@@ -161,13 +159,6 @@ public abstract class XTestCase extends TestCase {
         if (System.getProperty("hadoop20", "false").equals("false")) {
             System.setProperty("oozie.services.ext", "org.apache.oozie.service.KerberosHadoopAccessorService");
         }
-    }
-
-    /**
-     * Set 'oozie.test.config.file' to custom oozie-site for test cases
-     * @throws Exception
-     */
-    protected void setOozieSiteProp() throws Exception {
     }
 
     /**
