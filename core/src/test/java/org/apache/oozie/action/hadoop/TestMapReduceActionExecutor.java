@@ -36,7 +36,6 @@ import org.apache.oozie.util.ClassUtils;
 import org.jdom.Element;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.FileInputStream;
@@ -49,21 +48,10 @@ import java.util.List;
 public class TestMapReduceActionExecutor extends ActionExecutorTestCase {
 
     @Override
-    protected void setOozieSiteProp() throws Exception {
-        String siteFile = prepareOozieConfDir("oozie-site-credentials.xml");
-        setSystemProperty("oozie.test.config.file", siteFile);
-    }
-
-    private String prepareOozieConfDir(String oozieSite) throws Exception {
-        File siteFile = new File(getTestCaseConfDir(), oozieSite);
-        IOUtils.copyStream(IOUtils.getResourceAsStream(oozieSite, -1), new FileOutputStream(siteFile));
-        return siteFile.getAbsolutePath();
-    }
-
-    @Override
     protected void setSystemProps() {
         super.setSystemProps();
         setSystemProperty("oozie.service.ActionService.executor.classes", MapReduceActionExecutor.class.getName());
+        setSystemProperty("oozie.credentials.credentialclasses", "cred=org.apache.oozie.action.hadoop.CredentialForTest");
     }
 
     public void testLauncherJar() throws Exception {

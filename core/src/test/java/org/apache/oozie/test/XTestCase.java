@@ -207,8 +207,6 @@ public abstract class XTestCase extends TestCase {
         Services.setOozieHome();
         testCaseConfDir = createTestCaseSubDir("conf");
 
-        setOozieSiteProp();
-
         //setting up custom Oozie site for testing if avail
         String customOozieSite = System.getProperty("oozie.test.config.file", "");
         if (!customOozieSite.equals("")) {
@@ -254,13 +252,6 @@ public abstract class XTestCase extends TestCase {
             setSystemProperty("oozie.service.StoreService.jdbc.url", "jdbc:derby:" + baseDir +
                                                                      "/oozie-derby;create=true");
         }
-    }
-
-    /**
-     * Set 'oozie.test.config.file' to custom oozie-site for test cases
-     * @throws Exception
-     */
-    protected void setOozieSiteProp() throws Exception {
     }
 
     /**
