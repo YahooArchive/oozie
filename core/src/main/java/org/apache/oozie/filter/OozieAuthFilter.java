@@ -24,8 +24,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.oozie.service.AuthorizationService;
-import org.apache.oozie.service.Services;
 import org.apache.oozie.servlet.JsonRestServlet;
 
 /**
@@ -35,22 +33,17 @@ import org.apache.oozie.servlet.JsonRestServlet;
  */
 public class OozieAuthFilter implements Filter {
 
-    private static boolean securityEnabled;
-
     /**
      * Initializes the Filter. Reads the username from the request and set it as oozie.user.name
      */
     public void init(FilterConfig config) throws ServletException {
-        securityEnabled = Services.get().getConf().getBoolean(AuthorizationService.CONF_SECURITY_ENABLED, true);
     }
 
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException,
-            ServletException {
-        if (securityEnabled) {
-            HttpServletRequest request = (HttpServletRequest) req;
-            String userName = request.getUserPrincipal().getName();
-            setUserName(request, userName);
-        }
+    ServletException {
+        HttpServletRequest request = (HttpServletRequest) req;
+        String userName = request.getUserPrincipal().getName();
+        setUserName(request, userName);
         chain.doFilter(req, res);
     }
 

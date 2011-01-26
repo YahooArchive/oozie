@@ -19,9 +19,28 @@ import java.io.IOException;
 
 public interface AuthenticationProvider {
 
+    /**
+     * Check if this authentication provider supports client request
+     *
+     * @param httpServletRequest
+     * @return true if this authentication provider supports client request
+     */
     boolean supports(HttpServletRequest httpServletRequest);
 
+    /**
+     * Get auth token
+     *
+     * @param httpServletRequest
+     * @return auth token
+     * @throws IOException
+     */
     AuthenticationToken getAuthenticationToken(HttpServletRequest httpServletRequest) throws IOException;
 
+    /**
+     * Verify and authenticate the token
+     *
+     * @param authenticationToken
+     * @return auth token
+     */
     AuthenticationToken authenticate(AuthenticationToken authenticationToken);
 }

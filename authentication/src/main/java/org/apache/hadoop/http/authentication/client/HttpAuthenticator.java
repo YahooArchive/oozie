@@ -41,8 +41,20 @@ public abstract class HttpAuthenticator {
         }
     };
 
+    /**
+     * To authenticate a client request for http connection
+     *
+     * @param conf the configuration for authentication
+     * @param connection the connection to authenticate
+     * @throws IOException
+     */
     public abstract void authenticate(Map<String, String> conf, HttpURLConnection connection) throws IOException;
 
+    /**
+     * Read cookie from http response
+     *
+     * @param connection
+     */
     public void setCookieFromResponse(HttpURLConnection connection) {
         Map<String, List<String>> headers = connection.getHeaderFields();
         List<String> cookieHeaders = headers.get("Set-Cookie");
@@ -83,11 +95,20 @@ public abstract class HttpAuthenticator {
         }
     }
 
+    /**
+     * Clear the cookie
+     */
     public void clearCookie() {
         authCookie = null;
         cookieExpiryTime = 0L;
     }
 
+    /**
+     * Set cookie to http request
+     *
+     * @param connection
+     * @return true if cookie is added to http request
+     */
     protected boolean setCookieInRequest(HttpURLConnection connection) {
         if (authCookie == null || hasCookieExpired())
             return false;
@@ -96,6 +117,8 @@ public abstract class HttpAuthenticator {
     }
 
     /**
+     * Check if cookie is expired
+     *
      * @return true if the Cookie has expired or 10 mins to expire
      */
     private boolean hasCookieExpired() {
@@ -107,6 +130,12 @@ public abstract class HttpAuthenticator {
         return false;
     }
 
+    /**
+     * Return boolean
+     *
+     * @param value
+     * @return true if String "true" is given
+     */
     protected boolean getBooleanValue(String value) {
         return value != null && value.equals("true");
     }

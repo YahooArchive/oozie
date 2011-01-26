@@ -64,6 +64,13 @@
                 <include>*</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>${basedir}/../client/target/oozie-client-${project.version}-client/oozie-client-${project.version}/conf</directory>
+            <outputDirectory>/conf</outputDirectory>
+            <includes>
+                <include>*</include>
+            </includes>
+        </fileSet>
         <!-- Embedded Tomcat -->
         <fileSet>
             <directory>${basedir}/target/tomcat/oozie-server</directory>

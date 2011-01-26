@@ -51,6 +51,9 @@ import org.json.simple.JSONValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import org.apache.hadoop.http.authentication.client.HttpAuthenticator;
+import org.apache.hadoop.http.authentication.client.simple.SimpleAuthenticator;
+
 /**
  * Client API to submit and manage Oozie workflow jobs against an Oozie intance.
  * <p/>
@@ -114,7 +117,7 @@ public class OozieClient {
     public static final String CHANGE_VALUE_PAUSETIME = "pausetime";
 
     public static final String CHANGE_VALUE_CONCURRENCY = "concurrency";
-    
+
     public static final String LIBPATH = "oozie.libpath";
 
     public static final String USE_SYSTEM_LIBPATH = "oozie.use.system.libpath";
@@ -127,8 +130,7 @@ public class OozieClient {
     private String protocolUrl;
     private boolean validatedVersion = false;
     private Map<String, String> headers = new HashMap<String, String>();
-
-
+    private String authClass = "org.apache.hadoop.http.authentication.client.simple.SimpleAuthenticator";
 
     protected OozieClient() {
     }
@@ -323,7 +325,49 @@ public class OozieClient {
         for (Map.Entry<String, String> header : headers.entrySet()) {
             conn.setRequestProperty(header.getKey(), header.getValue());
         }
+        performAuthentication(conn);
         return conn;
+    }
+
+    /**
+     * Authenticate the connection by specified authenticator.
+     *
+     * @param connection
+     * @throws OozieClientException
+     */
+    private void performAuthentication(HttpURLConnection connection) throws OozieClientException {
+        Map<String, String> conf = new HashMap<String, String>();
+        try {
+            getHttpAuthenticator().authenticate(conf, connection);
+        }
+        catch (IOException ex) {
+            throw new OozieClientException(OozieClientException.IO_ERROR, ex);
+        }
+    }
+
+    /**
+     * Get user specified Authenticator
+     *
+     * @return HttpAuthenticator
+     * @throws OozieClientException
+     */
+    private HttpAuthenticator getHttpAuthenticator() throws OozieClientException {
+        HttpAuthenticator authenticator = null;
+        if (authClass == null || authClass.isEmpty()) {
+            //use simple authentication instead
+            authenticator = new SimpleAuthenticator();
+        }
+
+        try {
+            Class klass = Thread.currentThread().getContextClassLoader().loadClass(authClass);
+            authenticator = (HttpAuthenticator) klass.newInstance();
+        }
+        catch (Exception ex) {
+            throw new OozieClientException("Could not instantiate HttpAuthenticator [" + authClass + "], " +
+                    ex.getMessage(), ex);
+        }
+
+        return authenticator;
     }
 
     protected abstract class ClientCallable<T> implements Callable<T> {
@@ -1193,6 +1237,24 @@ public class OozieClient {
             throw new IllegalArgumentException(name + " cannot be null");
         }
         return obj;
+    }
+
+    /**
+     * Set auth class name
+     *
+     * @param authClass the authClass to set
+     */
+    public void setAuthClass(String authClass) {
+        this.authClass = authClass;
+    }
+
+    /**
+     * Retrun auth class name
+     *
+     * @return the authClass
+     */
+    public String getAuthClass() {
+        return authClass;
     }
 
 }

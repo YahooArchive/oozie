@@ -1180,6 +1180,9 @@
     <property>
         <name>authentication.providers</name>
         <value>org.apache.hadoop.http.authentication.server.simple.SimpleAuthenticationHeaderProvider</value>
+        <description>
+            List of Oozie server authentication providers (separated by commas).
+        </description>
     </property>
 
 </configuration>

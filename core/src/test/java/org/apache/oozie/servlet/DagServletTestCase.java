@@ -14,6 +14,11 @@
  */
 package org.apache.oozie.servlet;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.http.authentication.web.AuthenticationProcessingFilter;
+import org.apache.hadoop.http.authentication.web.CookieSignerVerifier;
+import org.apache.hadoop.http.authentication.web.FileSystemEvictorCallback;
+import org.apache.hadoop.http.authentication.web.ProxyUGICacheManager;
 import org.apache.oozie.service.AuthorizationService;
 
 import org.apache.oozie.service.Services;
@@ -24,8 +29,10 @@ import org.apache.oozie.test.XFsTestCase;
 
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 public abstract class DagServletTestCase extends XFsTestCase {
     private EmbeddedServletContainer container;
@@ -44,8 +51,8 @@ public abstract class DagServletTestCase extends XFsTestCase {
         if (parameters.size() > 0) {
             String separator = "?";
             for (Map.Entry<String, String> param : parameters.entrySet()) {
-                sb.append(separator).append(URLEncoder.encode(param.getKey(), "UTF-8")).append("=")
-                        .append(URLEncoder.encode(param.getValue(), "UTF-8"));
+                sb.append(separator).append(URLEncoder.encode(param.getKey(), "UTF-8")).append("=").append(
+                        URLEncoder.encode(param.getValue(), "UTF-8"));
                 separator = "&";
             }
         }
@@ -59,11 +66,16 @@ public abstract class DagServletTestCase extends XFsTestCase {
     @SuppressWarnings("unchecked")
     protected void runTest(String servletPath, Class servletClass, boolean securityEnabled, Callable<Void> assertions)
             throws Exception {
-        runTest(new String[]{servletPath}, new Class[]{servletClass}, securityEnabled, assertions);
+        runTest(new String[] { servletPath }, new Class[] { servletClass }, securityEnabled, assertions);
     }
 
     protected void runTest(String[] servletPath, Class[] servletClass, boolean securityEnabled,
-                           Callable<Void> assertions) throws Exception {
+            Callable<Void> assertions) throws Exception {
+        runTest(servletPath, servletClass, new String[0], new Class[0], securityEnabled, assertions);
+    }
+
+    protected void runTest(String[] servletPath, Class[] servletClass, String[] filterPath, Class[] filterClass,
+            boolean securityEnabled, Callable<Void> assertions) throws Exception {
         Services services = new Services();
         this.servletPath = servletPath[0];
         try {
@@ -77,6 +89,17 @@ public abstract class DagServletTestCase extends XFsTestCase {
             for (int i = 0; i < servletPath.length; i++) {
                 container.addServletEndpoint(servletPath[i], servletClass[i]);
             }
+            for (int i = 0; i < filterPath.length; i++) {
+                container.addFilter(filterPath[i], filterClass[i]);
+            }
+            // ***** START setup filter properties *****
+            container.addAttribute(AuthenticationProcessingFilter.AUTH_CONFIGURATION, services.getConf());
+            container.addAttribute("StartTime", new Date());
+            container.addAttribute(AuthenticationProcessingFilter.COOKIE_SIGNER_VERIFIER,
+                    new CookieSignerVerifier(services.getConf()));
+            container.addAttribute(AuthenticationProcessingFilter.UGI_CACHE_MANAGER,
+                    initializeUGICacheManager(services.getConf()));
+            // ***** END setup filter properties *****
             container.start();
             assertions.call();
         }
@@ -88,6 +111,15 @@ public abstract class DagServletTestCase extends XFsTestCase {
             services.destroy();
             container = null;
         }
+    }
+
+    protected ProxyUGICacheManager initializeUGICacheManager(Configuration conf) {
+        long ugiExpiryTimeInMillis = conf.getLong("ugi.expirytime.in.millis", TimeUnit.MINUTES.toMillis(10));
+        long evictionIntervalInMillis = conf.getLong("ugi.evictioninterval.in.millis", TimeUnit.MINUTES.toMillis(5));
+
+        ProxyUGICacheManager cacheManager = new ProxyUGICacheManager(ugiExpiryTimeInMillis, evictionIntervalInMillis,
+                new FileSystemEvictorCallback());
+        return cacheManager;
     }
 
 }

@@ -23,6 +23,9 @@ import org.apache.hadoop.http.authentication.client.HttpAuthenticator;
 public class SimpleAuthenticator extends HttpAuthenticator {
     public static final String REQUEST_PARAMETER_NAME = "ugi";
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.client.HttpAuthenticator#authenticate(java.util.Map, java.net.HttpURLConnection)
+     */
     @Override
     public void authenticate(Map<String, String> conf, HttpURLConnection connection) throws IOException {
         connection.setRequestProperty(REQUEST_PARAMETER_NAME, System.getProperty("user.name"));

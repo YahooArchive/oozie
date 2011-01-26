@@ -32,6 +32,9 @@ public class SimpleAuthenticationProvider implements AuthenticationProvider {
     public SimpleAuthenticationProvider(Configuration configuration) {
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.AuthenticationProvider#supports(javax.servlet.http.HttpServletRequest)
+     */
     @Override
     public boolean supports(HttpServletRequest httpServletRequest) {
         final String parameter = httpServletRequest.getParameter(REQUEST_PARAMETER_NAME);
@@ -48,6 +51,9 @@ public class SimpleAuthenticationProvider implements AuthenticationProvider {
         return false;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.AuthenticationProvider#getAuthenticationToken(javax.servlet.http.HttpServletRequest)
+     */
     @Override
     public AuthenticationToken getAuthenticationToken(HttpServletRequest httpServletRequest) throws IOException {
         final String parameter = httpServletRequest.getParameter(REQUEST_PARAMETER_NAME);
@@ -59,6 +65,9 @@ public class SimpleAuthenticationProvider implements AuthenticationProvider {
         throw new AccessDeniedException("Received UGI in request with no value.");
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.AuthenticationProvider#authenticate(org.apache.hadoop.http.authentication.AuthenticationToken)
+     */
     @Override
     public AuthenticationToken authenticate(AuthenticationToken authenticationToken) {
         return authenticationToken;

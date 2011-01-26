@@ -4,17 +4,18 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License. See accompanying LICENSE file.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. See accompanying LICENSE file.
  */
 package org.apache.oozie.test;
 
 import org.mortbay.jetty.Server;
+import org.mortbay.jetty.servlet.FilterHolder;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.Context;
 
@@ -22,8 +23,11 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 
 /**
- * An embedded servlet container for testing purposes. <p/> It provides reduced functionality, it supports only
- * Servlets. <p/> The servlet container is started in a free port.
+ * An embedded servlet container for testing purposes.
+ * <p/>
+ * It provides reduced functionality, it supports only Servlets.
+ * <p/>
+ * The servlet container is started in a free port.
  */
 public class EmbeddedServletContainer {
     private Server server;
@@ -36,7 +40,7 @@ public class EmbeddedServletContainer {
      * Create a servlet container.
      *
      * @param contextPath context path for the servlet, it must not be prefixed or append with "/", for the default
-     * context use ""
+     *        context use ""
      */
     public EmbeddedServletContainer(String contextPath) {
         this.contextPath = contextPath;
@@ -47,10 +51,24 @@ public class EmbeddedServletContainer {
     }
 
     /**
+     * Add a filter to the container.
+     *
+     * @param path path for the filter, it should be prefixed with '/", it may contain a wild card at the end.
+     * @param filterClass filter class
+     */
+    public void addFilter(String path, Class filterClass) {
+        context.addFilter(new FilterHolder(filterClass), "/*", 0);
+    }
+
+    public void addAttribute(String key, Object object) {
+        context.setAttribute(key, object);
+    }
+
+    /**
      * Add a servlet to the container.
      *
      * @param servletPath servlet path for the servlet, it should be prefixed with '/", it may contain a wild card at
-     * the end.
+     *        the end.
      * @param servletClass servlet class
      */
     public void addServletEndpoint(String servletPath, Class servletClass) {
@@ -58,7 +76,9 @@ public class EmbeddedServletContainer {
     }
 
     /**
-     * Start the servlet container. <p/> The container starts on a free port.
+     * Start the servlet container.
+     * <p/>
+     * The container starts on a free port.
      *
      * @throws Exception thrown if the container could not start.
      */

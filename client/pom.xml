@@ -58,6 +58,16 @@
             <artifactId>persistence-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.yahoo.oozie</groupId>
+            <artifactId>oozie-authentication</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+           <groupId>org.slf4j</groupId>
+           <artifactId>slf4j-log4j12</artifactId>
+           <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
