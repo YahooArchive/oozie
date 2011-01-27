@@ -25,6 +25,10 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 import java.security.Principal;
 
+/**
+ * Provide utility functions for authentication.
+ *
+ */
 final class AuthenticationHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationHelper.class.getName());
@@ -32,6 +36,14 @@ final class AuthenticationHelper {
     private AuthenticationHelper() {
     }
 
+    /**
+     * Get ugi from cache <code>ProxyUGICacheManager</code> or create it if not existed.
+     *
+     * @param ugiManager the container to store ugi
+     * @param httpServletRequest http request
+     * @param authenticatedToken authenticated token
+     * @throws IOException thrown if failed to get ugi
+     */
     static void setupUGI(ProxyUGICacheManager ugiManager, HttpServletRequest httpServletRequest,
             AuthenticationToken authenticatedToken) throws IOException {
         UserGroupInformation proxyUGI = ugiManager.getUGI(authenticatedToken.getPrincipal(), httpServletRequest);
@@ -39,6 +51,14 @@ final class AuthenticationHelper {
         LOGGER.info("Proxying as " + authenticatedToken.getPrincipal());
     }
 
+    /**
+     * Create a http request <code>HttpServletRequestWrapper</code> by overriding getUserPrincipal() and getRemoteUser()
+     * to return user name from authentication token.
+     *
+     * @param httpServletRequest http request
+     * @param authenticatedToken authenticated token
+     * @return http request wrapper
+     */
     static HttpServletRequestWrapper createAuthenticatedRequest(final HttpServletRequest httpServletRequest,
             final AuthenticationToken authenticatedToken) {
 

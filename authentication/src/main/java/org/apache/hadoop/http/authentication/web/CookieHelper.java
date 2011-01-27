@@ -19,12 +19,22 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.hadoop.http.authentication.AuthenticationTokenSerDe;
 
+/**
+ * Provide utility functions for Cookie.
+ *
+ */
 final class CookieHelper {
     private static final String COOKIE_NAME = "Hadoop-HTTP-Auth";
 
     private CookieHelper() {
     }
 
+    /**
+     * Create cookie from serialized authenticated token.
+     *
+     * @param serializedAuthenticatedToken
+     * @return cookie
+     */
     static Cookie create(String serializedAuthenticatedToken) {
         Cookie cookie = new Cookie(COOKIE_NAME, serializedAuthenticatedToken);
         cookie.setMaxAge((int) AuthenticationTokenSerDe.EXPIRATION_IN_SECONDS);
@@ -32,6 +42,11 @@ final class CookieHelper {
         return cookie;
     }
 
+    /**
+     * Create expired cookie
+     *
+     * @return cookie
+     */
     static Cookie createExpiredCookie() {
         Cookie cookie = new Cookie(COOKIE_NAME, "Expired cookie To clear browsers");
         cookie.setMaxAge(0);
@@ -39,6 +54,12 @@ final class CookieHelper {
         return cookie;
     }
 
+    /**
+     * Get cookie from http servlet request
+     *
+     * @param httpServletRequest http servlet request
+     * @return cookie
+     */
     static Cookie extract(HttpServletRequest httpServletRequest) {
         Cookie authenticatedCookie = null;
         Cookie[] cookies = httpServletRequest.getCookies();

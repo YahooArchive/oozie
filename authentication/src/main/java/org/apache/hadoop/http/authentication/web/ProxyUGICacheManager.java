@@ -26,6 +26,10 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The container class <code>ProxyUGICacheManager</code> is to maintain user ugi entries and service cached ugi without
+ * recreating new ones.
+ */
 public class ProxyUGICacheManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyUGICacheManager.class.getName());
@@ -43,11 +47,21 @@ public class ProxyUGICacheManager {
         }
     }
 
+    /**
+     * Get ugi from cached map.
+     *
+     * @param user user name
+     * @param request http servlet request
+     * @return ugi
+     * @throws IOException thrown if current user is not log in
+     */
     public UserGroupInformation getUGI(String user, HttpServletRequest request) throws IOException {
         CacheEntry entry = userUgiMap.get(user);
         if (entry == null) {
-//            UserGroupInformation ugi = UserGroupInformation.createProxyUser(user, UserGroupInformation.getLoginUser());
-            UserGroupInformation ugi = UserGroupInformation.createProxyUser(user, UserGroupInformation.getCurrentUser());
+            // UserGroupInformation ugi = UserGroupInformation.createProxyUser(user,
+            // UserGroupInformation.getLoginUser());
+            UserGroupInformation ugi = UserGroupInformation
+                    .createProxyUser(user, UserGroupInformation.getCurrentUser());
             // Take care of race condition
             CacheEntry oldEntry = userUgiMap.putIfAbsent(user, new CacheEntry(ugi, request));
             if (oldEntry == null) {
@@ -62,11 +76,24 @@ public class ProxyUGICacheManager {
         return entry.getUgi();
     }
 
+    /**
+     * Get number of user requests
+     *
+     * @param user user name
+     * @return number of user requests
+     * @throws IOException thrown if error
+     */
     public int getNumberOfRequestsForUser(String user) throws IOException {
         CacheEntry entry = userUgiMap.get(user);
         return entry.getNumRequests();
     }
 
+    /**
+     * Remove request from cache entry
+     *
+     * @param user user name
+     * @param request http servlet request
+     */
     public void removeRequest(String user, HttpServletRequest request) {
         CacheEntry entry = userUgiMap.get(user);
         if (entry == null) {
@@ -79,12 +106,19 @@ public class ProxyUGICacheManager {
         }
     }
 
+    /**
+     * Destroy cached map and stop cron service
+     */
     public void destroy() {
         evictorDaemon.shutdownNow();
         userUgiMap.clear();
         userUgiMap = null;
     }
 
+    /**
+     * Cache entry to store ugi and request information.
+     *
+     */
     private static class CacheEntry {
         private UserGroupInformation ugi;
         private long lastAccessTime;
@@ -124,6 +158,10 @@ public class ProxyUGICacheManager {
         }
     }
 
+    /**
+     * Cron service to evict old cache entry from map.
+     *
+     */
     private class CacheEvictor implements Runnable {
         private final long ugiExpiryTimeInMillis;
         private final EvictorCallback callback;

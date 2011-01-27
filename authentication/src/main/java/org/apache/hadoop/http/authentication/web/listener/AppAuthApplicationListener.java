@@ -29,6 +29,15 @@ import org.apache.hadoop.http.authentication.web.ProxyUGICacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The listener to initialize all required configuration and attributes for servlet context. The attributes and
+ * configuration are used later in filter class <code>AuthenticationProcessingFilter</code>.
+ * <p/>
+ * Oozie currently overrides this listener initializeAuthConfiguration() to create configuration from Oozie server
+ * configuration.
+ * <p/>
+ * The listener has to be configured in application server web.xml to load in server start time.
+ */
 public abstract class AppAuthApplicationListener implements ServletContextListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AppAuthApplicationListener.class);
@@ -43,6 +52,9 @@ public abstract class AppAuthApplicationListener implements ServletContextListen
 
     protected abstract void initializeUGI();
 
+    /* (non-Javadoc)
+     * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
+     */
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         servletContext = servletContextEvent.getServletContext();
@@ -62,6 +74,11 @@ public abstract class AppAuthApplicationListener implements ServletContextListen
         initializeUGI();
     }
 
+    /**
+     * Initialize authentication configuration.
+     *
+     * @return authentication configuration
+     */
     protected Configuration initializeAuthConfiguration() {
         Configuration configuration = new Configuration(false);
         configuration.addResource("authentication-conf.xml");
@@ -69,6 +86,12 @@ public abstract class AppAuthApplicationListener implements ServletContextListen
         return configuration;
     }
 
+    /**
+     * Initialize {@link ProxyUGICacheManager}
+     *
+     * @param conf configuration
+     * @return instance of {@link ProxyUGICacheManager}
+     */
     protected ProxyUGICacheManager initializeUGICacheManager(Configuration conf) {
         long ugiExpiryTimeInMillis = conf.getLong("ugi.expirytime.in.millis", TimeUnit.MINUTES.toMillis(10));
         long evictionIntervalInMillis = conf.getLong("ugi.evictioninterval.in.millis", TimeUnit.MINUTES.toMillis(5));
@@ -78,6 +101,12 @@ public abstract class AppAuthApplicationListener implements ServletContextListen
         return cacheManager;
     }
 
+    /**
+     * Initialize {@link CookieSignerVerifier}
+     *
+     * @param conf configuration
+     * @return instance of {@link CookieSignerVerifier}
+     */
     protected CookieSignerVerifier initializeCookieSignerVerifier(Configuration conf) {
         try {
             return new CookieSignerVerifier(conf);
@@ -87,6 +116,9 @@ public abstract class AppAuthApplicationListener implements ServletContextListen
         }
     }
 
+    /* (non-Javadoc)
+     * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
+     */
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         servletContext.removeAttribute(START_TIME);

@@ -20,8 +20,20 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 
+/**
+ * Provide utility functions for http errors.
+ *
+ */
 public class HttpExceptionUtil {
 
+    /**
+     * Output error xml
+     *
+     * @param t throwable
+     * @param path url
+     * @param doc the outputter
+     * @throws IOException
+     */
     public static void writeErrorXml(Throwable t, String path, XMLOutputter doc) throws IOException {
         doc.startTag(HttpRemoteException.class.getSimpleName());
         if (path == null)
@@ -48,6 +60,15 @@ public class HttpExceptionUtil {
         doc.endTag();
     }
 
+    /**
+     * Response error in xml
+     *
+     * @param response http servlet response
+     * @param errorCode error code
+     * @param t throwable
+     * @param path the url
+     * @throws IOException thrown if error
+     */
     public static void sendErrorAsXml(HttpServletResponse response, int errorCode, Throwable t, String path)
             throws IOException {
         StringWriter writer = new StringWriter();

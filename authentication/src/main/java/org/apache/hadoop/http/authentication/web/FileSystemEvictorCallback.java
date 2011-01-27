@@ -19,6 +19,10 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The class <code>FileSystemEvictorCallback</code> is to write information down when eviction of ugi happens.
+ *
+ */
 public class FileSystemEvictorCallback implements EvictorCallback {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemEvictorCallback.class);

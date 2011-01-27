@@ -18,8 +18,15 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Map;
 
+/**
+ * NO-OP authenticator
+ *
+ */
 public class NullAuthenticator extends HttpAuthenticator {
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.client.HttpAuthenticator#authenticate(java.util.Map, java.net.HttpURLConnection)
+     */
     @Override
     public void authenticate(Map<String, String> conf, HttpURLConnection connection) throws IOException {
     }

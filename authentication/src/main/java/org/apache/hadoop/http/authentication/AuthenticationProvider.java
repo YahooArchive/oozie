@@ -17,6 +17,10 @@ package org.apache.hadoop.http.authentication;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
+/**
+ * Provider interface for server authentication class.
+ *
+ */
 public interface AuthenticationProvider {
 
     /**
@@ -28,19 +32,19 @@ public interface AuthenticationProvider {
     boolean supports(HttpServletRequest httpServletRequest);
 
     /**
-     * Get auth token
+     * Get authentication token
      *
-     * @param httpServletRequest
-     * @return auth token
-     * @throws IOException
+     * @param httpServletRequest httpServletRequest
+     * @return authentication token
+     * @throws IOException thrown if error to retrieve token from request
      */
     AuthenticationToken getAuthenticationToken(HttpServletRequest httpServletRequest) throws IOException;
 
     /**
      * Verify and authenticate the token
      *
-     * @param authenticationToken
-     * @return auth token
+     * @param authenticationToken authentication token
+     * @return authentication token
      */
     AuthenticationToken authenticate(AuthenticationToken authenticationToken);
 }

@@ -14,15 +14,46 @@
  */
 package org.apache.hadoop.http.authentication;
 
+/**
+ * The interface for a token which contains the information for a authentication provider to use.
+ * <p/>
+ * Abstract class {@link} provides basic implementation for this interface.
+ *
+ */
 public interface AuthenticationToken {
 
+    /**
+     * Get authentication name
+     *
+     * @return authentication name
+     */
     String getAuthenticationMethod();
 
+    /**
+     * True if it is authenticated
+     *
+     * @return true if authenticated
+     */
     boolean isAuthenticated();
 
+    /**
+     * Get Principal
+     *
+     * @return principal
+     */
     String getPrincipal();
 
+    /**
+     * Get remote address
+     *
+     * @return remote address
+     */
     String getRemoteAddr();
 
+    /**
+     * Get token
+     *
+     * @return token
+     */
     String getToken();
 }

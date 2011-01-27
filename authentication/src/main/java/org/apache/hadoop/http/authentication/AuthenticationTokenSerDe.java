@@ -23,6 +23,10 @@ import org.slf4j.LoggerFactory;
 import java.security.GeneralSecurityException;
 import java.util.concurrent.TimeUnit;
 
+/**
+ *  The <code>AuthenticationTokenSerDe</code> is used to serialize and deserialize authentication token.
+ *
+ */
 public class AuthenticationTokenSerDe {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationTokenSerDe.class);
@@ -34,6 +38,13 @@ public class AuthenticationTokenSerDe {
     private AuthenticationTokenSerDe() {
     }
 
+    /**
+     * Serialize a token and encode token by signature <code>CookieSignerVerifier</code>
+     *
+     * @param authenticationToken authentication token
+     * @param cookieSigner signature verifier
+     * @return serialized string
+     */
     public static String serialize(AuthenticationToken authenticationToken, CookieSignerVerifier cookieSigner) {
         StringBuilder buffer = new StringBuilder();
         buffer.append(authenticationToken.getAuthenticationMethod()).append(DELIMITER);
@@ -55,6 +66,14 @@ public class AuthenticationTokenSerDe {
         }
     }
 
+    /**
+     * Deserialize a token and verify signature by <code>CookieSignerVerifier</code>
+     *
+     * @param serializedToken serialized token
+     * @param remoteAddr remote address
+     * @param cookieVerifier signature verifier
+     * @return authentication token
+     */
     public static AuthenticationToken deserialize(String serializedToken, String remoteAddr,
             CookieSignerVerifier cookieVerifier) {
         if (LOGGER.isTraceEnabled()) {

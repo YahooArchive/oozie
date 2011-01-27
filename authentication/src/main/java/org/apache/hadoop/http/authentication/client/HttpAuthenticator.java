@@ -26,6 +26,9 @@ import javax.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An authenticator abstract class to provide interfaces and common implementation for client side authentication.
+ */
 public abstract class HttpAuthenticator {
 
     private static final String HADOOP_HTTP_AUTH = "Hadoop-HTTP-Auth";
@@ -53,7 +56,7 @@ public abstract class HttpAuthenticator {
     /**
      * Read cookie from http response
      *
-     * @param connection
+     * @param connection http connection
      */
     public void setCookieFromResponse(HttpURLConnection connection) {
         Map<String, List<String>> headers = connection.getHeaderFields();
@@ -106,7 +109,7 @@ public abstract class HttpAuthenticator {
     /**
      * Set cookie to http request
      *
-     * @param connection
+     * @param connection http connection
      * @return true if cookie is added to http request
      */
     protected boolean setCookieInRequest(HttpURLConnection connection) {
@@ -131,9 +134,9 @@ public abstract class HttpAuthenticator {
     }
 
     /**
-     * Return boolean
+     * Return boolean value
      *
-     * @param value
+     * @param value string boolean value
      * @return true if String "true" is given
      */
     protected boolean getBooleanValue(String value) {

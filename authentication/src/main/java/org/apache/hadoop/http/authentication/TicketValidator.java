@@ -16,6 +16,17 @@ package org.apache.hadoop.http.authentication;
 
 import org.apache.hadoop.http.authentication.exception.BadCredentialsException;
 
+/**
+ * Interface to implement to validate authentication token <code>AuthenticationToken</code>
+ *
+ */
 public interface TicketValidator {
+    /**
+     * Validate token
+     *
+     * @param token
+     * @return string
+     * @throws BadCredentialsException
+     */
     public String validateTicket(AuthenticationToken token) throws BadCredentialsException;
 }

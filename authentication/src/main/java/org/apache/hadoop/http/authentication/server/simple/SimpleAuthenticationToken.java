@@ -16,6 +16,10 @@ package org.apache.hadoop.http.authentication.server.simple;
 
 import org.apache.hadoop.http.authentication.AbstractAuthenticationToken;
 
+/**
+ * A token contains basic functionality to support simple authentication.
+ *
+ */
 public class SimpleAuthenticationToken extends AbstractAuthenticationToken {
 
     private static final String AUTHENTICATION_METHOD = "simple";
@@ -29,6 +33,9 @@ public class SimpleAuthenticationToken extends AbstractAuthenticationToken {
         super.setAuthenticated(true);
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.AuthenticationToken#getAuthenticationMethod()
+     */
     @Override
     public String getAuthenticationMethod() {
         return AUTHENTICATION_METHOD;

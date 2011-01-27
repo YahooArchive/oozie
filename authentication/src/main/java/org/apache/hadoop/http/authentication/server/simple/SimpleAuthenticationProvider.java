@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
+/**
+ * A simple authentication to verify if http request has "ugi" parameter which contains requester's user name.
+ */
 public class SimpleAuthenticationProvider implements AuthenticationProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleAuthenticationProvider.class);
 
@@ -32,7 +35,9 @@ public class SimpleAuthenticationProvider implements AuthenticationProvider {
     public SimpleAuthenticationProvider(Configuration configuration) {
     }
 
-    /* (non-Javadoc)
+    /**
+     * True if the http request contains parameter 'ugi'.
+     *
      * @see org.apache.hadoop.http.authentication.AuthenticationProvider#supports(javax.servlet.http.HttpServletRequest)
      */
     @Override
@@ -51,7 +56,9 @@ public class SimpleAuthenticationProvider implements AuthenticationProvider {
         return false;
     }
 
-    /* (non-Javadoc)
+    /**
+     * Get 'ugi' from http request and construct a token object.
+     *
      * @see org.apache.hadoop.http.authentication.AuthenticationProvider#getAuthenticationToken(javax.servlet.http.HttpServletRequest)
      */
     @Override
@@ -65,7 +72,9 @@ public class SimpleAuthenticationProvider implements AuthenticationProvider {
         throw new AccessDeniedException("Received UGI in request with no value.");
     }
 
-    /* (non-Javadoc)
+    /**
+     * This method is to authenticate the token. It is no-op in <code>SimpleAuthenticationProvider</code>.
+     *
      * @see org.apache.hadoop.http.authentication.AuthenticationProvider#authenticate(org.apache.hadoop.http.authentication.AuthenticationToken)
      */
     @Override

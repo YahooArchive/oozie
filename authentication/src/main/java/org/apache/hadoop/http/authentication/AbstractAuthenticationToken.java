@@ -14,6 +14,12 @@
  */
 package org.apache.hadoop.http.authentication;
 
+/**
+ * Abstract class contains basic implementation for {@link AuthenticationToken}.
+ * <p/>
+ * To provide user-defined authentication, one token <code>AuthenticationToken</code>
+ * instance has to be provided to carry the information that authentication needs.
+ */
 public abstract class AbstractAuthenticationToken implements AuthenticationToken {
 
     private boolean authenticated = false;
@@ -31,25 +37,42 @@ public abstract class AbstractAuthenticationToken implements AuthenticationToken
         this.token = token;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.AuthenticationToken#isAuthenticated()
+     */
     @Override
     public boolean isAuthenticated() {
         return authenticated;
     }
 
+    /**
+     * Set true if token is authenticated
+     *
+     * @param authenticated
+     */
     public void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.AuthenticationToken#getPrincipal()
+     */
     @Override
     public String getPrincipal() {
         return principal;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.AuthenticationToken#getRemoteAddr()
+     */
     @Override
     public String getRemoteAddr() {
         return remoteAddr;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.hadoop.http.authentication.AuthenticationToken#getToken()
+     */
     public String getToken() {
         return token;
     }

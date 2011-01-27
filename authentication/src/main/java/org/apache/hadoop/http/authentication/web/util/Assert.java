@@ -18,12 +18,24 @@ public class Assert {
     private Assert() {
     }
 
+    /**
+     * Check not null
+     *
+     * @param object object to check
+     * @param message error message
+     */
     public static void notNull(Object object, String message) {
         if (object == null) {
             throw new IllegalArgumentException(message);
         }
     }
 
+    /**
+     * Check if true
+     *
+     * @param condition boolean value
+     * @param message error message
+     */
     public static void isTrue(boolean condition, String message) {
         if (!condition) {
             throw new IllegalArgumentException(message);

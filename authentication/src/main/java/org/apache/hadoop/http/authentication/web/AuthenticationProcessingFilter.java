@@ -39,6 +39,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+/**
+ * The filter <code>AuthenticationProcessingFilter</code> delegate to different authentication mechanisms to authenticate
+ * http requests. When web resources are gated by <code>AuthenticationProcessingFilter</code>, requests first come to
+ * here to do authentication and continue on the rest of filters before reaching the resources.
+ *
+ * These resources needed in <code>AuthenticationProcessingFilter</code> are saved in context as :
+ * <ul>
+ * <li>auth.configuration: the key used to store <code>AuthenticationProviderFactory</code> in a servlet context.</li>
+ * <li>ugi.cache.manager: the key used to store <code>ProxyUGICacheManager</code> in a servlet context.</li>
+ * <li>cookie.signer.verifier: the key used to store <code>CookieSignerVerifier</code> in a servlet context.</li>
+ * </ul>
+ */
 public class AuthenticationProcessingFilter implements javax.servlet.Filter {
 
     public static final String AUTH_CONFIGURATION = "auth.configuration";
@@ -51,6 +63,9 @@ public class AuthenticationProcessingFilter implements javax.servlet.Filter {
     private ProxyUGICacheManager ugiManager;
     private CookieSignerVerifier cookieSignerVerifier;
 
+    /* (non-Javadoc)
+     * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
+     */
     public void init(FilterConfig config) throws ServletException {
         Configuration configuration = (Configuration) config.getServletContext().getAttribute(AUTH_CONFIGURATION);
         providerFactory = new AuthenticationProviderFactory(configuration);
@@ -58,6 +73,9 @@ public class AuthenticationProcessingFilter implements javax.servlet.Filter {
         cookieSignerVerifier = (CookieSignerVerifier) config.getServletContext().getAttribute(COOKIE_SIGNER_VERIFIER);
     }
 
+    /* (non-Javadoc)
+     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+     */
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws ServletException, IOException {
         final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
@@ -90,7 +108,8 @@ public class AuthenticationProcessingFilter implements javax.servlet.Filter {
         catch (UnknownAuthenticationSchemeException ignore) {
             httpServletResponse.addHeader("WWW-Authenticate", "Negotiate");
             if (cookieException == null) {
-                LOGGER.warn("Request did not have any authentication information. Replying with Negotiate header", ignore);
+                LOGGER.warn("Request did not have any authentication information. Replying with Negotiate header",
+                        ignore);
                 HttpExceptionUtil.sendErrorAsXml(httpServletResponse, HttpServletResponse.SC_UNAUTHORIZED,
                         new AccessDeniedException("Authentication is required"), path);
             }
@@ -130,6 +149,13 @@ public class AuthenticationProcessingFilter implements javax.servlet.Filter {
         return null;
     }
 
+    /**
+     * Authenticate the requests for protected resources.
+     *
+     * @param httpServletRequest http servlet request
+     * @return authentication token
+     * @throws IOException thrown if failed to get authentication token
+     */
     private AuthenticationToken authenticate(HttpServletRequest httpServletRequest) throws IOException {
         AuthenticationProvider supportedProvider = providerFactory.getAuthenticationProvider(httpServletRequest);
         AuthenticationToken rawToken = supportedProvider.getAuthenticationToken(httpServletRequest);

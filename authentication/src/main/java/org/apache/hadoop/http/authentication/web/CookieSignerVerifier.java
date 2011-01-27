@@ -38,6 +38,10 @@ import org.apache.hadoop.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class <code>CookieSignerVerifier</code> is to provide public/private security mechanism to verify and sign
+ * cookie.
+ */
 public class CookieSignerVerifier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CookieSignerVerifier.class.getName());
@@ -61,6 +65,15 @@ public class CookieSignerVerifier {
         initializeKeys(publicKeyFile, privateKeyFile, certificateFile);
     }
 
+    /**
+     * Initialize the keys
+     *
+     * @param publicKeyFile public key file
+     * @param privateKeyFile private key file
+     * @param certificateFile certificate file
+     * @throws GeneralSecurityException thrown if error
+     * @throws IOException thrown if error
+     */
     private void initializeKeys(String publicKeyFile, String privateKeyFile, String certificateFile)
             throws GeneralSecurityException, IOException {
 
@@ -86,6 +99,13 @@ public class CookieSignerVerifier {
         }
     }
 
+    /**
+     * Get cookie signature
+     *
+     * @param data data to be signed
+     * @return signed data
+     * @throws GeneralSecurityException
+     */
     public String getSignature(String data) throws GeneralSecurityException {
         Signature signer = Signature.getInstance(signatureAlgorithm);
         signer.initSign(privateKey);
@@ -94,6 +114,14 @@ public class CookieSignerVerifier {
         return Base64.encodeBase64URLSafeString(signature);
     }
 
+    /**
+     * Verify cookie signature
+     *
+     * @param data signed data
+     * @param signature signature
+     * @return true if verified successfully
+     * @throws GeneralSecurityException
+     */
     public boolean verifySignature(String data, String signature) throws GeneralSecurityException {
         Signature verifier = Signature.getInstance(signatureAlgorithm);
         verifier.initVerify(publicKey);

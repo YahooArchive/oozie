@@ -25,6 +25,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is instantiated by {@link AuthenticationProcessingFilter} to statically store all providers in a map.
+ * <p/>
+ * The parameter "authentication.providers" is used to specify a list of providers server can support. Filter
+ * {@link AuthenticationProcessingFilter} use this factory to get appropriate provider to authenticate request.
+ *
+ */
 public class AuthenticationProviderFactory {
 
     private List<AuthenticationProvider> authenticationProviderList = new ArrayList<AuthenticationProvider>();
@@ -33,6 +40,13 @@ public class AuthenticationProviderFactory {
         initializeAuthenticationProviders(configuration);
     }
 
+    /**
+     * Initialize a list of providers specified in configuration "authentication.providers".
+     * <p/>
+     * A list of providers is stored in a map for further use.
+     *
+     * @param configuration configuration contains parameters to instantiate providers
+     */
     private void initializeAuthenticationProviders(final Configuration configuration) {
         String authProviderConf = configuration.get("authentication.providers");
         Assert.notNull(authProviderConf,
@@ -74,6 +88,12 @@ public class AuthenticationProviderFactory {
         }
     }
 
+    /**
+     * Get authentication provider if supports() return true
+     *
+     * @param httpServletRequest httpServletRequest
+     * @return authentication provider if supports() return true
+     */
     public AuthenticationProvider getAuthenticationProvider(HttpServletRequest httpServletRequest) {
         AuthenticationProvider supportedProvider = null;
 

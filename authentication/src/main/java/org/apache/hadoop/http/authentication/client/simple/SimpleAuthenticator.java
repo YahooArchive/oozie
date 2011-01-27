@@ -20,10 +20,15 @@ import java.util.Map;
 
 import org.apache.hadoop.http.authentication.client.HttpAuthenticator;
 
+/**
+ * Authenticator class for simple authentication.
+ */
 public class SimpleAuthenticator extends HttpAuthenticator {
     public static final String REQUEST_PARAMETER_NAME = "ugi";
 
-    /* (non-Javadoc)
+    /**
+     * Get property "ugi" from http connection. This is simple authentication for default use.
+     *
      * @see org.apache.hadoop.http.authentication.client.HttpAuthenticator#authenticate(java.util.Map, java.net.HttpURLConnection)
      */
     @Override
