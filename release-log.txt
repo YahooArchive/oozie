@@ -1,3 +1,7 @@
+-- Oozie 2.2.5 release
+
+GH-0141 Oozie uses excessive memory when doing purging
+
 -- Oozie 2.2.3 release
 
 GH-0055 Oozie should not materialize a coordinator job right after its submission if the job will only run in far future
