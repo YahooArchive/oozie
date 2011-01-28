@@ -41,8 +41,8 @@ public class JsonWorkflowAction implements WorkflowAction, JsonBean {
     private String name = null;
 
     @Basic
-    @Column(name = "auth")
-    private String auth = null;
+    @Column(name = "cred")
+    private String cred = null;
     
     @Basic
     @Column(name = "type")
@@ -104,7 +104,7 @@ public class JsonWorkflowAction implements WorkflowAction, JsonBean {
     public JsonWorkflowAction(JSONObject jsonObject) {
         id = (String) jsonObject.get(JsonTags.WORKFLOW_ACTION_ID);
         name = (String) jsonObject.get(JsonTags.WORKFLOW_ACTION_NAME);
-        auth = (String) jsonObject.get(JsonTags.WORKFLOW_ACTION_AUTH);
+        cred = (String) jsonObject.get(JsonTags.WORKFLOW_ACTION_AUTH);
         type = (String) jsonObject.get(JsonTags.WORKFLOW_ACTION_TYPE);
         conf = (String) jsonObject.get(JsonTags.WORKFLOW_ACTION_CONF);
         status = Status.valueOf((String) jsonObject.get(JsonTags.WORKFLOW_ACTION_STATUS));
@@ -126,7 +126,7 @@ public class JsonWorkflowAction implements WorkflowAction, JsonBean {
         JSONObject json = new JSONObject();
         json.put(JsonTags.WORKFLOW_ACTION_ID, id);
         json.put(JsonTags.WORKFLOW_ACTION_NAME, name);
-        json.put(JsonTags.WORKFLOW_ACTION_AUTH, auth);
+        json.put(JsonTags.WORKFLOW_ACTION_AUTH, cred);
         json.put(JsonTags.WORKFLOW_ACTION_TYPE, type);
         json.put(JsonTags.WORKFLOW_ACTION_CONF, conf);
         json.put(JsonTags.WORKFLOW_ACTION_START_TIME, JsonUtils.formatDateRfc822(startTime));
@@ -161,12 +161,12 @@ public class JsonWorkflowAction implements WorkflowAction, JsonBean {
         this.name = name;
     }
     
-    public String getAuth() {
-        return auth;
+    public String getCred() {
+        return cred;
     }
 
-    public void setAuth(String auth) {
-        this.auth = auth;
+    public void setCred(String cred) {
+        this.cred = cred;
     }
 
     public String getType() {

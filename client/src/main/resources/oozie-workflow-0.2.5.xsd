@@ -26,7 +26,7 @@
 
     <xs:complexType name="WORKFLOW-APP">
         <xs:sequence>
-        	<xs:element name="authentications" type="workflow:AUTHENTICATIONS" minOccurs="0" maxOccurs="1"/>
+        	<xs:element name="credentials" type="workflow:CREDENTIALS" minOccurs="0" maxOccurs="1"/>
             <xs:element name="start" type="workflow:START" minOccurs="1" maxOccurs="1"/>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element name="decision" type="workflow:DECISION" minOccurs="1" maxOccurs="1"/>
@@ -129,7 +129,7 @@
             <xs:any namespace="uri:oozie:sla:0.1" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="name" type="workflow:IDENTIFIER" use="required"/>
-        <xs:attribute name="auth" type="xs:string"/>
+        <xs:attribute name="cred" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="MAP-REDUCE">
@@ -259,13 +259,13 @@
         <xs:attribute name="dir-files" type="xs:string"/>
     </xs:complexType>
     
-    <xs:complexType name="AUTHENTICATIONS">             
+    <xs:complexType name="CREDENTIALS">             
         <xs:sequence minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="authentication" type="workflow:AUTHENTICATION"/>
+            <xs:element name="credential" type="workflow:CREDENTIAL"/>
 		</xs:sequence>                
     </xs:complexType>
     
-   	<xs:complexType name="AUTHENTICATION">
+   	<xs:complexType name="CREDENTIAL">
         <xs:sequence  minOccurs="0" maxOccurs="unbounded" >
                    <xs:element name="property" minOccurs="1" maxOccurs="unbounded">
                 	<xs:complexType>

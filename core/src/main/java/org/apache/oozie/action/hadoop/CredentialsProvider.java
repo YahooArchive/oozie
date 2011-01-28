@@ -36,7 +36,7 @@ public class CredentialsProvider {
 
     /**
      * Create Credentials object
-     *
+     * 
      * @return Credentials object
      * @throws Exception
      */
@@ -53,18 +53,20 @@ public class CredentialsProvider {
                 if (str.length > 0) {
                     type = str[0];
                     classname = str[1];
-                    LOG.debug("Creating Credentials type : '" + type + "', class Name : '" + classname + "'");
-                    if (this.type.equalsIgnoreCase(str[0])) {
-                        Class<?> klass = null;
-                        try {
-                            klass = Thread.currentThread().getContextClassLoader().loadClass(classname);
-                        }
-                        catch (ClassNotFoundException ex) {
-                            LOG.warn("Exception while loading the class", ex);
-                            throw ex;
-                        }
+                    if (classname != null) {
+                        LOG.debug("Creating Credentials type : '" + type + "', class Name : '" + classname + "'");
+                        if (this.type.equalsIgnoreCase(str[0])) {
+                            Class<?> klass = null;
+                            try {
+                                klass = Thread.currentThread().getContextClassLoader().loadClass(classname);
+                            }
+                            catch (ClassNotFoundException ex) {
+                                LOG.warn("Exception while loading the class", ex);
+                                throw ex;
+                            }
 
-                        auth = (Credentials) ReflectionUtils.newInstance(klass, null);
+                            auth = (Credentials) ReflectionUtils.newInstance(klass, null);
+                        }
                     }
                 }
             }
@@ -74,7 +76,7 @@ public class CredentialsProvider {
 
     /**
      * To trim string
-     *
+     * 
      * @param str
      * @return trim string
      */

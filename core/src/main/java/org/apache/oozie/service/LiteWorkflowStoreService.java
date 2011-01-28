@@ -79,8 +79,8 @@ public abstract class LiteWorkflowStoreService extends WorkflowStoreService {
             action.setStatus(WorkflowAction.Status.PREP);
             action.setJobId(jobId);
         }
-        action.setAuth(context.getNodeDef().getAuth());
-        log.debug("liteExecute: Setting the Auth type for action "+context.getNodeDef().getAuth() + " Name: "+context.getNodeDef().getName());
+        action.setCred(context.getNodeDef().getCred());
+        log.debug("liteExecute: Setting the Auth type for action "+context.getNodeDef().getCred() + " Name: "+context.getNodeDef().getName());
         action.setName(nodeName);
         action.setId(actionId);
         context.setVar(nodeName + WorkflowInstance.NODE_VAR_SEPARATOR + ACTION_ID, actionId);

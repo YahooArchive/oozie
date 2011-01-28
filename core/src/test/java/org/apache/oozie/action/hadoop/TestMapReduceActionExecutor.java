@@ -181,7 +181,7 @@ public class TestMapReduceActionExecutor extends ActionExecutorTestCase {
         action.setName(name);
         action.setType(ae.getType());
         action.setConf(actionXml);
-        action.setAuth("testcred");
+        action.setCred("testcred");
 
         return new Context(wf, action);
     }

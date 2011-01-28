@@ -780,6 +780,7 @@ public class WorkflowStore extends Store {
                 Query q = entityManager.createNamedQuery("GET_COMPLETED_WORKFLOWS_OLDER_THAN");
                 q.setParameter("endTime", maxEndTime);
                 List<WorkflowJobBean> workflows = q.getResultList();
+
                 if (workflows.size() != 0) {
                     for (WorkflowJobBean w : workflows) {
                         String wfId = w.getId();
@@ -789,7 +790,6 @@ public class WorkflowStore extends Store {
                         int deleted_action = g.executeUpdate();
                     }
                 }
-
                 return null;
             }
         });
@@ -920,7 +920,7 @@ public class WorkflowStore extends Store {
             action.setExternalId(a.getExternalId());
             action.setExternalStatus(a.getExternalStatus());
             action.setName(a.getName());
-            action.setAuth(a.getAuth());
+            action.setCred(a.getCred());
             action.setRetries(a.getRetries());
             action.setTrackerUri(a.getTrackerUri());
             action.setTransition(a.getTransition());
@@ -972,7 +972,7 @@ public class WorkflowStore extends Store {
         q.setParameter("externalId", aBean.getExternalId());
         q.setParameter("externalStatus", aBean.getExternalStatus());
         q.setParameter("name", aBean.getName());
-        q.setParameter("auth", aBean.getAuth());
+        q.setParameter("cred", aBean.getCred());
         q.setParameter("retries", aBean.getRetries());
         q.setParameter("trackerUri", aBean.getTrackerUri());
         q.setParameter("transition", aBean.getTransition());
