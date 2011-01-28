@@ -36,7 +36,7 @@ public class CredentialsProvider {
 
     /**
      * Create Credentials object
-     * 
+     *
      * @return Credentials object
      * @throws Exception
      */
@@ -76,7 +76,7 @@ public class CredentialsProvider {
 
     /**
      * To trim string
-     * 
+     *
      * @param str
      * @return trim string
      */
