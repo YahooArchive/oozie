@@ -15,10 +15,16 @@
 package org.apache.oozie.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,20 +39,26 @@ import org.apache.oozie.util.XCallable;
 import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.PriorityDelayQueue.QueueElement;
 
-
 /**
- * The callable queue service queues {@link XCallable}s for asynchronous execution. <p/> Callables can be queued for
- * immediate execution or for delayed execution (some time in the future). <p/> Callables are consumed from the queue
- * for execution based on their priority. <p/> When the queues (for immediate execution and for delayed execution) are
- * full, teh callable queue service stops queuing callables. <p/> A threadpool is used to execute the callables
- * asynchronously. <p/> The following configuration parameters control the callable queue service: <p/> {@link
- * #CONF_QUEUE_SIZE} size of the immmediate execution queue. Defaulf value is 1000. <p/> {@link
- * #CONF_DELAYED_QUEUE_SIZE} size of the delayed execution queue. Defaulf value is 1000. <p/> {@link #CONF_THREADS}
- * number of threads in the threadpool used for asynchronous command execution. When this number of threads is reached,
- * commands remain the queue until threads become available.
- *
- * Sets up a priority queue for the execution of Commands via a ThreadPool. Sets up a Delyaed Queue to handle actions
- * which will be ready for execution sometime in the future.
+ * The callable queue service queues {@link XCallable}s for asynchronous execution.
+ * <p/>
+ * Callables can be queued for immediate execution or for delayed execution (some time in the future).
+ * <p/>
+ * Callables are consumed from the queue for execution based on their priority.
+ * <p/>
+ * When the queues (for immediate execution and for delayed execution) are full, the callable queue service stops
+ * queuing callables.
+ * <p/>
+ * A thread-pool is used to execute the callables asynchronously.
+ * <p/>
+ * The following configuration parameters control the callable queue service:
+ * <p/>
+ * {@link #CONF_QUEUE_SIZE} size of the immediate execution queue. Defaulf value is 10000.
+ * <p/>
+ * {@link #CONF_THREADS} number of threads in the thread-pool used for asynchronous command execution. When this number
+ * of threads is reached, commands remain the queue until threads become available. Sets up a priority queue for the
+ * execution of Commands via a ThreadPool. Sets up a Delayed Queue to handle actions which will be ready for execution
+ * sometime in the future.
  */
 public class CallableQueueService implements Service, Instrumentable {
     private static final String INSTRUMENTATION_GROUP = "callablequeue";
@@ -67,10 +79,13 @@ public class CallableQueueService implements Service, Instrumentable {
 
     public static final int SAFE_MODE_DELAY = 60000;
 
-    final private Map<String, AtomicInteger> activeCallables = new HashMap<String, AtomicInteger>();
+    private final Map<String, AtomicInteger> activeCallables = new HashMap<String, AtomicInteger>();
+
+    private final Map<String, Date> uniqueCallables = new ConcurrentHashMap<String, Date>();
+
     private int maxCallableConcurrency;
 
-    private boolean callableBegin(XCallable callable) {
+    private boolean callableBegin(XCallable<?> callable) {
         synchronized (activeCallables) {
             AtomicInteger counter = activeCallables.get(callable.getType());
             if (counter == null) {
@@ -85,7 +100,7 @@ public class CallableQueueService implements Service, Instrumentable {
         }
     }
 
-    private void callableEnd(XCallable callable) {
+    private void callableEnd(XCallable<?> callable) {
         synchronized (activeCallables) {
             AtomicInteger counter = activeCallables.get(callable.getType());
             if (counter == null) {
@@ -109,10 +124,11 @@ public class CallableQueueService implements Service, Instrumentable {
         }
 
         public void run() {
-            if(Services.get().getSystemMode() == SYSTEM_MODE.SAFEMODE) {
-                log.info("Oozie is in SAFEMODE, requeuing callable [{0}] with [{1}]ms delay",
-                         getElement().getType(), SAFE_MODE_DELAY);
+            if (Services.get().getSystemMode() == SYSTEM_MODE.SAFEMODE) {
+                log.info("Oozie is in SAFEMODE, requeuing callable [{0}] with [{1}]ms delay", getElement().getType(),
+                        SAFE_MODE_DELAY);
                 setDelay(SAFE_MODE_DELAY, TimeUnit.MILLISECONDS);
+                removeFromUniqueCallables();
                 queue(this, true);
                 return;
             }
@@ -124,6 +140,8 @@ public class CallableQueueService implements Service, Instrumentable {
                     XLog.Info.get().clear();
                     XLog log = XLog.getLog(getClass());
                     log.trace("executing callable [{0}]", callable.getName());
+
+                    removeFromUniqueCallables();
                     try {
                         callable.call();
                         incrCounter(INSTR_EXECUTED_COUNTER, 1);
@@ -138,9 +156,10 @@ public class CallableQueueService implements Service, Instrumentable {
                     }
                 }
                 else {
-                    log.warn("max concurrency for callable [{0}] exceeded, requeueing with [{1}]ms delay",
-                             callable.getType(), CONCURRENCY_DELAY);
+                    log.warn("max concurrency for callable [{0}] exceeded, requeueing with [{1}]ms delay", callable
+                            .getType(), CONCURRENCY_DELAY);
                     setDelay(CONCURRENCY_DELAY, TimeUnit.MILLISECONDS);
+                    removeFromUniqueCallables();
                     queue(this, true);
                     incrCounter(callable.getType() + "#exceeded.concurrency", 1);
                 }
@@ -156,6 +175,51 @@ public class CallableQueueService implements Service, Instrumentable {
         @Override
         public String toString() {
             return "delay=" + getDelay(TimeUnit.MILLISECONDS) + ", elements=" + getElement().toString();
+        }
+
+        /**
+         * Filter the duplicate callables from the list before queue this.
+         * <p/>
+         * If it is single callable, checking if key is in unique map or not.
+         * <p/>
+         * If it is composite callable, remove duplicates callables from the composite.
+         *
+         * @return true if this callable should be queued
+         */
+        public boolean filterDuplicates() {
+            XCallable<Void> callable = getElement();
+            if (callable instanceof CompositeCallable<?>) {
+                return ((CompositeCallable<?>) callable).removeDuplicates();
+            }
+            else {
+                return uniqueCallables.containsKey(callable.getKey()) == false;
+            }
+        }
+
+        /**
+         * Add the keys to the set
+         */
+        public void addToUniqueCallables() {
+            XCallable<Void> callable = getElement();
+            if (callable instanceof CompositeCallable<?>) {
+                ((CompositeCallable<?>) callable).addToUniqueCallables();
+            }
+            else {
+                ((ConcurrentHashMap<String, Date>)uniqueCallables).putIfAbsent(callable.getKey(), new Date());
+            }
+        }
+
+        /**
+         * Remove the keys from the set
+         */
+        public void removeFromUniqueCallables() {
+            XCallable<Void> callable = getElement();
+            if (callable instanceof CompositeCallable<?>) {
+                ((CompositeCallable<?>) callable).removeFromUniqueCallables();
+            }
+            else {
+                uniqueCallables.remove(callable.getKey());
+            }
         }
 
     }
@@ -190,6 +254,11 @@ public class CallableQueueService implements Service, Instrumentable {
         @Override
         public String getType() {
             return "#composite#" + callables.get(0).getType();
+        }
+
+        @Override
+        public String getKey() {
+            return "#composite#" + callables.get(0).getKey();
         }
 
         @Override
@@ -237,13 +306,56 @@ public class CallableQueueService implements Service, Instrumentable {
                 XCallable<T> callable = callables.get(i);
                 sb.append("(");
                 sb.append(callable.toString());
-                if (i+1 == size) {
+                if (i + 1 == size) {
                     sb.append(")");
-                } else {
+                }
+                else {
                     sb.append("),");
                 }
             }
             return sb.toString();
+        }
+
+        /**
+         * Remove the duplicate callables from the list before queue them
+         *
+         * @return true if callables should be queued
+         */
+        public boolean removeDuplicates() {
+            Set<String> set = new HashSet<String>();
+            List<XCallable<T>> filteredCallables = new ArrayList<XCallable<T>>();
+            if (callables.size() == 0) {
+                return false;
+            }
+            for (XCallable<T> callable : callables) {
+                if (!uniqueCallables.containsKey(callable.getKey()) && !set.contains(callable.getKey())) {
+                    filteredCallables.add(callable);
+                    set.add(callable.getKey());
+                }
+            }
+            callables = filteredCallables;
+            if (callables.size() == 0) {
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Add the keys to the set
+         */
+        public void addToUniqueCallables() {
+            for (XCallable<T> callable : callables) {
+                ((ConcurrentHashMap<String, Date>)uniqueCallables).putIfAbsent(callable.getKey(), new Date());
+            }
+        }
+
+        /**
+         * Remove the keys from the set
+         */
+        public void removeFromUniqueCallables() {
+            for (XCallable<T> callable : callables) {
+                uniqueCallables.remove(callable.getKey());
+            }
         }
 
     }
@@ -358,13 +470,22 @@ public class CallableQueueService implements Service, Instrumentable {
         return queue.size();
     }
 
-    private boolean queue(CallableWrapper wrapper, boolean ignoreQueueSize) {
+    private synchronized boolean queue(CallableWrapper wrapper, boolean ignoreQueueSize) {
         if (!ignoreQueueSize && queue.size() >= queueSize) {
             log.warn("queue if full, ignoring queuing for [{0}]", wrapper.getElement());
             return false;
         }
         if (!executor.isShutdown()) {
-            executor.execute(wrapper);
+            if (wrapper.filterDuplicates()) {
+                wrapper.addToUniqueCallables();
+                try {
+                    executor.execute(wrapper);
+                }
+                catch (RejectedExecutionException ree) {
+                    wrapper.removeFromUniqueCallables();
+                    throw ree;
+                }
+            }
         }
         else {
             log.warn("Executor shutting down, ignoring queueing of [{0}]", wrapper.getElement());
@@ -384,9 +505,11 @@ public class CallableQueueService implements Service, Instrumentable {
     }
 
     /**
-     * Queue a list of callables for serial execution. <p/> Useful to serialize callables that may compete with each
-     * other for resources. <p/> All callables will be processed with the priority of the highest priority of all
-     * callables.
+     * Queue a list of callables for serial execution.
+     * <p/>
+     * Useful to serialize callables that may compete with each other for resources.
+     * <p/>
+     * All callables will be processed with the priority of the highest priority of all callables.
      *
      * @param callables callables to be executed by the composite callable.
      * @return <code>true</code> if the callables were queued, <code>false</code> if the queue is full and the callables
@@ -410,8 +533,8 @@ public class CallableQueueService implements Service, Instrumentable {
             return true;
         }
         boolean queued = false;
-        if(Services.get().getSystemMode() == SYSTEM_MODE.SAFEMODE) {
-            log.warn("[queue] System is in SAFEMODE. Hence no callable is queued. current queue size "+ queue.size());
+        if (Services.get().getSystemMode() == SYSTEM_MODE.SAFEMODE) {
+            log.warn("[queue] System is in SAFEMODE. Hence no callable is queued. current queue size " + queue.size());
         }
         else {
             queued = queue(new CallableWrapper(callable, delay), false);
@@ -426,9 +549,11 @@ public class CallableQueueService implements Service, Instrumentable {
     }
 
     /**
-     * Queue a list of callables for serial execution sometime in the future. <p/> Useful to serialize callables that
-     * may compete with each other for resources. <p/> All callables will be processed with the priority of the highest
-     * priority of all callables.
+     * Queue a list of callables for serial execution sometime in the future.
+     * <p/>
+     * Useful to serialize callables that may compete with each other for resources.
+     * <p/>
+     * All callables will be processed with the priority of the highest priority of all callables.
      *
      * @param callables callables to be executed by the composite callable.
      * @param delay time, in milliseconds, that the callable should be delayed.
@@ -466,11 +591,12 @@ public class CallableQueueService implements Service, Instrumentable {
                 return (long) queue.size();
             }
         });
-        instr.addSampler(INSTRUMENTATION_GROUP, INSTR_THREADS_ACTIVE_SAMPLER, 60, 1, new Instrumentation.Variable<Long>() {
-            public Long getValue() {
-                return (long) executor.getActiveCount();
-            }
-        });
+        instr.addSampler(INSTRUMENTATION_GROUP, INSTR_THREADS_ACTIVE_SAMPLER, 60, 1,
+                new Instrumentation.Variable<Long>() {
+                    public Long getValue() {
+                        return (long) executor.getActiveCount();
+                    }
+                });
     }
 
     /**
@@ -480,11 +606,24 @@ public class CallableQueueService implements Service, Instrumentable {
      */
     public List<String> getQueueDump() {
         List<String> list = new ArrayList<String>();
-        for (QueueElement<CallableWrapper> qe: queue) {
-            if (qe.toString() == null){
+        for (QueueElement<CallableWrapper> qe : queue) {
+            if (qe.toString() == null) {
                 continue;
             }
             list.add(qe.toString());
+        }
+        return list;
+    }
+
+    /**
+     * Get the list of strings of uniqueness map dump
+     *
+     * @return the list of string that representing the key of each command in the queue
+     */
+    public List<String> getUniqueDump() {
+        List<String> list = new ArrayList<String>();
+        for (Entry<String, Date> entry : uniqueCallables.entrySet()) {
+            list.add(entry.toString());
         }
         return list;
     }
