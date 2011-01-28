@@ -52,11 +52,11 @@ public interface WorkflowAction {
     String getName();
 
     /**
-     * Return the action name.
+     * Return the Credential.
      *
-     * @return the action name.
+     * @return the Credential.
      */
-    String getAuth();
+    String getCred();
     
     /**
      * Return the action type.

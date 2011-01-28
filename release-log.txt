@@ -1,6 +1,7 @@
 -- Oozie 2.2.5 release
 
 GH-0332 Adding Credentials Module
+GH-0141 Oozie uses excessive memory when doing purging
 
 -- Oozie 2.2.3 release
 

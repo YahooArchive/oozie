@@ -53,7 +53,7 @@ public class LiteWorkflowAppParser {
     private static final Object KILL_E = "kill";
 
     private static final String SLA_INFO = "info";
-    private static final String AUTHENTICATIONS = "authentications";
+    private static final String CREDENTIALS = "credentials";
     
     private static final String NAME_A = "name";
     private static final String AUTH_A = "auth";
@@ -188,7 +188,7 @@ public class LiteWorkflowAppParser {
                                                     transitions[1] = elem.getAttributeValue(TO_A);
                                                 }
                                                 else {
-                                                    if (SLA_INFO.equals(elem.getName()) || AUTHENTICATIONS.equals(elem.getName())) {
+                                                    if (SLA_INFO.equals(elem.getName()) || CREDENTIALS.equals(elem.getName())) {
                                                         continue;
                                                     }
                                                     else {
@@ -202,7 +202,7 @@ public class LiteWorkflowAppParser {
                                                                       transitions[0], transitions[1],eNode.getAttributeValue(AUTH_A)));
                                     }
                                     else {
-                                        if (SLA_INFO.equals(eNode.getName()) || AUTHENTICATIONS.equals(eNode.getName())) {
+                                        if (SLA_INFO.equals(eNode.getName()) || CREDENTIALS.equals(eNode.getName())) {
                                             // No operation is required
                                         }
                                         else {

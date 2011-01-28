@@ -35,7 +35,7 @@ public class TestSchemaService extends XTestCase {
     private static final String APP_V2 = "<workflow-app xmlns='uri:oozie:workflow:0.2' name='app'>" + "<start to='end'/>"
             + "<end name='end'/>" + "</workflow-app>";
 
-    private static final String APP_V25 = "<workflow-app xmlns='uri:oozie:workflow:0.2.5' name='app'>" + "<authentications></authentications>"+"<start to='end'/>"
+    private static final String APP_V25 = "<workflow-app xmlns='uri:oozie:workflow:0.2.5' name='app'>" + "<credentials></credentials>"+"<start to='end'/>"
     + "<end name='end'/>" + "</workflow-app>";
     
     private static final String WF_SLA_APP = "<workflow-app xmlns='uri:oozie:workflow:0.2' name='app'  xmlns:sla='uri:oozie:sla:0.1'>"

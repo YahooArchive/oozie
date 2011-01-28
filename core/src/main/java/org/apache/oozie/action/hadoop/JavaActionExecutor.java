@@ -634,7 +634,7 @@ public class JavaActionExecutor extends ActionExecutor {
             WorkflowAction action) throws Exception {
         HashMap<String, CredentialsProperties> props = new HashMap<String, CredentialsProperties>();
         if (context != null && action != null) {
-            String credsInAction = action.getAuth();
+            String credsInAction = action.getCred();
             log.debug("Auth credentials '" + credsInAction + "' for action name : " + action.getName());
             String[] credNames = credsInAction.split(",");
             for (String credName : credNames) {
@@ -654,9 +654,9 @@ public class JavaActionExecutor extends ActionExecutor {
         CredentialsProperties credProp = null;
         String workflowXml = ((WorkflowJobBean) context.getWorkflow()).getWorkflowInstance().getApp().getDefinition();
         Element elementJob = XmlUtils.parseXml(workflowXml);
-        Element authentications = elementJob.getChild("authentications", elementJob.getNamespace());
+        Element authentications = elementJob.getChild("credentials", elementJob.getNamespace());
         if (authentications != null) {
-            for (Element authentication : (List<Element>) authentications.getChildren("authentication", authentications
+            for (Element authentication : (List<Element>) authentications.getChildren("credential", authentications
                     .getNamespace())) {
                 String name = authentication.getAttributeValue("name");
                 String type = authentication.getAttributeValue("type");
