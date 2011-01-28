@@ -931,7 +931,7 @@ public class OozieCLI {
                     System.out.println("System mode: " + status);
             }
             else if (options.contains(QUEUE_DUMP_OPTION)) {
-                System.out.println("[Server Queue Dump]:");
+
                 List<String> list = wc.getQueueDump();
                 if (list != null && list.size() != 0) {
                     for (String str: list) {
@@ -941,22 +941,6 @@ public class OozieCLI {
                 else {
                     System.out.println("QueueDump is null!");
                 }
-            }
-            else if (options.contains(UNIQUE_DUMP_OPTION)) {
-                System.out.println("[Server Uniqueness Map Dump]:");
-                List<String> list = wc.getUniqueDump();
-                if (list != null && list.size() != 0) {
-                    for (String str: list) {
-                        System.out.println(str);
-                    }
-                }
-                else {
-                    System.out.println("Uniqueness Map dump is null!");
-                }
-            }
-            else if (options.contains(UNIQUE_FLUSH_OPTION)) {
-                String result = wc.flushUniqueDump();
-                System.out.println(result);
             }
         }
         catch (OozieClientException ex) {

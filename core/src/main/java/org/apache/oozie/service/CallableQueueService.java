@@ -178,14 +178,18 @@ public class CallableQueueService implements Service, Instrumentable {
         }
 
         /**
-         * Filter the duplicate callable from the list before queue this
+         * Filter the duplicate callables from the list before queue this.
+         * <p/>
+         * If it is single callable, checking if key is in unique map or not.
+         * <p/>
+         * If it is composite callable, remove duplicates callables from the composite.
          *
-         * @return if this callable should be queued
+         * @return true if this callable should be queued
          */
         public boolean filterDuplicates() {
             XCallable<Void> callable = getElement();
             if (callable instanceof CompositeCallable<?>) {
-                return ((CompositeCallable<?>) callable).filterDuplicates();
+                return ((CompositeCallable<?>) callable).removeDuplicates();
             }
             else {
                 return uniqueCallables.containsKey(callable.getKey()) == false;
@@ -201,7 +205,7 @@ public class CallableQueueService implements Service, Instrumentable {
                 ((CompositeCallable<?>) callable).addToUniqueCallables();
             }
             else {
-                uniqueCallables.put(callable.getKey(), new Date());
+                ((ConcurrentHashMap<String, Date>)uniqueCallables).putIfAbsent(callable.getKey(), new Date());
             }
         }
 
@@ -313,11 +317,11 @@ public class CallableQueueService implements Service, Instrumentable {
         }
 
         /**
-         * Filter the duplicate callable from the list before queue this
+         * Remove the duplicate callables from the list before queue them
          *
-         * @return if this callable should be queued
+         * @return true if callables should be queued
          */
-        public boolean filterDuplicates() {
+        public boolean removeDuplicates() {
             Set<String> set = new HashSet<String>();
             List<XCallable<T>> filteredCallables = new ArrayList<XCallable<T>>();
             if (callables.size() == 0) {
@@ -341,7 +345,7 @@ public class CallableQueueService implements Service, Instrumentable {
          */
         public void addToUniqueCallables() {
             for (XCallable<T> callable : callables) {
-                uniqueCallables.put(callable.getKey(), new Date());
+                ((ConcurrentHashMap<String, Date>)uniqueCallables).putIfAbsent(callable.getKey(), new Date());
             }
         }
 
@@ -622,13 +626,6 @@ public class CallableQueueService implements Service, Instrumentable {
             list.add(entry.toString());
         }
         return list;
-    }
-
-    /**
-     * Flush uniqueness map
-     */
-    public void flushUniqueMap() {
-        uniqueCallables.clear();
     }
 
 }

@@ -114,26 +114,11 @@ public abstract class BaseAdminServlet extends JsonRestServlet {
             getQueueDump(json);
             sendJsonResponse(response, HttpServletResponse.SC_OK, json);
         }
-        else if (resource.equals(RestConstants.ADMIN_UNIQUE_DUMP_RESOURCE)) {
-            JSONObject json = new JSONObject();
-            getUniqueDump(json);
-            sendJsonResponse(response, HttpServletResponse.SC_OK, json);
-        }
     }
 
-    /**
-     * Flush uniqueness map
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
-        String resource = getResourceName(request);
-
-        if (resource.equals(RestConstants.ADMIN_UNIQUE_FLUSH_RESOURCE)) {
-            JSONObject json = new JSONObject();
-            flushUniqueMap();
-            sendJsonResponse(response, HttpServletResponse.SC_OK, json);
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -188,9 +173,5 @@ public abstract class BaseAdminServlet extends JsonRestServlet {
             throws XServletException;
 
     protected abstract void getQueueDump(JSONObject json) throws XServletException;
-
-    protected abstract void getUniqueDump(JSONObject json) throws XServletException;
-
-    protected abstract void flushUniqueMap() throws XServletException;
 
 }

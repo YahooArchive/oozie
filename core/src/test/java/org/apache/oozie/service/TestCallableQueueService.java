@@ -342,7 +342,7 @@ public class TestCallableQueueService extends XTestCase {
 
         waitFor(200, new Predicate() {
             public boolean evaluate() throws Exception {
-                return callable1.executed != 0 || callable2.executed != 0 || callable3.executed != 0;
+                return callable1.executed != 0 && callable2.executed == 0 && callable3.executed == 0;
             }
         });
 
@@ -372,7 +372,7 @@ public class TestCallableQueueService extends XTestCase {
 
         waitFor(200, new Predicate() {
             public boolean evaluate() throws Exception {
-                return callable1.executed != 0 || callable2.executed != 0 || callable3.executed != 0;
+                return callable1.executed != 0 && callable2.executed == 0 && callable3.executed == 0;
             }
         });
 
@@ -397,7 +397,7 @@ public class TestCallableQueueService extends XTestCase {
 
         waitFor(200, new Predicate() {
             public boolean evaluate() throws Exception {
-                return callable1.executed != 0 || callable2.executed != 0 || callable3.executed != 0;
+                return callable1.executed != 0 && callable2.executed == 0 && callable3.executed == 0;
             }
         });
 

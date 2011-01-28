@@ -106,10 +106,6 @@ public interface RestConstants {
 
     public static final String ADMIN_QUEUE_DUMP_RESOURCE = "queue-dump";
 
-    public static final String ADMIN_UNIQUE_DUMP_RESOURCE = "unique-dump";
-
-    public static final String ADMIN_UNIQUE_FLUSH_RESOURCE = "unique-flush";
-
     public static final String OOZIE_ERROR_CODE = "oozie-error-code";
 
     public static final String OOZIE_ERROR_MESSAGE = "oozie-error-message";

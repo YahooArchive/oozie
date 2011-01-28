@@ -39,30 +39,36 @@ public class CoordActionNotification extends CoordinatorCommand<Void> {
     private final XLog log = XLog.getLog(getClass());
 
     public CoordActionNotification(CoordinatorActionBean actionBean) {
-        super("coord_action_notification", "coord_action_notification", 0, XLog.STD);
+        super("coord_action_notification", "coord_action_notification", 0,
+                XLog.STD);
         this.actionBean = actionBean;
     }
 
     @Override
-    protected Void call(CoordinatorStore store) throws StoreException, CommandException {
+    protected Void call(CoordinatorStore store) throws StoreException,
+            CommandException {
         setLogInfo(actionBean);
-        log.info("STARTED Coordinator Notification actionId=" + actionBean.getId() + " : " + actionBean.getStatus());
+        log.info("STARTED Coordinator Notification actionId="
+                + actionBean.getId() + " : " + actionBean.getStatus());
         Configuration conf;
         try {
             conf = new XConfiguration(new StringReader(actionBean.getRunConf()));
         }
         catch (IOException e1) {
-            log.warn("Configuration parse error. read from DB :" + actionBean.getRunConf());
+            log.warn("Configuration parse error. read from DB :"
+                    + actionBean.getRunConf());
             throw new CommandException(ErrorCode.E1005, e1.getMessage(), e1);
         }
         String url = conf.get(OozieClient.COORD_ACTION_NOTIFICATION_URL);
         if (url != null) {
             url = url.replaceAll(ACTION_ID_PATTERN, actionBean.getId());
-            url = url.replaceAll(STATUS_PATTERN, actionBean.getStatus().toString());
+            url = url.replaceAll(STATUS_PATTERN, actionBean.getStatus()
+                    .toString());
             log.debug("Notification URL :" + url);
             try {
                 URL urlObj = new URL(url);
-                HttpURLConnection urlConn = (HttpURLConnection) urlObj.openConnection();
+                HttpURLConnection urlConn = (HttpURLConnection) urlObj
+                        .openConnection();
                 if (urlConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     handleRetry(url);
                 }
@@ -72,10 +78,15 @@ public class CoordActionNotification extends CoordinatorCommand<Void> {
             }
         }
         else {
-            log.info("No Notification URL is defined. Therefore nothing to notify for job " + actionBean.getJobId()
-                    + " action ID " + actionBean.getId());
+            log
+                    .info("No Notification URL is defined. Therefore nothing to notify for job "
+                            + actionBean.getJobId()
+                            + " action ID "
+                            + actionBean.getId());
+            // System.out.println("No Notification URL is defined. Therefore nothing is notified");
         }
-        log.info("ENDED Coordinator Notification actionId=" + actionBean.getId());
+        log.info("ENDED Coordinator Notification actionId="
+                + actionBean.getId());
         return null;
     }
 
@@ -85,7 +96,8 @@ public class CoordActionNotification extends CoordinatorCommand<Void> {
             queueCallable(this, 60 * 1000);
         }
         else {
-            XLog.getLog(getClass()).warn(XLog.OPS, "could not send notification [{0}]", url);
+            XLog.getLog(getClass()).warn(XLog.OPS,
+                                         "could not send notification [{0}]", url);
         }
     }
 
