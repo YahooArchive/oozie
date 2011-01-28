@@ -1,5 +1,6 @@
 -- Oozie 2.2.5 release
 
+GH-0066 Add Uniqueness functionality to queue
 GH-0141 Oozie uses excessive memory when doing purging
 
 -- Oozie 2.2.3 release
