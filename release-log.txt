@@ -1,4 +1,4 @@
--- Oozie 2.2.4 release
+-- Oozie 2.2.5 release
 
 GH-0066 Add Uniqueness functionality to queue
 
