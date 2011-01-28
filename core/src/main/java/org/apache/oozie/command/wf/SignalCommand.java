@@ -190,7 +190,7 @@ public class SignalCommand extends WorkflowCommand<Void> {
                                 // actionSlaXml);
                                 // newAction.setSlaXml(workflow.getSlaXml());
                                 newAction.setSlaXml(actionSlaXml);
-                                XLog.getLog(getClass()).debug("SignalCOmmand: Name: "+ newAction.getName() +"Id: " +newAction.getId()+ " Authcode:" + newAction.getAuth());
+                                XLog.getLog(getClass()).debug("SignalCOmmand: Name: "+ newAction.getName() +"Id: " +newAction.getId()+ " Authcode:" + newAction.getCred());
                                 store.insertAction(newAction);
                                 queueCallable(new ActionStartCommand(newAction.getId(), newAction.getType()));
                             }

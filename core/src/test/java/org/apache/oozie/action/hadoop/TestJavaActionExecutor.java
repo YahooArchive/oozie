@@ -654,10 +654,10 @@ public class TestJavaActionExecutor extends ActionExecutorTestCase {
     }
     
     public void testCredentialsModule() throws Exception {
-        String actionXml = "<workflow-app xmlns='uri:oozie:workflow:0.2.5' name='pig-wf'>" + "<authentications>"
-                + "<authentication name='abcname' type='abc'>" + "<property>" + "<name>property1</name>"
+        String actionXml = "<workflow-app xmlns='uri:oozie:workflow:0.2.5' name='pig-wf'>" + "<credentials>"
+                + "<credential name='abcname' type='abc'>" + "<property>" + "<name>property1</name>"
                 + "<value>value1</value>" + "</property>" + "<property>" + "<name>property2</name>"
-                + "<value>value2</value>" + "</property>" + "</authentication>" + "</authentications>"
+                + "<value>value2</value>" + "</property>" + "</credential>" + "</credentials>"
                 + "<start to='pig1' />" + "<action name='pig1' auth='abcname'>" + "<pig>" + "</pig>"
                 + "<ok to='end' />" + "<error to='fail' />" + "</action>" + "<kill name='fail'>"
                 + "<message>Pig failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>" + "</kill>"
@@ -667,7 +667,7 @@ public class TestJavaActionExecutor extends ActionExecutorTestCase {
         WorkflowJobBean wfBean = addRecordToWfJobTable("test1", actionXml);
         WorkflowActionBean action = (WorkflowActionBean) wfBean.getActions().get(0);
         action.setType(ae.getType());
-        action.setAuth("abcname");
+        action.setCred("abcname");
         String actionxml = "<pig>" + "<job-tracker>${jobTracker}</job-tracker>" + "<name-node>${nameNode}</name-node>"
                 + "<prepare>" + "<delete path='outputdir' />" + "</prepare>" + "<configuration>" + "<property>"
                 + "<name>mapred.compress.map.output</name>" + "<value>true</value>" + "</property>" + "<property>"
@@ -716,7 +716,7 @@ public class TestJavaActionExecutor extends ActionExecutorTestCase {
         wfBean.setStatus(WorkflowJob.Status.SUCCEEDED);
         WorkflowActionBean action = new WorkflowActionBean();
         action.setName("test");
-        action.setAuth("null");
+        action.setCred("null");
         action.setId(Services.get().get(UUIDService.class).generateChildId(wfBean.getId(), "test"));
         wfBean.getActions().add(action);
         return wfBean;

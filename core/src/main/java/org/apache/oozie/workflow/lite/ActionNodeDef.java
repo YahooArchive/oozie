@@ -31,7 +31,7 @@ public class ActionNodeDef extends NodeDef {
     }
     
     public ActionNodeDef(String name, String conf, Class<? extends ActionNodeHandler> actionHandlerClass, String onOk,
-            String onError,String auth) {
-        super(name, ParamChecker.notNull(conf, "conf"), actionHandlerClass, Arrays.asList(onOk, onError),auth);
+            String onError,String cred) {
+        super(name, ParamChecker.notNull(conf, "conf"), actionHandlerClass, Arrays.asList(onOk, onError),cred);
     }
 }

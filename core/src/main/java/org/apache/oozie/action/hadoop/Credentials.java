@@ -22,6 +22,10 @@ import org.jdom.Element;
 public abstract class Credentials {
 
     /**
+     * This is the interface for all the Credentials implementation. Any new credential implementaion must implement 
+     * this function. This function should modify the jobconf which will be used further to pass the credentials
+     * to the tasks while running it. Creentials properties and context is also provided by that user can get all the 
+     * necessary configuration.  
      * @param jobconf
      * @param props
      * @throws Exception 
