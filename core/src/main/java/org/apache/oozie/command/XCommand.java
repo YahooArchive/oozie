@@ -222,7 +222,7 @@ public abstract class XCommand<T> implements XCallable<T> {
     @Override
     public final T call() throws CommandException {
         if (used) {
-            throw new IllegalStateException(this.getClass().getSimpleName() + " already used. ignore.");
+            throw new IllegalStateException(this.getClass().getSimpleName() + " already used.");
         }
         used = true;
         Instrumentation instrumentation = Services.get().get(InstrumentationService.class).get();
@@ -235,16 +235,10 @@ public abstract class XCommand<T> implements XCallable<T> {
             try {
                 if (isLockRequired()) {
                     Instrumentation.Cron acquireLockCron = new Instrumentation.Cron();
-                    try {
-                        acquireLockCron.start();
-                        acquireLock();
-                        acquireLockCron.stop();
-                        instrumentation.addCron(INSTRUMENTATION_GROUP, getName() + ".acquireLock", acquireLockCron);
-                    }
-                    catch (Exception ex) {
-                        instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);
-                        throw ex;
-                    }
+                    acquireLockCron.start();
+                    acquireLock();
+                    acquireLockCron.stop();
+                    instrumentation.addCron(INSTRUMENTATION_GROUP, getName() + ".acquireLock", acquireLockCron);
                 }
                 LOG.debug("Load state for [{0}]", getEntityKey());
                 loadState();
@@ -252,17 +246,10 @@ public abstract class XCommand<T> implements XCallable<T> {
                 verifyPrecondition();
                 LOG.debug("Execute command [{0}] key [{1}]", getName(), getEntityKey());
                 Instrumentation.Cron executeCron = new Instrumentation.Cron();
-                T ret;
-                try {
-                    executeCron.start();
-                    ret = execute();
-                    executeCron.stop();
-                    instrumentation.addCron(INSTRUMENTATION_GROUP, getName() + ".execute", executeCron);
-                }
-                catch (Exception ex) {
-                    instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".exceptions", 1);
-                    throw ex;
-                }
+                executeCron.start();
+                T ret = execute();
+                executeCron.stop();
+                instrumentation.addCron(INSTRUMENTATION_GROUP, getName() + ".execute", executeCron);
                 if (commandQueue != null) {
                     CallableQueueService callableQueueService = Services.get().get(CallableQueueService.class);
                     for (Map.Entry<Long, List<XCommand<?>>> entry : commandQueue.entrySet()) {
