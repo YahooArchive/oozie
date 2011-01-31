@@ -19,6 +19,8 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -66,6 +68,9 @@ import org.xml.sax.SAXException;
  * Oozie command line utility.
  */
 public class OozieCLI {
+
+    private static final String OOZIE_CLIENT_CLASS = "oozie.client.class";
+
     public static final String ENV_OOZIE_URL = "OOZIE_URL";
     public static final String WS_HEADER_PREFIX = "header:";
 
@@ -115,7 +120,8 @@ public class OozieCLI {
 
     private static final String[] OOZIE_HELP = {
             "the env variable '" + ENV_OOZIE_URL + "' is used as default value for the '-" + OOZIE_OPTION + "' option",
-            "custom headers for Oozie web services can be specified using '-D" + WS_HEADER_PREFIX + "NAME=VALUE'" };
+            "custom headers for Oozie web services can be specified using '-D" + WS_HEADER_PREFIX + "NAME=VALUE'",
+            "a custom OozieClient class can be used by setting it in the'oozie.client.class' Java system property"};
 
     private static final String RULER;
     private static final int LINE_WIDTH = 132;
@@ -489,16 +495,18 @@ public class OozieCLI {
     /**
      * Create a OozieClient. <p/> It injects any '-Dheader:' as header to the the {@link
      * org.apache.oozie.client.OozieClient}.
+     * <p/>
+     * This method it is kept for backwards compatibility reasons. It delegates the call
+     * to the {@link #createXOozieClient(CommandLine)}.
      *
      * @param commandLine the parsed command line options.
      * @return a pre configured eXtended workflow client.
      * @throws OozieCLIException thrown if the OozieClient could not be
      *         configured.
      */
+    @Deprecated
     protected OozieClient createOozieClient(CommandLine commandLine) throws OozieCLIException {
-        OozieClient wc = new OozieClient(getOozieUrl(commandLine));
-        addHeader(wc);
-        return wc;
+        return createXOozieClient(commandLine);
     }
 
     /**
@@ -510,10 +518,37 @@ public class OozieCLI {
      * @throws OozieCLIException thrown if the XOozieClient could not be
      *         configured.
      */
+    @SuppressWarnings("unchecked")
     protected XOozieClient createXOozieClient(CommandLine commandLine) throws OozieCLIException {
-        XOozieClient wc = new XOozieClient(getOozieUrl(commandLine));
-        addHeader(wc);
-        return wc;
+        Class<? extends XOozieClient> klass = XOozieClient.class;
+        String customOozieClientClass = System.getProperty(OOZIE_CLIENT_CLASS);
+        if (customOozieClientClass != null) {
+            try {
+                klass = (Class<? extends XOozieClient>)
+                        Thread.currentThread().getContextClassLoader().loadClass(customOozieClientClass);
+            }
+            catch (ClassNotFoundException ex) {
+                throw new OozieCLIException("OozieClient class [" + customOozieClientClass +
+                                            "] could not be loaded: " + ex.getMessage(), ex);
+            }
+        }
+        try {
+            Constructor<? extends XOozieClient> constructor = klass.getConstructor(new Class[] { String.class});
+            XOozieClient wc = constructor.newInstance(getOozieUrl(commandLine));
+            addHeader(wc);
+            return wc;
+        }
+        catch (NoSuchMethodException ex) {
+            throw new OozieCLIException("OozieClient class [" + customOozieClientClass +
+                                        "] does not have a constructor '<init>(String)'");
+        }
+        catch (InvocationTargetException ex) {
+            throw new OozieCLIException("OozieClient [" + customOozieClientClass + "]: " +
+                                        ex.getTargetException().getMessage(), ex.getTargetException());
+        }
+        catch (Exception ex) {
+            throw new OozieCLIException("OozieClient [" + customOozieClientClass + "]: " + ex.getMessage(), ex);
+        }
     }
 
     private static String JOB_ID_PREFIX = "job: ";

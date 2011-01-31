@@ -27,6 +27,12 @@ import org.apache.oozie.client.rest.RestConstants;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+/**
+ * Java Client for Oozie.
+ * <p/>
+ * Subclasses must have a public constructor <code>&lt;init&gt;(String oozieURL)</code>
+ * if they are to be used from Oozie command line tool.
+ */
 public class XOozieClient extends OozieClient {
 
     public static final String JT = "mapred.job.tracker";
