@@ -100,6 +100,37 @@ public class TestOozieCLI extends DagServletTestCase {
         return path;
     }
 
+    public static class TestOozieClient extends  XOozieClient {
+        public static boolean CREATED;
+
+        public TestOozieClient(String oozieUrl) {
+            super(oozieUrl);
+            CREATED = true;
+        }
+
+    }
+        
+    public void testCustomOozieClient() throws  Exception {
+        runTest(END_POINTS, SERVLET_CLASSES, IS_SECURITY_ENABLED, new Callable<Void>() {
+            public Void call() throws Exception {
+                HeaderTestingVersionServlet.OOZIE_HEADERS.clear();
+
+                String oozieUrl = getContextURL();
+                String[] args = new String[]{"admin", "-version", "-oozie", oozieUrl};
+
+                setSystemProperty("oozie.client.class", "Foo");
+                assertNotSame(0, new OozieCLI().run(args));
+
+                TestOozieClient.CREATED = false;
+                setSystemProperty("oozie.client.class", TestOozieClient.class.getName());
+                assertEquals(0, new OozieCLI().run(args));
+                assertTrue(TestOozieClient.CREATED);
+
+                return null;
+            }
+        });
+    }
+
     public void testSubmit() throws Exception {
         runTest(END_POINTS, SERVLET_CLASSES, IS_SECURITY_ENABLED, new Callable<Void>() {
             public Void call() throws Exception {

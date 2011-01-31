@@ -71,6 +71,7 @@ import org.w3c.dom.Element;
  * The query will do an AND among all the filter names. The query will do an OR among all the filter values for the same
  * name. Multiple values must be specified as different name value pairs.
  */
+@Deprecated
 public class OozieClient {
 
     public static final long WS_PROTOCOL_VERSION_0 = 0;
@@ -306,13 +307,18 @@ public class OozieClient {
     }
 
     /**
-     * Create http connection to oozie server.
+     * Create and initializes a {@link HttpURLConnection} initialized to interact with Oozie server HTTP REST API.
+     * <p/>
+     * The returned {@link HttpURLConnection} has the HTTP method set and all the HTTP headers already
+     * injected.
+     * <p/>
+     * This method could be overriden to ensure authentication credentials are passed properly set.
      *
-     * @param url
-     * @param method
-     * @return connection
-     * @throws IOException
-     * @throws OozieClientException
+     * @param url the URL to open a HTTP connection to.
+     * @param method the HTTP method for the HTTP connection.
+     * @return connection a {@link HttpURLConnection} initialized to interact with Oozie server HTTP REST API.
+     * @throws IOException thrown if an IO error occurred.
+     * @throws OozieClientException thrown if an Oozie error occurred.
      */
     protected HttpURLConnection createConnection(URL url, String method) throws IOException, OozieClientException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
