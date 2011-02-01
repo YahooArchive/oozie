@@ -1,6 +1,5 @@
 -- Oozie 2.3.0 release
 
-GH-0141 Oozie uses excessive memory when doing purging
 GH-0236 add support for -Dname=value to oozie CLI and make -config optional
 GH-0108 Add support for Derby as Oozie DB
 GH-0189 make ENV setting flexible to allow Unix standard layout for conf/logs/data/tmp
