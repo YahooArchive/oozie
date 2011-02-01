@@ -156,6 +156,7 @@ public class TestXCommand extends XTestCase {
     public void testXCommandLifecycleLockingFailingToLock() throws Exception {
         Thread t = new LockGetter();
         t.start();
+        Thread.sleep(150);
         AXCommand command = new AXCommand(true);
         try {
             command.call();
