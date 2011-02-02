@@ -89,7 +89,7 @@ public class CoordActionInputCheckCommand extends CoordinatorCommand<Void> {
                     log.info("[" + actionId + "]::ActionInputCheck:: Missing deps:" + uriList[0] + ",  NonResolvedList:"
                             + nonResolvedList.toString());
                 } else {
-                    log.info("[" + actionId + "]::ActionInputCheck:: Missing deps:" + nonExistList.toString() + ",  NonResolvedList:"
+                    log.info("[" + actionId + "]::ActionInputCheck:: No missing deps,  NonResolvedList:"
                             + nonResolvedList.toString());
                 }
                 Date actualTime = new Date();
