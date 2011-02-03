@@ -21,9 +21,9 @@ usage:
       custom headers for Oozie web services can be specified using '-Dheader:NAME=VALUE'
 
       oozie help : display usage
-
+.
       oozie version : show client version
-
+.
       oozie job <OPTIONS> : job operations
                 -action <arg>         coordinator rerun on action ids (requires -rerun)
                 -change <arg>         change a coordinator job
@@ -52,7 +52,7 @@ usage:
                 -value <arg>          new endtime/concurrency/pausetime value for changing a
                                       coordinator job
                 -verbose              verbose mode
-
+.
       oozie jobs <OPTIONS> : jobs status
                  -filter <arg>    user=<U>;name=<N>;group=<G>;status=<S>;...
                  -jobtype <arg>   job type ('Supported in Oozie-2.0 or later versions ONLY -
@@ -62,7 +62,7 @@ usage:
                  -offset <arg>    jobs offset (default '1')
                  -oozie <arg>     Oozie URL
                  -verbose         verbose mode
-
+.
       oozie admin <OPTIONS> : admin operations
                   -oozie <arg>        Oozie URL
                   -queuedump          show Oozie server queue elements
@@ -70,14 +70,14 @@ usage:
                   -systemmode <arg>   Supported in Oozie-2.0 or later versions ONLY. Change oozie
                                       system mode [NORMAL|NOWEBSERVICE|SAFEMODE]
                   -version            show Oozie server build version
-
+.
       oozie validate <ARGS> : validate a workflow XML file
-
+.
       oozie sla <OPTIONS> : sla operations (Supported in Oozie-2.0 or later)
                 -len <arg>      number of results (default '100')
                 -offset <arg>   start offset (default '0')
                 -oozie <arg>    Oozie URL
-
+.
       oozie pig <OPTIONS> -X <ARGS> : submit a pig job, everything after '-X' are pass-through parameters to pig
                 -config <arg>         job configuration file '.properties'
                 -D <property=value>   set/override value for given property
@@ -86,6 +86,33 @@ usage:
 </verbatim>
 
 ---++ Common CLI Options
+
+---+++ Authentication
+
+*IMPORTANT:* This feature is only available in Cloudera's distribution of Oozie (CDH3b3 onwards).
+
+The =oozie= CLI automatically perform authentication i the Oozie server requests it. By default it supports both
+pseudo/simple authentication and Kerberos HTTP SPNEGO authentication.
+
+For pseudo/simple authentication the =oozie= CLI uses the user name of the current OS user.
+
+For Kerberos HTTP SPNEGO authentication the =oozie= CLI uses the default principal for the OS Kerberos cache
+(normally the principal that did =kinit=).
+
+Oozie uses [[http://www.github.com/cloudera/alfredo][Alfredo, Java HTTP SPENGO]] library for authentication.
+This library can be extended to support other authentication mechanisms.
+
+To disable authentication altogether the =-Doozie.client.class= option must be set with no value. This is required
+for the =oozie= CLI to work with older versions of Oozie server.
+
+Once authentication is performed successfully the received authentication token is cached in the user home directory
+in the =.oozie-auth-token= file with owner-only permissions. Subsequent requests reuse the cached token while valid.
+
+The use of the cache file can be disabled by invoking the =oozie= CLI with the =-Doozie.auth.token.cache=false=
+option.
+
+To use an custom authentication mechanism, an Alfredo =Authenticator= implementation must be specified with the
+ =-Dauthenticator.class= = =CLASS= option.
 
 ---+++ Oozie URL
 
@@ -256,7 +283,6 @@ is not in =FAILED= or =KILLED= state.
 After the command is executed the rerun coordiator action will be in =WAITING= status.
 
 Refer to the [[DG_CoordinatorRerun][Rerunning Coordinator Actions]] for details on rerun.
-
 
 ---+++ Checking the Status of a Workflow Job or Coordinator Job or Coordinator Action
 

@@ -43,9 +43,8 @@ else
     JAVA_BIN=${JAVA_HOME}/bin/java
 fi
 
-JAVA_PROPERTIES=""
 while [[ ${1} =~ ^\-D ]]; do
   JAVA_PROPERTIES="${JAVA_PROPERTIES} ${1}"
   shift
 done
-${JAVA_BIN} ${JAVA_PROPERTIES} -cp ${OOZIECPPATH} org.apache.oozie.cli.OozieCLI "${@}"
+${JAVA_BIN} ${JAVA_PROPERTIES} -cp ${OOZIECPPATH} org.apache.oozie.cli.AuthOozieCLI "${@}"

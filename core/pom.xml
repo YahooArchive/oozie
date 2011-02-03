@@ -95,12 +95,6 @@
         </dependency>
 
         <dependency>
-           <groupId>org.slf4j</groupId>
-           <artifactId>slf4j-log4j12</artifactId>
-           <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <scope>compile</scope>
@@ -169,6 +163,17 @@
             <scope>compile</scope>
         </dependency>
         
+        <dependency>
+            <groupId>com.cloudera.alfredo</groupId>
+            <artifactId>alfredo</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
