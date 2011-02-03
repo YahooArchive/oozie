@@ -23,7 +23,7 @@ import org.apache.oozie.ErrorCode;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.util.ParamChecker;
 
-public class WorkflowActionRetryManualGetJPAExecutor implements JPAExecutor<List<WorkflowActionBean>>{
+public class WorkflowActionRetryManualGetJPAExecutor implements JPAExecutor<List<WorkflowActionBean>> {
 
     private String wfId = null;
     List<WorkflowActionBean> actions;
@@ -36,8 +36,9 @@ public class WorkflowActionRetryManualGetJPAExecutor implements JPAExecutor<List
         this.wfId = wfId;
         this.actions = null;
     }
+
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#execute(javax.persistence.EntityManager)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
      */
     @Override
     public List<WorkflowActionBean> execute(EntityManager em) throws JPAExecutorException {
@@ -53,11 +54,10 @@ public class WorkflowActionRetryManualGetJPAExecutor implements JPAExecutor<List
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#getName()
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#getName()
      */
     @Override
     public String getName() {
-        return "WorkflowActionGetCommand";
+        return "WorkflowActionRetryManualGetJPAExecutor";
     }
-
 }

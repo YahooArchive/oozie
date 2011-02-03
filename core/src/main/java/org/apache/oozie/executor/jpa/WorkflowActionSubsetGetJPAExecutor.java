@@ -48,7 +48,7 @@ public class WorkflowActionSubsetGetJPAExecutor implements JPAExecutor<List<Work
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#execute(javax.persistence.EntityManager)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -74,11 +74,11 @@ public class WorkflowActionSubsetGetJPAExecutor implements JPAExecutor<List<Work
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#getName()
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#getName()
      */
     @Override
     public String getName() {
-        return "WorkflowActionSubsetGetCommand";
+        return "WorkflowActionSubsetGetJPAExecutor";
     }
 
     /**
