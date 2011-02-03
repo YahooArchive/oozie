@@ -49,7 +49,7 @@ public class WorkflowInfoWithActionsSubsetGetJPAExecutor implements JPAExecutor<
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#execute(javax.persistence.EntityManager)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
      */
     @Override
     public WorkflowJobBean execute(EntityManager em) throws JPAExecutorException {
@@ -90,10 +90,10 @@ public class WorkflowInfoWithActionsSubsetGetJPAExecutor implements JPAExecutor<
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#getName()
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#getName()
      */
     @Override
     public String getName() {
-        return "WorkflowInfoWithActionsSubsetGetCommand";
+        return "WorkflowInfoWithActionsSubsetGetJPAExecutor";
     }
 }
