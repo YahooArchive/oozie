@@ -23,7 +23,6 @@ import javax.persistence.Query;
 
 import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.ErrorCode;
-import org.apache.oozie.command.CommandException;
 import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.ParamChecker;
 
@@ -61,7 +60,7 @@ public class CoordJobGetActionForNominalTimeJPAExecutor implements JPAExecutor<C
                 action = actions.get(0);
             }
             else {
-                throw new CommandException(ErrorCode.E0605, DateUtils.convertDateToString(nominalTime));
+                throw new JPAExecutorException(ErrorCode.E0605, DateUtils.convertDateToString(nominalTime));
             }
             return getBeanForRunningCoordAction(action);
         }
