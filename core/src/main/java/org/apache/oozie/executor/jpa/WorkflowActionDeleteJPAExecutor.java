@@ -19,20 +19,20 @@ import javax.persistence.EntityManager;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.util.ParamChecker;
 
-public class WorkflowActionDeleteJPAExecutor implements JPAExecutor<Void>{
+public class WorkflowActionDeleteJPAExecutor implements JPAExecutor<Void> {
 
     private final String wfActionId;
 
     /**
      * @param wfActionId
      */
-    public WorkflowActionDeleteJPAExecutor(String wfActionId){
+    public WorkflowActionDeleteJPAExecutor(String wfActionId) {
         ParamChecker.notEmpty(wfActionId, "ActionID");
         this.wfActionId = wfActionId;
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#execute(javax.persistence.EntityManager)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
      */
     @Override
     public Void execute(EntityManager em) throws JPAExecutorException {
@@ -44,11 +44,10 @@ public class WorkflowActionDeleteJPAExecutor implements JPAExecutor<Void>{
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#getName()
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#getName()
      */
     @Override
     public String getName() {
-        return "WorkflowActionDeleteCommand";
+        return "WorkflowActionDeleteJPAExecutor";
     }
-
 }
