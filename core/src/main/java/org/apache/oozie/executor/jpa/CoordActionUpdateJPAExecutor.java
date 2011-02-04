@@ -9,16 +9,15 @@ import org.apache.oozie.ErrorCode;
 import org.apache.oozie.util.ParamChecker;
 
 /**
- * Update the CoordinatorAction into a Bean and persist it.
- */
-/**
- * @author bansalm
+ * Update the CoordinatorAction into a Bean and persist it
  */
 public class CoordActionUpdateJPAExecutor implements JPAExecutor<Void> {
 
     private CoordinatorActionBean coordAction = null;
 
     /**
+     * Create the object for CoordActionUpdateJPAExecutor to update the CoordinatorAction into a Bean and persist it
+     * 
      * @param coordAction
      */
     public CoordActionUpdateJPAExecutor(CoordinatorActionBean coordAction) {

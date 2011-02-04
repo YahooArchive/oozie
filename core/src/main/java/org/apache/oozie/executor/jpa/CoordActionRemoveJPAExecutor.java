@@ -16,6 +16,8 @@ public class CoordActionRemoveJPAExecutor implements JPAExecutor<Void> {
     private String coordActionId = null;
 
     /**
+     * This constructs the object to Update the CoordinatorAction into a Bean and persist it.
+     * 
      * @param coordAction
      */
     public CoordActionRemoveJPAExecutor(String coordActionId) {

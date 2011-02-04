@@ -26,9 +26,6 @@ public class CoordJobDeleteJPAExecutor implements JPAExecutor<Void> {
 
     private String coordJobId = null;
 
-    /**
-     * @param coordJobId
-     */
     public CoordJobDeleteJPAExecutor(String coordJobId) {
         ParamChecker.notEmpty(coordJobId, "coordJobId");
         this.coordJobId = coordJobId;

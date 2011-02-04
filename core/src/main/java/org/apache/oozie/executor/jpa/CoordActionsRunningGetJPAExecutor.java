@@ -67,10 +67,6 @@ public class CoordActionsRunningGetJPAExecutor implements JPAExecutor<List<Coord
         return actionList;
     }
 
-    /**
-     * @param a
-     * @return
-     */
     private CoordinatorActionBean getBeanForRunningCoordAction(CoordinatorActionBean a) {
         if (a != null) {
             CoordinatorActionBean action = new CoordinatorActionBean();
