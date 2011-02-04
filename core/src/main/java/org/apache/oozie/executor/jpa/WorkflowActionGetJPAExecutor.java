@@ -35,11 +35,17 @@ public class WorkflowActionGetJPAExecutor implements JPAExecutor<WorkflowActionB
         this.wfActionId = wfActionId;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#getName()
+     */
     @Override
     public String getName() {
-        return "WorkflowActionGetCommand";
+        return "WorkflowActionGetJPAExecutor";
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
+     */
     @Override
     @SuppressWarnings("unchecked")
     public WorkflowActionBean execute(EntityManager em) throws JPAExecutorException {

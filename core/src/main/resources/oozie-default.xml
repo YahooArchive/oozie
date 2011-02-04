@@ -888,7 +888,6 @@
         <value>false</value>
         <description>
             Validates DB connections from the DB connection pool.
-
             If the 'oozie.service.JPAService.create.db.schema' property is set to true, this property is ignored.
         </description>
     </property>
