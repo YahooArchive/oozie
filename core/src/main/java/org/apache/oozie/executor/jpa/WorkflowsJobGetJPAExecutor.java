@@ -45,6 +45,8 @@ public class WorkflowsJobGetJPAExecutor implements JPAExecutor<WorkflowsInfo> {
     private final int len;
 
     /**
+     * This JPA Executor gets the workflows info for the range.
+     * 
      * @param filter
      * @param start
      * @param len
@@ -260,10 +262,6 @@ public class WorkflowsJobGetJPAExecutor implements JPAExecutor<WorkflowsInfo> {
         return "WorkflowsJobGetJPAExecutor";
     }
 
-    /**
-     * @param arr
-     * @return
-     */
     private WorkflowJobBean getBeanForWorkflowFromArray(Object[] arr) {
 
         WorkflowJobBean wfBean = new WorkflowJobBean();
