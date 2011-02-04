@@ -59,6 +59,8 @@ public class TestWorkflowActionDeleteJPAExecutor extends XDataTestCase {
         }
         catch (JPAExecutorException ex) {
             assertNull(ret);
+            return;
         }
+        fail("testWfActionDelete Failed Deleted Record should not be found.");
     }
 }
