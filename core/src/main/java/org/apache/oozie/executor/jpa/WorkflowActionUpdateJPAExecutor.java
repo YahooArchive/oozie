@@ -34,7 +34,7 @@ public class WorkflowActionUpdateJPAExecutor implements JPAExecutor<String> {
 
     @Override
     public String getName() {
-        return "WorkflowActionUpdateCommand";
+        return "WorkflowActionUpdateJPAExecutor";
     }
 
     @Override
