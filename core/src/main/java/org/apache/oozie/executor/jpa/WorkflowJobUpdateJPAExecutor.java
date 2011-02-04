@@ -25,7 +25,7 @@ import org.apache.oozie.ErrorCode;
 /**
 * Persist the WorkflowJob bean.
 */
-public class WorkflowJobUpdateJPAExecutor implements JPAExecutor<String> {
+public class WorkflowJobUpdateJPAExecutor implements JPAExecutor<Void> {
 
     private WorkflowJobBean wfJob = null;
 
@@ -46,7 +46,7 @@ public class WorkflowJobUpdateJPAExecutor implements JPAExecutor<String> {
      * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
      */
     @Override
-    public String execute(EntityManager em) throws JPAExecutorException {
+    public Void execute(EntityManager em) throws JPAExecutorException {
         try {
             wfJob.setLastModifiedTime(new Date());
             em.merge(wfJob);

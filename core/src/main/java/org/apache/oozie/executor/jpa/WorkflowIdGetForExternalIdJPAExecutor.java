@@ -51,10 +51,7 @@ public class WorkflowIdGetForExternalIdJPAExecutor implements JPAExecutor<String
         Query q = em.createNamedQuery("GET_WORKFLOW_ID_FOR_EXTERNAL_ID");
         q.setParameter("externalId", externalId);
         List<String> w = q.getResultList();
-        if (w.size() == 0) {
-            id = "";
-        }
-        else {
+        if (w.size() > 0) {
             int index = w.size() - 1;
             id = w.get(index);
         }
