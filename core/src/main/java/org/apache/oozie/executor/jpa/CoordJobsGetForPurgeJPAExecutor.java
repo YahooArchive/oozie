@@ -39,7 +39,7 @@ public class CoordJobsGetForPurgeJPAExecutor implements JPAExecutor<List<Coordin
 
     @Override
     public String getName() {
-        return "CoordJobsGetForPurgeCommand";
+        return "CoordJobsGetForPurgeJPAExecutor";
     }
 
     @Override

@@ -40,7 +40,7 @@ public class SLAEventsGetForSeqIdJPAExecutor implements JPAExecutor<List<SLAEven
 
     @Override
     public String getName() {
-        return "SLAEventsGetForSeqIdCommand";
+        return "SLAEventsGetForSeqIdJPAExecutor";
     }
 
     @Override

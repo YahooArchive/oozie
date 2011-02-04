@@ -33,7 +33,7 @@ public class CoordJobsToBeMaterializedJPAExecutor implements JPAExecutor<List<Co
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#execute(javax.persistence.EntityManager)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -59,7 +59,7 @@ public class CoordJobsToBeMaterializedJPAExecutor implements JPAExecutor<List<Co
 
     @Override
     public String getName() {
-        return "CoordJobsToBeMaterializedCommand";
+        return "CoordJobsToBeMaterializedJPAExecutor";
     }
 
     /**

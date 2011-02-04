@@ -23,7 +23,7 @@ public class CoordJobUpdateJPAExecutor implements JPAExecutor<Void> {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.oozie.command.jpa.JPACommand#execute(javax.persistence.
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.
      * EntityManager)
      */
     @Override
@@ -40,11 +40,11 @@ public class CoordJobUpdateJPAExecutor implements JPAExecutor<Void> {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.oozie.command.jpa.JPACommand#getName()
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#getName()
      */
     @Override
     public String getName() {
-        return "CoordinatorUpdateJobCommand";
+        return "CoordinatorUpdateJobJPAExecutor";
     }
 
 }
