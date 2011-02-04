@@ -31,7 +31,8 @@ public class TestCoordActionsDeleteForPurgeJPAExecutor extends XDataTestCase {
     public void testCoordActionDelForPurge() throws Exception {
         int actionNum = 1;
         CoordinatorJobBean job = addRecordToCoordJobTable(CoordinatorJob.Status.RUNNING);
-        CoordinatorActionBean action = addRecordToCoordActionTable(job.getId(), actionNum, CoordinatorAction.Status.SUCCEEDED, "coord-action-get.xml");
+        CoordinatorActionBean action = addRecordToCoordActionTable(job.getId(), actionNum,
+                CoordinatorAction.Status.SUCCEEDED, "coord-action-get.xml");
         _testCoordActionDelForPurge(job.getId(), action.getId());
     }
 
@@ -39,7 +40,7 @@ public class TestCoordActionsDeleteForPurgeJPAExecutor extends XDataTestCase {
         JPAService jpaService = Services.get().get(JPAService.class);
         assertNotNull(jpaService);
         CoordActionsDeleteForPurgeJPAExecutor coordDelCmd = new CoordActionsDeleteForPurgeJPAExecutor(jobId);
-        Integer  ret = jpaService.execute(coordDelCmd);
+        Integer ret = jpaService.execute(coordDelCmd);
         assertNotNull(ret);
         assertEquals(ret.intValue(), 1);
     }

@@ -30,11 +30,11 @@ public class TestCoordActionsGetForJobJPAExecutor extends XDataTestCase {
         super.tearDown();
     }
 
-
     public void testCoordActionsGetForJob() throws Exception {
         int actionNum = 1;
         CoordinatorJobBean job = addRecordToCoordJobTable(CoordinatorJob.Status.RUNNING);
-        CoordinatorActionBean action = addRecordToCoordActionTable(job.getId(), actionNum, CoordinatorAction.Status.READY, "coord-action-get.xml");
+        CoordinatorActionBean action = addRecordToCoordActionTable(job.getId(), actionNum,
+                CoordinatorAction.Status.READY, "coord-action-get.xml");
         _testCoordActionsGetForJob(job, action);
     }
 
@@ -46,7 +46,5 @@ public class TestCoordActionsGetForJobJPAExecutor extends XDataTestCase {
         assertNotNull(ret);
         assertEquals(ret.size(), 1);
     }
-    
-
 
 }

@@ -33,17 +33,18 @@ public class TestCoordActionsRunningGetJPAExecutor extends XDataTestCase {
     public void testCoordActionRunningGet() throws Exception {
         int actionNum = 1;
         CoordinatorJobBean job = addRecordToCoordJobTable(CoordinatorJob.Status.RUNNING);
-        CoordinatorActionBean action = addRecordToCoordActionTable(job.getId(), actionNum, CoordinatorAction.Status.RUNNING, "coord-action-get.xml");
+        CoordinatorActionBean action = addRecordToCoordActionTable(job.getId(), actionNum,
+                CoordinatorAction.Status.RUNNING, "coord-action-get.xml");
         _testCoordActionRunningGet(action);
     }
 
     private void _testCoordActionRunningGet(CoordinatorActionBean action) throws Exception {
         JPAService jpaService = Services.get().get(JPAService.class);
         assertNotNull(jpaService);
-       
-        CoordActionsRunningGetJPAExecutor coordGetCmd = new CoordActionsRunningGetJPAExecutor(0 );
+
+        CoordActionsRunningGetJPAExecutor coordGetCmd = new CoordActionsRunningGetJPAExecutor(0);
         List<CoordinatorActionBean> ret = jpaService.execute(coordGetCmd);
-        
+
         assertNotNull(ret);
         assertEquals(ret.size(), 1);
     }

@@ -30,18 +30,20 @@ public class TestCoordJobGetActionByActionNumberJPAExecutor extends XDataTestCas
         super.tearDown();
     }
 
-
     public void testCoordActionsGetByActionNumber() throws Exception {
         int actionNum = 1;
         CoordinatorJobBean job = addRecordToCoordJobTable(CoordinatorJob.Status.RUNNING);
-        CoordinatorActionBean action = addRecordToCoordActionTable(job.getId(), actionNum, CoordinatorAction.Status.WAITING, "coord-action-get.xml");
+        CoordinatorActionBean action = addRecordToCoordActionTable(job.getId(), actionNum,
+                CoordinatorAction.Status.WAITING, "coord-action-get.xml");
         _testCoordActionsGetByActionNumber(job, action);
     }
 
-    private void _testCoordActionsGetByActionNumber(CoordinatorJobBean job, CoordinatorActionBean action) throws Exception {
+    private void _testCoordActionsGetByActionNumber(CoordinatorJobBean job, CoordinatorActionBean action)
+            throws Exception {
         JPAService jpaService = Services.get().get(JPAService.class);
         assertNotNull(jpaService);
-        CoordJobGetActionByActionNumberJPAExecutor coordGetCmd = new CoordJobGetActionByActionNumberJPAExecutor(job.getId(), action.getActionNumber());
+        CoordJobGetActionByActionNumberJPAExecutor coordGetCmd = new CoordJobGetActionByActionNumberJPAExecutor(job
+                .getId(), action.getActionNumber());
         CoordinatorActionBean ret = jpaService.execute(coordGetCmd);
         assertNotNull(ret);
         assertEquals(ret.getId(), action.getId());
