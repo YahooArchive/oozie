@@ -31,11 +31,17 @@ public class SLAEventInsertJPAExecutor implements JPAExecutor<String> {
         this.slaEvent = slaEvent;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#getName()
+     */
     @Override
     public String getName() {
-        return "SLAEventInsertCommand";
+        return "SLAEventInsertJPAExecutor";
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
+     */
     @Override
     public String execute(EntityManager em) throws JPAExecutorException {
         em.persist(slaEvent);
