@@ -36,6 +36,9 @@ public class WorkflowActionSubsetGetJPAExecutor implements JPAExecutor<List<Work
     private final int length;
 
     /**
+     * This Constructor creates the WorkflowActionSubsetGetJPAExecutor object Which gets the List of wrokflow action
+     * bean.
+     * 
      * @param wfId
      * @param start
      * @param length
@@ -81,11 +84,6 @@ public class WorkflowActionSubsetGetJPAExecutor implements JPAExecutor<List<Work
         return "WorkflowActionSubsetGetJPAExecutor";
     }
 
-    /**
-     * @param a
-     * @return
-     * @throws SQLException
-     */
     private WorkflowActionBean getBeanForRunningAction(WorkflowActionBean a) throws SQLException {
         if (a != null) {
             WorkflowActionBean action = new WorkflowActionBean();

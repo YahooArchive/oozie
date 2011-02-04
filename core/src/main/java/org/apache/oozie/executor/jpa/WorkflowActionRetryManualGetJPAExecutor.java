@@ -29,6 +29,8 @@ public class WorkflowActionRetryManualGetJPAExecutor implements JPAExecutor<List
     List<WorkflowActionBean> actions;
 
     /**
+     * This creates the WorkflowActionRetryManualGetJPAExecutor executor object.
+     * 
      * @param wfId
      */
     public WorkflowActionRetryManualGetJPAExecutor(String wfId) {

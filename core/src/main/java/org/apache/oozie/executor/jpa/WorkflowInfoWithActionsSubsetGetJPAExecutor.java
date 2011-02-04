@@ -27,7 +27,7 @@ import org.apache.oozie.service.Services;
 import org.apache.oozie.util.ParamChecker;
 
 /**
- * This JPA Command is responsible for getting the Workflow job with actions in certain range.
+ * This JPA Executor is responsible for getting the Workflow job with actions in certain range.
  */
 public class WorkflowInfoWithActionsSubsetGetJPAExecutor implements JPAExecutor<WorkflowJobBean> {
 
@@ -37,6 +37,9 @@ public class WorkflowInfoWithActionsSubsetGetJPAExecutor implements JPAExecutor<
     private final int len;
 
     /**
+     * This will create the WorkflowInfoWithActionsSubsetGetJPAExecutor object. which is responsible for getting the
+     * Workflow job with actions in certain range.
+     * 
      * @param wfJobId
      * @param start
      * @param len
