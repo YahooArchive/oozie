@@ -21,9 +21,6 @@ import org.apache.oozie.util.InstrumentUtils;
  */
 public class StartXCommand extends SignalXCommand {
 
-    /**
-     * @param id
-     */
     public StartXCommand(String id) {
         super("start", 1, id);
         InstrumentUtils.incrJobCounter(getName(), 1, getInstrumentation());

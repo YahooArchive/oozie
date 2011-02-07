@@ -37,23 +37,12 @@ public class CompletedActionXCommand extends WorkflowXCommand<Void> {
     private JPAService jpaService;
     private WorkflowActionBean wfactionBean;
 
-    /**
-     * @param actionId
-     * @param externalStatus
-     * @param actionData
-     * @param priority
-     */
     public CompletedActionXCommand(String actionId, String externalStatus, Properties actionData, int priority) {
         super("callback", "callback", priority);
         this.actionId = ParamChecker.notEmpty(actionId, "actionId");
         this.externalStatus = ParamChecker.notEmpty(externalStatus, "externalStatus");
     }
 
-    /**
-     * @param actionId
-     * @param externalStatus
-     * @param actionData
-     */
     public CompletedActionXCommand(String actionId, String externalStatus, Properties actionData) {
         this(actionId, externalStatus, actionData, 1);
     }

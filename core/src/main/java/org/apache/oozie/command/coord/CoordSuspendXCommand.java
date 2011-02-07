@@ -43,9 +43,6 @@ public class CoordSuspendXCommand extends CoordinatorXCommand<Void> {
     private boolean exceptionOccured = false;
     CoordinatorJob.Status prevStatus;
 
-    /**
-     * @param id
-     */
     public CoordSuspendXCommand(String id) {
         super("coord_suspend", "coord_suspend", 1);
         this.jobId = ParamChecker.notEmpty(id, "id");

@@ -91,11 +91,6 @@ public class ReRunXCommand extends WorkflowXCommand<Void> {
 
     private static XLog LOG = XLog.getLog(XCommand.class);
 
-    /**
-     * @param jobId
-     * @param conf
-     * @param authToken
-     */
     public ReRunXCommand(String jobId, Configuration conf, String authToken) {
         super("rerun", "rerun", 1);
         this.jobId = ParamChecker.notEmpty(jobId, "jobId");
@@ -252,8 +247,8 @@ public class ReRunXCommand extends WorkflowXCommand<Void> {
     /**
      * Copys the variables for skipped nodes from the old wfInstance to new one.
      *
-     * @param newWfInstance
-     * @param oldWfInstance
+     * @param newWfInstance : Source WF instance object
+     * @param oldWfInstance : Update WF instance
      */
     private void copyActionData(WorkflowInstance newWfInstance, WorkflowInstance oldWfInstance) {
         Map<String, String> oldVars = new HashMap<String, String>();

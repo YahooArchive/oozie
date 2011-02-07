@@ -32,14 +32,12 @@ public class JobXCommand extends WorkflowXCommand<WorkflowJobBean> {
     private final int len = Integer.MAX_VALUE;
     private WorkflowJobBean workflow;
 
-    /**
-     * @param id wf jobId
-     */
     public JobXCommand(String id) {
         this(id, 1, Integer.MAX_VALUE);
     }
 
     /**
+     * Constructor used to retrieve WF Job
      * @param id wf jobId
      * @param start starting index in the list of actions belonging to the job
      * @param length number of actions to be returned
@@ -78,8 +76,8 @@ public class JobXCommand extends WorkflowXCommand<WorkflowJobBean> {
     }
 
     /**
-     * @param jobId
-     * @return
+     * @param jobId : Job ID to retrieve console URL
+     * @return console URL
      */
     static String getJobConsoleUrl(String jobId) {
         String consoleUrl = Services.get().getConf().get("oozie.JobCommand.job.console.url", null);
