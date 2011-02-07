@@ -19,7 +19,6 @@ import java.util.List;
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.WorkflowJobBean;
-import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.PreconditionException;
 import org.apache.oozie.executor.jpa.JPAExecutorException;
@@ -31,7 +30,6 @@ import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.store.StoreException;
 import org.apache.oozie.util.InstrumentUtils;
-import org.apache.oozie.util.LogUtils;
 import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.workflow.WorkflowException;
 import org.apache.oozie.workflow.WorkflowInstance;
@@ -42,9 +40,6 @@ public class SuspendXCommand extends WorkflowXCommand<Void> {
     private WorkflowJobBean wfJobBean;
     private JPAService jpaService;
 
-    /**
-     * @param id
-     */
     public SuspendXCommand(String id) {
         super("suspend", "suspend", 1);
         this.wfid = ParamChecker.notEmpty(id, "wfid");
@@ -74,13 +69,12 @@ public class SuspendXCommand extends WorkflowXCommand<Void> {
      * Suspend the workflow job and pending flag to false for the actions that are START_RETRY or START_MANUAL or
      * END_RETRY or END_MANUAL
      *
-     * @param store WorkflowStore
-     * @param workflow WorkflowJobBean
-     * @param id String
-     * @param actionId String
-     * @throws WorkflowException
-     * @throws CommandException
-     * @throws StoreException
+     * @param jpaService jpa service
+     * @param workflow workflow job
+     * @param id workflow job id
+     * @param actionId workflow action id
+     * @throws WorkflowException thrown if failed to suspend workflow instance
+     * @throws CommandException thrown if unable set pending false for actions
      */
     public static void suspendJob(JPAService jpaService, WorkflowJobBean workflow, String id, String actionId)
             throws WorkflowException, CommandException {
@@ -99,11 +93,10 @@ public class SuspendXCommand extends WorkflowXCommand<Void> {
      * Set pending flag to false for the actions that are START_RETRY or START_MANUAL or END_RETRY or END_MANUAL
      * <p/>
      *
-     * @param store WorkflowStore
-     * @param id workflow id
+     * @param jpaService jpa service
+     * @param id workflow job id
      * @param actionId workflow action id
-     * @throws CommandException
-     * @throws StoreException
+     * @throws CommandException thrown if failed to update workflow action
      */
     private static void setPendingFalseForActions(JPAService jpaService, String id, String actionId)
             throws CommandException {

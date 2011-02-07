@@ -29,8 +29,6 @@ import org.apache.oozie.ErrorCode;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.WorkflowJobBean;
 import org.apache.oozie.action.ActionExecutor;
-import org.apache.oozie.client.WorkflowAction;
-import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.service.CallbackService;
 import org.apache.oozie.service.ELService;
@@ -48,8 +46,8 @@ import org.apache.oozie.workflow.WorkflowInstance;
 import org.apache.oozie.workflow.lite.LiteWorkflowInstance;
 
 /**
- * Base class for Action execution commands. Provides common functionality to
- * handle different types of errors while attempting to start or end an action.
+ * Base class for Action execution commands. Provides common functionality to handle different types of errors while
+ * attempting to start or end an action.
  */
 public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
     private static final String INSTRUMENTATION_GROUP = "action.executors";
@@ -65,17 +63,15 @@ public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
     }
 
     /**
-     * Takes care of Transient failures. Sets the action status to retry and
-     * increments the retry count if not enough attempts have been made.
-     * Otherwise returns false.
+     * Takes care of Transient failures. Sets the action status to retry and increments the retry count if not enough
+     * attempts have been made. Otherwise returns false.
      *
      * @param context the execution context.
      * @param executor the executor instance being used.
      * @param status the status to be set for the action.
-     * @return true if the action is scheduled for another retry. false if the
-     *         number of retries has exceeded the maximum number of configured
-     *         retries.
-     * @throws org.apache.oozie.command.CommandException
+     * @return true if the action is scheduled for another retry. false if the number of retries has exceeded the
+     *         maximum number of configured retries.
+     * @throws CommandException thrown if unable to handle transient
      */
     protected boolean handleTransient(ActionExecutor.Context context, ActionExecutor executor,
             WorkflowAction.Status status) throws CommandException {
@@ -95,8 +91,7 @@ public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
             action.incRetries();
             long retryDelayMillis = executor.getRetryInterval() * 1000;
             action.setPendingAge(new Date(System.currentTimeMillis() + retryDelayMillis));
-            LOG.info("Next Retry, Attempt Number [{0}] in [{1}] milliseconds",
-                    actionRetryCount + 1, retryDelayMillis);
+            LOG.info("Next Retry, Attempt Number [{0}] in [{1}] milliseconds", actionRetryCount + 1, retryDelayMillis);
             this.resetUsed();
             queue(this, retryDelayMillis);
             return true;
@@ -104,14 +99,13 @@ public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
     }
 
     /**
-     * Takes care of non transient failures. The job is suspended, and the state
-     * of the action is changed to *MANUAL and set pending flag of action to
-     * false
+     * Takes care of non transient failures. The job is suspended, and the state of the action is changed to *MANUAL and
+     * set pending flag of action to false
      *
      * @param context the execution context.
      * @param executor the executor instance being used.
      * @param status the status to be set for the action.
-     * @throws CommandException
+     * @throws CommandException thrown if unable to suspend job
      */
     protected void handleNonTransient(ActionExecutor.Context context, ActionExecutor executor,
             WorkflowAction.Status status) throws CommandException {
@@ -127,23 +121,21 @@ public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
             SuspendXCommand.suspendJob(Services.get().get(JPAService.class), workflow, id, action.getId());
         }
         catch (Exception e) {
-            throw new CommandException(ErrorCode.E0727,e.getMessage());
+            throw new CommandException(ErrorCode.E0727, e.getMessage());
         }
     }
 
     /**
-     * Takes care of errors. </p> For errors while attempting to start the
-     * action, the job state is updated and an {@link ActionEndCommand} is
-     * queued. </p> For errors while attempting to end the action, the job state
-     * is updated. </p>
+     * Takes care of errors. </p> For errors while attempting to start the action, the job state is updated and an
+     * {@link ActionEndCommand} is queued. </p> For errors while attempting to end the action, the job state is updated.
+     * </p>
      *
      * @param context the execution context.
      * @param executor the executor instance being used.
      * @param message
-     * @param isStart whether the error was generated while starting or ending
-     *        an action.
+     * @param isStart whether the error was generated while starting or ending an action.
      * @param status the status to be set for the action.
-     * @throws org.apache.oozie.command.CommandException
+     * @throws CommandException thrown if unable to handle action error
      */
     protected void handleError(ActionExecutor.Context context, ActionExecutor executor, String message,
             boolean isStart, WorkflowAction.Status status) throws CommandException {
@@ -164,8 +156,8 @@ public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
     /**
      * Fail the job due to failed action
      *
-     * @param context
-     * @throws CommandException
+     * @param context the execution context.
+     * @throws CommandException thrown if unable to fail job
      */
     public void failJob(ActionExecutor.Context context) throws CommandException {
         ActionExecutorContext aContext = (ActionExecutorContext) context;
@@ -202,6 +194,10 @@ public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
         getInstrumentation().addCron(INSTRUMENTATION_GROUP, type + "#" + getName(), cron);
     }
 
+    /**
+     * Workflow action executor context
+     *
+     */
     public static class ActionExecutorContext implements ActionExecutor.Context {
         private final WorkflowJobBean workflow;
         private Configuration protoConf;
@@ -249,7 +245,6 @@ public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
             name = action.getName() + WorkflowInstance.NODE_VAR_SEPARATOR + name;
             WorkflowInstance wfInstance = workflow.getWorkflowInstance();
             wfInstance.setVar(name, value);
-            // workflow.getWorkflowInstance().setVar(name, value);
             workflow.setWorkflowInstance(wfInstance);
         }
 
@@ -289,8 +284,7 @@ public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
         /**
          * Returns whether setExecutionData has been called or not.
          *
-         * @return true if execution completion info has been set, otherwise
-         *         false.
+         * @return true if execution completion info has been set, otherwise false.
          */
         public boolean isExecuted() {
             return executed;
@@ -338,6 +332,9 @@ public abstract class ActionXCommand<T> extends WorkflowXCommand<Void> {
 
         }
 
+        /* (non-Javadoc)
+         * @see org.apache.oozie.action.ActionExecutor.Context#setErrorInfo(java.lang.String, java.lang.String)
+         */
         @Override
         public void setErrorInfo(String str, String exMsg) {
             action.setErrorInfo(str, exMsg);
