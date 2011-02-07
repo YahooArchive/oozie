@@ -35,7 +35,8 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
     private final String name;
 
     /**
-     * Update the coordinator job bean and update that to database.
+     * This command is used to update the Coordinator job with the new values Update the coordinator job bean and update
+     * that to database.
      * 
      * @param id
      * @param changeValue
