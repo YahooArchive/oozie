@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2011-02-15
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Coordinator_Rerun"></a>
+<div class="section"><h2> Coordinator Rerun</h2>
+<p><ul><ul><li><a href="#Pre-Conditions">Pre-Conditions</a>
+</li>
+<li><a href="#Rerun_Arguments">Rerun Arguments</a>
+</li>
+<li><a href="#Rerun_coordinator_actions">Rerun coordinator actions</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Pre-Conditions"></a>
+<div class="section"><h3>Pre-Conditions</h3>
+<p><ul><li>Rerun coordinator action must be in TIMEDOUT/SUCCEEDED/KILLED/FAILED.</li>
+<li>Coordinator actions cannot be rerun if the coordinator job is in the KILLED or FAILED state.</li>
+<li>All rerun actions must exist already.</li>
+<li>Coordinator Rerun will only use the original configs from first run.</li>
+<li>Coordinator Rerun will not re-read the coordinator.xml in hdfs.</li>
+</ul>
+</p>
+<a name="Rerun_Arguments"></a>
+</div>
+<div class="section"><h3>Rerun Arguments</h3>
+<p><pre>
+$oozie job -rerun &lt;coord_Job_id&gt; [-nocleanup] [-refresh]
+[-action 1, 3-4, 7-40] (-action or -date is required to rerun.)
+[-date 2009-01-01T01:00Z::2009-05-31T23:59Z, 2009-11-10T01:00Z, 2009-12-31T22:00Z]
+(if neither -action nor -date is given, the exception will be thrown.)
+</pre></p>
+<p><ul><li>Either -action or -date should be given.</li>
+<li>If -action and -date both are given, an error will be thrown.</li>
+<li>Multiple ranges can be used in -action or -date. See the above examples.</li>
+<li>If one of action in the given list of -action does not exist or not in terminal state, the rerun throws an error.</li>
+<li>The dates specified in -date must be UTC.</li>
+<li>Single date specified in -date must be able to find an action with matched nominal time to be effective.</li>
+<li>If -nocleanup is given, coordinator directories will not be removed; otherwise the 'output-event' will be deleted.</li>
+<li>If -refresh is set, new dataset is re-evaluated for latest() and future().</li>
+<li>If -refresh is set, all dependencies will be re-checked; otherwise only missed dependencies will be checked.</li>
+</ul>
+</p>
+<a name="Rerun_coordinator_actions"></a>
+</div>
+<div class="section"><h3>Rerun coordinator actions</h3>
+<p><ul><li>Rerun terminated coordinator actions.</li>
+<li>By default, Oozie will delete the 'output-event' directories before changing actions' status and materializing actions.</li>
+<li>If coordinator job is RUNNING, rerun actions will be materialized and compete with current running actions.</li>
+<li>Rerun for job, user should use job's start date and end date in -date.</li>
+<li>If the user specifies a date range (say Jan 1 to May 1), the actions that will be re-run are the existing actions</li>
+</ul>
+within that range.  If the existing actions are action #5....#40, which map to Jan 15 to Feb 15, then only those actions will run.<ul><li>When rerun succeeds, the rerun action_id and nominal_time will be return.</li>
+</ul>
+</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2011
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>
