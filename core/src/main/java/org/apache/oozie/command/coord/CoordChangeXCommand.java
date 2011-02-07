@@ -38,8 +38,8 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
      * This command is used to update the Coordinator job with the new values Update the coordinator job bean and update
      * that to database.
      * 
-     * @param id
-     * @param changeValue
+     * @param id Coordinator job id.
+     * @param changeValue This the changed value in the form key=value.
      */
     public CoordChangeXCommand(String id, String changeValue) {
         super("coord_change", "coord_change", 0);
@@ -49,10 +49,6 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
         this.name = "coord_change";
     }
 
-    /**
-     * @param changeValue change value.
-     * @throws CommandException thrown if changeValue cannot be parsed properly.
-     */
     private void parseChangeValue(String changeValue) throws CommandException {
         Map<String, String> map = new HashMap<String, String>();
         String[] tokens = changeValue.split(";");
@@ -139,11 +135,6 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
         parseChangeValue(this.changeValue);
     }
 
-    /**
-     * @param coordJob coordinator job id.
-     * @param newEndTime new end time.
-     * @throws CommandException thrown if new end time is not valid.
-     */
     private void checkEndTime(CoordinatorJobBean coordJob, Date newEndTime) throws CommandException {
         // New endTime cannot be before coordinator job's start time.
         Date startTime = coordJob.getStartTime();
@@ -163,12 +154,6 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
         }
     }
 
-    /**
-     * @param coordJob coordinator job id.
-     * @param newPauseTime new pause time.
-     * @param newEndTime new end time, can be null meaning no change on end time.
-     * @throws CommandException thrown if new pause time is not valid.
-     */
     private void checkPauseTime(CoordinatorJobBean coordJob, Date newPauseTime, Date newEndTime)
             throws CommandException {
         // New pauseTime cannot be before coordinator job's start time.
@@ -196,13 +181,6 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
         }
     }
 
-    /**
-     * @param coordJob coordinator job id.
-     * @param newEndTime new end time.
-     * @param newConcurrency new concurrency.
-     * @param newPauseTime new pause time.
-     * @throws CommandException thrown if new values are not valid.
-     */
     private void check(CoordinatorJobBean coordJob, Date newEndTime, Integer newConcurrency, Date newPauseTime)
             throws CommandException {
         if (coordJob.getStatus() == CoordinatorJob.Status.KILLED) {

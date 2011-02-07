@@ -93,7 +93,11 @@ public class JobUtils {
     }
 
     /**
+     * This Function will parse the value of the changed values in key value manner. the change value would be
+     * key1=value1;key2=value2
+     * 
      * @param changeValue change value.
+     * @return This returns the hash with hash<[key1,value1],[key2,value2]>
      * @throws CommandException thrown if changeValue cannot be parsed properly.
      */
     public static Map<String, String> parseChangeValue(String changeValue) throws CommandException {
