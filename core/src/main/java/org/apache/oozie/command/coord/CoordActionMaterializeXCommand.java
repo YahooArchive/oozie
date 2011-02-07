@@ -118,9 +118,9 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
     /**
      * Create action instances starting from "start-time" to end-time" and store them into Action table.
      *
-     * @param dryrun
-     * @param jobBean
-     * @param conf
+     * @param dryrun if this is a dry run
+     * @param jobBean coordinator job bean
+     * @param conf configuration object
      * @throws Exception
      */
     protected String materializeJobs(boolean dryrun, CoordinatorJobBean jobBean, Configuration conf,
@@ -201,16 +201,6 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
         }
     }
 
-    /**
-     * Store an Action into database table.
-     *
-     * @param actionBean
-     * @param actionXml
-     * @param store
-     * @param wantSla
-     * @throws StoreException
-     * @throws JDOMException
-     */
     private void storeToDB(CoordinatorActionBean actionBean, String actionXml) throws Exception {
         log.debug("In storeToDB() action Id " + actionBean.getId() + " Size of actionXml " + actionXml.length());
         actionBean.setActionXml(actionXml);
@@ -223,12 +213,6 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
         queue(new CoordActionInputCheckXCommand(actionBean.getId()), 100);
     }
 
-    /**
-     * @param actionXml
-     * @param actionBean
-     * @param store
-     * @throws Exception
-     */
     private void writeActionRegistration(String actionXml, CoordinatorActionBean actionBean)
             throws Exception {
         Element eAction = XmlUtils.parseXml(actionXml);
@@ -236,10 +220,6 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
         SLADbOperations.writeSlaRegistrationEvent(eSla, actionBean.getId(), SlaAppType.COORDINATOR_ACTION, user, group, log);
     }
 
-    /**
-     * @param job
-     * @throws StoreException
-     */
     private void updateJobTable(CoordinatorJobBean job) throws CommandException {
         // TODO: why do we need this? Isn't lastMatTime enough???
         job.setLastActionTime(endTime);
@@ -262,31 +242,6 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
         }
         catch (JPAExecutorException ex) {
             throw new CommandException(ex);
-        }
-    }
-
-    /**
-     * For preliminery testing. Should be removed soon
-     *
-     * @param args
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-        new Services().init();
-        try {
-            Date startTime = DateUtils.parseDateUTC("2009-02-01T01:00Z");
-            Date endTime = DateUtils.parseDateUTC("2009-02-02T01:00Z");
-            String jobId = "0000000-091207151850551-oozie-dani-C";
-            CoordActionMaterializeXCommand matCmd = new CoordActionMaterializeXCommand(jobId, startTime, endTime);
-            matCmd.call();
-        }
-        finally {
-            try {
-                Thread.sleep(60000);
-            }
-            catch (Exception ex) {
-            }
-            new Services().destroy();
         }
     }
 
