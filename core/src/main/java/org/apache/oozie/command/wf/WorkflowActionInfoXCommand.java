@@ -30,7 +30,7 @@ public class WorkflowActionInfoXCommand extends WorkflowXCommand<WorkflowActionB
     private static XLog LOG = XLog.getLog(WorkflowActionInfoXCommand.class);
     
     /**
-     * @param id
+     * @param id workflow action id
      */
     public WorkflowActionInfoXCommand(String id) {
         super("action.info", "action.info", 1);
