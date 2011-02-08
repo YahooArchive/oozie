@@ -40,6 +40,7 @@ import org.apache.oozie.store.StoreException;
 import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.Instrumentation;
 import org.apache.oozie.util.LogUtils;
+import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.XConfiguration;
 import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.XmlUtils;
@@ -65,7 +66,7 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
 
     public CoordActionMaterializeXCommand(String jobId, Date startTime, Date endTime) {
         super("coord_action_mater", "coord_action_mater", 1);
-        this.jobId = jobId;
+        this.jobId = ParamChecker.notEmpty(jobId, "jobId");
         this.startTime = startTime;
         this.endTime = endTime;
     }
@@ -127,9 +128,7 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
                                      XLog log) throws Exception {
         String jobXml = jobBean.getJobXml();
         Element eJob = XmlUtils.parseXml(jobXml);
-        // TODO: always UTC?
         TimeZone appTz = DateUtils.getTimeZone(jobBean.getTimeZone());
-        // TimeZone appTz = DateUtils.getTimeZone("UTC");
         int frequency = jobBean.getFrequency();
         TimeUnit freqTU = TimeUnit.valueOf(eJob.getAttributeValue("freq_timeunit"));
         TimeUnit endOfFlag = TimeUnit.valueOf(eJob.getAttributeValue("end_of_duration"));
@@ -139,7 +138,6 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
         Calendar end = Calendar.getInstance(appTz);
         end.setTime(endTime);
         lastActionNumber = jobBean.getLastActionNumber();
-        // DateUtils.moveToEnd(end, endOfFlag);
         log.info("   *** materialize Actions for tz=" + appTz.getDisplayName() + ",\n start=" + start.getTime()
                 + ", end=" + end.getTime() + "\n TimeUNIT " + freqTU.getCalendarUnit() + " Frequency :" + frequency
                 + ":" + freqTU + " lastActionNumber " + lastActionNumber);
@@ -221,7 +219,6 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
     }
 
     private void updateJobTable(CoordinatorJobBean job) throws CommandException {
-        // TODO: why do we need this? Isn't lastMatTime enough???
         job.setLastActionTime(endTime);
         job.setLastActionNumber(lastActionNumber);
         // if the job endtime == action endtime, then set status of job to

@@ -29,9 +29,6 @@ public class WorkflowActionInfoXCommand extends WorkflowXCommand<WorkflowActionB
     private String id;
     private static XLog LOG = XLog.getLog(WorkflowActionInfoXCommand.class);
     
-    /**
-     * @param id workflow action id
-     */
     public WorkflowActionInfoXCommand(String id) {
         super("action.info", "action.info", 1);
         this.id = ParamChecker.notEmpty(id, "id");

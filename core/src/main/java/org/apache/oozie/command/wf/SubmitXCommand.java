@@ -171,11 +171,6 @@ public class SubmitXCommand extends WorkflowXCommand<String> {
                 return null;
             }
 
-            // Configuration conf1 = workflow.getWorkflowInstance().getConf();
-            // System.out.println("WF1 INSTANCE CONF:");
-            // System.out.println(XmlUtils.prettyPrint(conf1).toString());
-            // Add WF_JOB SLA Registration event
-
             return workflow.getId();
         }
         catch (WorkflowException ex) {
@@ -191,8 +186,6 @@ public class SubmitXCommand extends WorkflowXCommand<String> {
 
     private String verifySlaElements(Element eWfJob, ELEvaluator evalSla) throws CommandException {
         String jobSlaXml = "";
-        // String prefix = XmlUtils.getNamespacePrefix(eWfJob,
-        // SchemaService.SLA_NAME_SPACE_URI);
         // Validate WF job
         Element eSla = eWfJob.getChild("info", Namespace.getNamespace(SchemaService.SLA_NAME_SPACE_URI));
         if (eSla != null) {
@@ -223,6 +216,12 @@ public class SubmitXCommand extends WorkflowXCommand<String> {
         }
     }
 
+    /**
+     * @param eSla sla xml element
+     * @param evalSla sla evaluator
+     * @return sla xml string after evaluation
+     * @throws CommandException
+     */
     public static String resolveSla(Element eSla, ELEvaluator evalSla) throws CommandException {
         // EL evaluation
         String slaXml = XmlUtils.prettyPrint(eSla).toString();
@@ -237,6 +236,13 @@ public class SubmitXCommand extends WorkflowXCommand<String> {
         }
     }
 
+    /**
+     * Create an EL evaluator for a given group.
+     * 
+     * @param conf configuration variable
+     * @param group group variable
+     * @return
+     */
     public static ELEvaluator createELEvaluatorForGroup(Configuration conf, String group) {
         ELEvaluator eval = Services.get().get(ELService.class).createEvaluator(group);
         for (Map.Entry<String, String> entry : conf) {

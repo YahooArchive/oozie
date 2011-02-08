@@ -14,7 +14,6 @@
  */
 package org.apache.oozie.command.wf;
 
-import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.local.LocalOozie;
@@ -92,7 +91,7 @@ public class TestSubmitMRXCommand extends XFsTestCase {
         String reference = XmlUtils.prettyPrint(root).toString();
 
         XLog.getLog(getClass()).info("reference xml = " + reference);
-        Assert.assertTrue(xml.equals(reference));
+        assertTrue(xml.equals(reference));
     }
 
     public void testWFXmlGenerationNegative1() throws Exception {

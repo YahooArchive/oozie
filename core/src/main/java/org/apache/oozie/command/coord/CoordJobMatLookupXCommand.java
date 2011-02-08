@@ -29,6 +29,7 @@ import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.LogUtils;
+import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.XLog;
 
 public class CoordJobMatLookupXCommand extends CoordinatorXCommand<Void> {
@@ -42,7 +43,7 @@ public class CoordJobMatLookupXCommand extends CoordinatorXCommand<Void> {
 
     public CoordJobMatLookupXCommand(String id, int materializationWindow) {
         super("materialization_lookup", "materialization_lookup", 1);
-        this.jobId = id;
+        this.jobId = ParamChecker.notEmpty(id, "id");
         this.materializationWindow = materializationWindow;
     }
 
