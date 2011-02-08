@@ -217,6 +217,8 @@ public class SubmitXCommand extends WorkflowXCommand<String> {
     }
 
     /**
+     * Resolve variables in sla xml element.
+     * 
      * @param eSla sla xml element
      * @param evalSla sla evaluator
      * @return sla xml string after evaluation
@@ -241,7 +243,7 @@ public class SubmitXCommand extends WorkflowXCommand<String> {
      * 
      * @param conf configuration variable
      * @param group group variable
-     * @return
+     * @return the evaluator created for the group
      */
     public static ELEvaluator createELEvaluatorForGroup(Configuration conf, String group) {
         ELEvaluator eval = Services.get().get(ELService.class).createEvaluator(group);

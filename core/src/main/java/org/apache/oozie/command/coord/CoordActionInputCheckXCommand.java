@@ -27,10 +27,10 @@ import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.PreconditionException;
-import org.apache.oozie.executor.jpa.CoordActionGetJPAExecutor;
-import org.apache.oozie.executor.jpa.JPAExecutorException;
 import org.apache.oozie.coord.CoordELEvaluator;
 import org.apache.oozie.coord.CoordELFunctions;
+import org.apache.oozie.executor.jpa.CoordActionGetJPAExecutor;
+import org.apache.oozie.executor.jpa.JPAExecutorException;
 import org.apache.oozie.service.HadoopAccessorException;
 import org.apache.oozie.service.HadoopAccessorService;
 import org.apache.oozie.service.JPAService;
@@ -45,23 +45,29 @@ import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.XmlUtils;
 import org.jdom.Element;
 
+/**
+ * The command to check if an action's data input paths exist in the file system.
+ */
 public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
 
-    private String actionId;
-    private static XLog log = XLog.getLog(CoordActionInputCheckXCommand.class);
+    private final String actionId;
+    private static XLog LOG = XLog.getLog(CoordActionInputCheckXCommand.class);
     private int COMMAND_REQUEUE_INTERVAL = 60000; // 1 minute
     private CoordinatorActionBean coordAction = null;
     private JPAService jpaService = null;
 
     public CoordActionInputCheckXCommand(String actionId) {
         super("coord_action_input", "coord_action_input", 1);
-        this.actionId = actionId;
+        this.actionId = ParamChecker.notEmpty(actionId, "actionId");
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.XCommand#execute()
+     */
     @Override
     protected Void execute() throws CommandException {
-        log.info("[" + actionId + "]::ActionInputCheck:: Action is in WAITING state.");
-        StringBuilder actionXml = new StringBuilder(coordAction.getActionXml());// job.getXml();
+        LOG.info("[" + actionId + "]::ActionInputCheck:: Action is in WAITING state.");
+        StringBuilder actionXml = new StringBuilder(coordAction.getActionXml());
         Instrumentation.Cron cron = new Instrumentation.Cron();
         try {
             Configuration actionConf = new XConfiguration(new StringReader(coordAction.getRunConf()));
@@ -69,23 +75,21 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
             StringBuilder existList = new StringBuilder();
             StringBuilder nonExistList = new StringBuilder();
             StringBuilder nonResolvedList = new StringBuilder();
-            CoordCommandUtils.getResolvedList(coordAction.getMissingDependencies(), nonExistList,
-                                                          nonResolvedList);
+            CoordCommandUtils.getResolvedList(coordAction.getMissingDependencies(), nonExistList, nonResolvedList);
 
-            log.info("[" + actionId + "]::ActionInputCheck:: Missing deps:" + nonExistList.toString() + " "
+            LOG.info("[" + actionId + "]::CoordActionInputCheck:: Missing deps:" + nonExistList.toString() + " "
                     + nonResolvedList.toString());
             Date actualTime = new Date();
             boolean status = checkInput(actionXml, existList, nonExistList, actionConf, actualTime);
             coordAction.setLastModifiedTime(actualTime);
             coordAction.setActionXml(actionXml.toString());
             if (nonResolvedList.length() > 0 && status == false) {
-                nonExistList.append(CoordCommandUtils.RESOLVED_UNRESOLVED_SEPARATOR).append(
-                        nonResolvedList);
+                nonExistList.append(CoordCommandUtils.RESOLVED_UNRESOLVED_SEPARATOR).append(nonResolvedList);
             }
             coordAction.setMissingDependencies(nonExistList.toString());
             if (status == true) {
                 coordAction.setStatus(CoordinatorAction.Status.READY);
-                // pass jobID to the ReadyCommand
+                // pass jobID to the CoordActionReadyXCommand
                 queue(new CoordActionReadyXCommand(coordAction.getJobId()), 100);
             }
             else {
@@ -110,12 +114,23 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
         return null;
     }
 
+    /**
+     * To check the list of input paths if all of them exist
+     *
+     * @param actionXml action xml
+     * @param existList the list of existed paths
+     * @param nonExistList the list of non existed paths
+     * @param conf action configuration
+     * @param actualTime current time
+     * @return true if all input paths are existed
+     * @throws Exception thrown of unable to check input path
+     */
     protected boolean checkInput(StringBuilder actionXml, StringBuilder existList, StringBuilder nonExistList,
-                                 Configuration conf, Date actualTime) throws Exception {
+            Configuration conf, Date actualTime) throws Exception {
         Element eAction = XmlUtils.parseXml(actionXml.toString());
         boolean allExist = checkResolvedUris(eAction, existList, nonExistList, conf);
         if (allExist) {
-            log.debug("[" + actionId + "]::ActionInputCheck:: Checking Latest/future");
+            LOG.debug("[" + actionId + "]::ActionInputCheck:: Checking Latest/future");
             allExist = checkUnresolvedInstances(eAction, conf, actualTime);
         }
         if (allExist == true) {
@@ -129,15 +144,16 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
      * Materialize data properties defined in <action> tag. it includes dataIn(<DS>) and dataOut(<DS>) it creates a list
      * of files that will be needed.
      *
-     * @param eAction
-     * @param conf
-     * @throws Exception
+     * @param eAction action element
+     * @param conf action configuration
+     * @throws Exception thrown if failed to resolve data properties
      * @update modify 'Action' element with appropriate list of files.
      */
+    @SuppressWarnings("unchecked")
     private void materializeDataProperties(Element eAction, Configuration conf) throws Exception {
         ELEvaluator eval = CoordELEvaluator.createDataEvaluator(eAction, conf, actionId);
         Element configElem = eAction.getChild("action", eAction.getNamespace()).getChild("workflow",
-                                                                                         eAction.getNamespace()).getChild("configuration", eAction.getNamespace());
+                eAction.getNamespace()).getChild("configuration", eAction.getNamespace());
         if (configElem != null) {
             for (Element propElem : (List<Element>) configElem.getChildren("property", configElem.getNamespace())) {
                 resolveTagContents("value", propElem, eval);
@@ -145,6 +161,14 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
         }
     }
 
+    /**
+     * To resolve property value which contains el functions
+     *
+     * @param tagName tag name
+     * @param elem the child element of "property" element
+     * @param eval el functions evaluator
+     * @throws Exception thrown if unable to resolve tag value
+     */
     private void resolveTagContents(String tagName, Element elem, ELEvaluator eval) throws Exception {
         if (elem == null) {
             return;
@@ -156,10 +180,20 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
             tagElem.addContent(updated);
         }
         else {
-            log.warn(" Value NOT FOUND " + tagName);
+            LOG.warn(" Value NOT FOUND " + tagName);
         }
     }
 
+    /**
+     * Check if any unsolved paths under data output. Resolve the unresolved data input paths.
+     *
+     * @param eAction action element
+     * @param actionConf action configuration
+     * @param actualTime current time
+     * @return true if successful to resolve input and output paths
+     * @throws Exception thrown if failed to resolve data input and output paths
+     */
+    @SuppressWarnings("unchecked")
     private boolean checkUnresolvedInstances(Element eAction, Configuration actionConf, Date actualTime)
             throws Exception {
         String strAction = XmlUtils.prettyPrint(eAction).toString();
@@ -169,8 +203,8 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
         boolean ret;
         Element inputList = eAction.getChild("input-events", eAction.getNamespace());
         if (inputList != null) {
-            ret = materializeUnresolvedEvent(inputList.getChildren("data-in", eAction.getNamespace()),
-                                             nominalTime, actualTime, actionConf);
+            ret = materializeUnresolvedEvent(inputList.getChildren("data-in", eAction.getNamespace()), nominalTime,
+                    actualTime, actionConf);
             if (ret == false) {
                 resultedXml.append(strAction);
                 return false;
@@ -178,8 +212,7 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
         }
 
         // Using latest() or future() in output-event is not intuitive.
-        // We need to make
-        // sure, this assumption is correct.
+        // We need to make sure, this assumption is correct.
         Element outputList = eAction.getChild("output-events", eAction.getNamespace());
         if (outputList != null) {
             for (Element dEvent : (List<Element>) outputList.getChildren("data-out", eAction.getNamespace())) {
@@ -188,18 +221,23 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
                             " not permitted in output-event ");
                 }
             }
-            /*
-             * ret = materializeUnresolvedEvent( (List<Element>)
-             * outputList.getChildren("data-out", eAction.getNamespace()),
-             * actualTime, nominalTime, actionConf); if (ret == false) {
-             * resultedXml.append(strAction); return false; }
-             */
         }
         return true;
     }
 
+    /**
+     * Resolve the list of data input paths
+     *
+     * @param eDataEvents the list of data input elements
+     * @param nominalTime action nominal time
+     * @param actualTime current time
+     * @param conf action configuration
+     * @return true if all unresolved URIs can be resolved
+     * @throws Exception thrown if failed to resolve data input paths
+     */
+    @SuppressWarnings("unchecked")
     private boolean materializeUnresolvedEvent(List<Element> eDataEvents, Date nominalTime, Date actualTime,
-                                               Configuration conf) throws Exception {
+            Configuration conf) throws Exception {
         for (Element dEvent : eDataEvents) {
             if (dEvent.getChild("unresolved-instances", dEvent.getNamespace()) == null) {
                 continue;
@@ -212,7 +250,7 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
                 String ret = CoordELFunctions.evalAndWrap(eval, unresolvedList[i]);
                 Boolean isResolved = (Boolean) eval.getVariable("is_resolved");
                 if (isResolved == false) {
-                    log.info("[" + actionId + "]::Cannot resolve: " + ret);
+                    LOG.info("[" + actionId + "]::Cannot resolve: " + ret);
                     return false;
                 }
                 if (resolvedTmp.length() > 0) {
@@ -236,29 +274,42 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
         return true;
     }
 
+    /**
+     * Check all resolved URIs existence
+     *
+     * @param eAction action element
+     * @param existList the list of existed paths
+     * @param nonExistList the list of paths to check existence
+     * @param conf action configuration
+     * @return true if all nonExistList paths exist
+     * @throws IOException thrown if unable to access the path
+     */
     private boolean checkResolvedUris(Element eAction, StringBuilder existList, StringBuilder nonExistList,
-                                      Configuration conf) throws IOException {
-
-        log.info("[" + actionId + "]::ActionInputCheck:: In checkResolvedUris...");
+            Configuration conf) throws IOException {
+        LOG.info("[" + actionId + "]::ActionInputCheck:: In checkResolvedUris...");
         Element inputList = eAction.getChild("input-events", eAction.getNamespace());
         if (inputList != null) {
-            // List<Element> eDataEvents = inputList.getChildren("data-in",
-            // eAction.getNamespace());
-            // for (Element event : eDataEvents) {
-            // Element uris = event.getChild("uris", event.getNamespace());
             if (nonExistList.length() > 0) {
                 checkListOfPaths(existList, nonExistList, conf);
             }
-            // }
             return nonExistList.length() == 0;
         }
         return true;
     }
 
+    /**
+     * Check a list of non existed paths and add to exist list if it exists
+     *
+     * @param existList the list of existed paths
+     * @param nonExistList the list of paths to check existence
+     * @param conf action configuration
+     * @return true if all nonExistList paths exist
+     * @throws IOException thrown if unable to access the path
+     */
     private boolean checkListOfPaths(StringBuilder existList, StringBuilder nonExistList, Configuration conf)
             throws IOException {
 
-        log.info("[" + actionId + "]::ActionInputCheck:: In checkListOfPaths for: " + nonExistList.toString());
+        LOG.info("[" + actionId + "]::ActionInputCheck:: In checkListOfPaths for: " + nonExistList.toString());
 
         String[] uriList = nonExistList.toString().split(CoordELFunctions.INSTANCE_SEPARATOR);
         nonExistList.delete(0, nonExistList.length());
@@ -267,7 +318,7 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
         for (int i = 0; i < uriList.length; i++) {
             if (allExists) {
                 allExists = pathExists(uriList[i], conf);
-                log.info("[" + actionId + "]::ActionInputCheck:: File:" + uriList[i] + ", Exists? :" + allExists);
+                LOG.info("[" + actionId + "]::ActionInputCheck:: File:" + uriList[i] + ", Exists? :" + allExists);
             }
             if (allExists) {
                 existList.append(existSeparator).append(uriList[i]);
@@ -281,8 +332,16 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
         return allExists;
     }
 
+    /**
+     * Check if given path exists
+     *
+     * @param sPath uri path
+     * @param actionConf action configuration
+     * @return true if path exists
+     * @throws IOException thrown if unable to access the path
+     */
     private boolean pathExists(String sPath, Configuration actionConf) throws IOException {
-        log.debug("checking for the file " + sPath);
+        LOG.debug("checking for the file " + sPath);
         Path path = new Path(sPath);
         String user = ParamChecker.notEmpty(actionConf.get(OozieClient.USER_NAME), OozieClient.USER_NAME);
         String group = ParamChecker.notEmpty(actionConf.get(OozieClient.GROUP_NAME), OozieClient.GROUP_NAME);
@@ -302,8 +361,9 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
      * @param instances : List of time stamp seprated by ","
      * @param unresolvedInstances : list of instance with latest/future function
      * @return : list of URIs separated by ",".
-     * @throws Exception
+     * @throws Exception thrown if failed to create URIs from unresolvedInstances
      */
+    @SuppressWarnings("unused")
     private String createURIs(Element event, String instances, StringBuilder unresolvedInstances) throws Exception {
         if (instances == null || instances.length() == 0) {
             return "";
@@ -321,9 +381,6 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
                 continue;
             }
             ELEvaluator eval = CoordELEvaluator.createURIELEvaluator(instanceList[i]);
-            // uris.append(eval.evaluate(event.getChild("dataset",
-            // event.getNamespace()).getChild("uri-template",
-            // event.getNamespace()).getTextTrim(), String.class));
             if (uris.length() > 0) {
                 uris.append(CoordELFunctions.INSTANCE_SEPARATOR);
             }
@@ -333,32 +390,25 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
         return uris.toString();
     }
 
-    /**
-     * @param args
-     * @throws Exception
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.XCommand#getEntityKey()
      */
-    public static void main(String[] args) throws Exception {
-        new Services().init();
-        String actionId = "0000000-091221141623042-oozie-dani-C@4";
-        try {
-            new CoordActionInputCheckXCommand(actionId).call();
-            Thread.sleep(10000);
-        }
-        finally {
-            new Services().destroy();
-        }
-    }
-
     @Override
     protected String getEntityKey() {
         return coordAction.getJobId();
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.XCommand#isLockRequired()
+     */
     @Override
     protected boolean isLockRequired() {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.XCommand#eagerLoadState()
+     */
     @Override
     protected void eagerLoadState() throws CommandException {
         jpaService = Services.get().get(JPAService.class);
@@ -368,43 +418,50 @@ public class CoordActionInputCheckXCommand extends CoordinatorXCommand<Void> {
         try {
             coordAction = jpaService.execute(new CoordActionGetJPAExecutor(actionId));
         }
-        catch (JPAExecutorException e) {
-            throw new CommandException(e);
+        catch (JPAExecutorException je) {
+            throw new CommandException(je);
         }
         LogUtils.setLogInfo(coordAction, logInfo);
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.XCommand#loadState()
+     */
     @Override
     protected void loadState() throws CommandException {
 
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.XCommand#verifyPrecondition()
+     */
     @Override
     protected void verifyPrecondition() throws CommandException, PreconditionException {
         // this action should only get processed if current time >
-        // materialization time
+        // materialization time.
         // otherwise, requeue this action after 30 seconds
         Date nominalTime = coordAction.getNominalTime();
         Date currentTime = new Date();
         if (nominalTime.compareTo(currentTime) > 0) {
-            queue(new CoordActionInputCheckXCommand(coordAction.getId()), Math.max(
-                    (nominalTime.getTime() - currentTime.getTime()), COMMAND_REQUEUE_INTERVAL));
+            queue(new CoordActionInputCheckXCommand(coordAction.getId()), Math.max((nominalTime.getTime() - currentTime
+                    .getTime()), COMMAND_REQUEUE_INTERVAL));
             // update lastModifiedTime
             coordAction.setLastModifiedTime(new Date());
             try {
                 jpaService.execute(new org.apache.oozie.executor.jpa.CoordActionUpdateJPAExecutor(coordAction));
             }
-            catch (JPAExecutorException e) {
-                throw new CommandException(e);
+            catch (JPAExecutorException je) {
+                throw new CommandException(je);
             }
-            
+
             throw new PreconditionException(ErrorCode.E1100, "[" + actionId
                     + "]::ActionInputCheck:: nominal Time is newer than current time, so requeue and wait. Current="
                     + currentTime + ", nominal=" + nominalTime);
         }
-        
+
         if (coordAction.getStatus() != CoordinatorActionBean.Status.WAITING) {
-            throw new PreconditionException(ErrorCode.E1100, "[" + actionId + "]::ActionInputCheck:: Ignoring action. Should be in WAITING state, but state="
+            throw new PreconditionException(ErrorCode.E1100, "[" + actionId
+                    + "]::ActionInputCheck:: Ignoring action. Should be in WAITING state, but state="
                     + coordAction.getStatus());
         }
     }
