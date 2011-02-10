@@ -65,7 +65,7 @@ public class JobXCommand extends WorkflowXCommand<WorkflowJobBean> {
             this.workflow.setConsoleUrl(getJobConsoleUrl(id));
         }
         catch (JPAExecutorException ex) {
-            throw new CommandException( ((JPAExecutorException)ex).getErrorCode(), ex);
+            throw new CommandException(ex);
         }
         catch (Exception ex) {
             throw new CommandException(ErrorCode.E0603, ex);
