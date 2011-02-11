@@ -32,7 +32,7 @@ public class BundleJobInsertJPAExecutor implements JPAExecutor<String> {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#execute(javax.persistence.EntityManager)
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
      */
     @Override
     public String execute(EntityManager em) throws JPAExecutorException {
@@ -41,7 +41,7 @@ public class BundleJobInsertJPAExecutor implements JPAExecutor<String> {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.jpa.JPACommand#getName()
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#getName()
      */
     @Override
     public String getName() {

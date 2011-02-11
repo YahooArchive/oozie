@@ -16,31 +16,20 @@ package org.apache.oozie.command;
 
 import org.apache.oozie.client.Job;
 
-public abstract class ResumeTransitionXCommand extends TransitionXCommand<Void>{
+public abstract class ResumeTransitionXCommand extends TransitionXCommand<Void> {
 
     /**
-     * Submit the job
+     * Resume the job
      *
      * @return String
      * @throws CommandException
      */
     public abstract void resume() throws CommandException;
 
-    /**
-     * @param name
-     * @param type
-     * @param priority
-     */
     public ResumeTransitionXCommand(String name, String type, int priority) {
         super(name, type, priority);
     }
 
-    /**
-     * @param name
-     * @param type
-     * @param priority
-     * @param dryrun
-     */
     public ResumeTransitionXCommand(String name, String type, int priority, boolean dryrun) {
         super(name, type, priority, dryrun);
     }
@@ -53,9 +42,10 @@ public abstract class ResumeTransitionXCommand extends TransitionXCommand<Void>{
         if (job == null) {
             job = this.getJob();
         }
-        if(job.getStatus() == Job.Status.PREPSUSPENDED){
+        if (job.getStatus() == Job.Status.PREPSUSPENDED) {
             job.setStatus(Job.Status.PREP);
-        }else if(job.getStatus() == Job.Status.SUSPENDED){
+        }
+        else if (job.getStatus() == Job.Status.SUSPENDED) {
             job.setStatus(Job.Status.RUNNING);
         }
         job.resetPending();

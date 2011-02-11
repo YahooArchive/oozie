@@ -30,8 +30,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.oozie.client.BundleJob;
-import org.apache.oozie.client.Job;
 import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.Job;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -103,6 +103,8 @@ public class JsonBundleJob implements BundleJob, JsonBean {
     }
 
     /**
+     * Get the value from the json object.
+     *
      * @param json
      */
     public JsonBundleJob(JSONObject json) {
@@ -418,7 +420,7 @@ public class JsonBundleJob implements BundleJob, JsonBean {
     public void setCoordJobs(List<? extends JsonCoordinatorJob> coordJobs) {
         this.coordJobs = (coordJobs != null) ? coordJobs : new ArrayList<JsonCoordinatorJob>();
     }
-    
+
     /**
      * Convert a Bundle job list into a JSONArray.
      *

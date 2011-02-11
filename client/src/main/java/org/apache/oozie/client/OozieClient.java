@@ -138,7 +138,7 @@ public class OozieClient {
 
     /**
      * Create a Workflow client instance.
-     * 
+     *
      * @param oozieUrl URL of the Oozie instance it will interact with.
      */
     public OozieClient(String oozieUrl) {
@@ -152,7 +152,7 @@ public class OozieClient {
      * Return the Oozie URL of the workflow client instance.
      * <p/>
      * This URL is the base URL fo the Oozie system, with not protocol versioning.
-     * 
+     *
      * @return the Oozie URL of the workflow client instance.
      */
     public String getOozieUrl() {
@@ -163,7 +163,7 @@ public class OozieClient {
      * Return the Oozie URL used by the client and server for WS communications.
      * <p/>
      * This URL is the original URL plus the versioning element path.
-     * 
+     *
      * @return the Oozie URL used by the client and server for communication.
      * @throws OozieClientException thrown in the client and the server are not protocol compatible.
      */
@@ -174,7 +174,7 @@ public class OozieClient {
 
     /**
      * Validate that the Oozie client and server instances are protocol compatible.
-     * 
+     *
      * @throws OozieClientException thrown in the client and the server are not protocol compatible.
      */
     public synchronized void validateWSVersion() throws OozieClientException {
@@ -220,7 +220,7 @@ public class OozieClient {
 
     /**
      * Create an empty configuration with just the {@link #USER_NAME} set to the JVM user name.
-     * 
+     *
      * @return an empty configuration.
      */
     public Properties createConfiguration() {
@@ -231,7 +231,7 @@ public class OozieClient {
 
     /**
      * Set a HTTP header to be used in the WS requests by the workflow instance.
-     * 
+     *
      * @param name header name.
      * @param value header value.
      */
@@ -241,7 +241,7 @@ public class OozieClient {
 
     /**
      * Get the value of a set HTTP header from the workflow instance.
-     * 
+     *
      * @param name header name.
      * @return header value, <code>null</code> if not set.
      */
@@ -251,7 +251,7 @@ public class OozieClient {
 
     /**
      * Get the set HTTP header
-     * 
+     *
      * @return map of header key and value
      */
     public Map<String, String> getHeaders() {
@@ -260,7 +260,7 @@ public class OozieClient {
 
     /**
      * Remove a HTTP header from the workflow client instance.
-     * 
+     *
      * @param name header name.
      */
     public void removeHeader(String name) {
@@ -269,7 +269,7 @@ public class OozieClient {
 
     /**
      * Return an iterator with all the header names set in the workflow instance.
-     * 
+     *
      * @return header names.
      */
     public Iterator<String> getHeaderNames() {
@@ -310,7 +310,7 @@ public class OozieClient {
 
     /**
      * Create http connection to oozie server.
-     * 
+     *
      * @param url
      * @param method
      * @return connection
@@ -466,7 +466,7 @@ public class OozieClient {
 
     /**
      * Submit a workflow job.
-     * 
+     *
      * @param conf job configuration.
      * @return the job Id.
      * @throws OozieClientException thrown if the job could not be submitted.
@@ -497,7 +497,7 @@ public class OozieClient {
 
     /**
      * dryrun for a given job
-     * 
+     *
      * @param conf Job configuration.
      */
     public String dryrun(Properties conf) throws OozieClientException {
@@ -506,7 +506,7 @@ public class OozieClient {
 
     /**
      * Start a workflow job.
-     * 
+     *
      * @param jobId job Id.
      * @throws OozieClientException thrown if the job could not be started.
      */
@@ -516,7 +516,7 @@ public class OozieClient {
 
     /**
      * Submit and start a workflow job.
-     * 
+     *
      * @param conf job configuration.
      * @return the job Id.
      * @throws OozieClientException thrown if the job could not be submitted.
@@ -527,7 +527,7 @@ public class OozieClient {
 
     /**
      * Rerun a workflow job.
-     * 
+     *
      * @param jobId job Id to rerun.
      * @param conf configuration information for the rerun.
      * @throws OozieClientException thrown if the job could not be started.
@@ -538,7 +538,7 @@ public class OozieClient {
 
     /**
      * Suspend a workflow job.
-     * 
+     *
      * @param jobId job Id.
      * @throws OozieClientException thrown if the job could not be suspended.
      */
@@ -548,7 +548,7 @@ public class OozieClient {
 
     /**
      * Resume a workflow job.
-     * 
+     *
      * @param jobId job Id.
      * @throws OozieClientException thrown if the job could not be resume.
      */
@@ -558,7 +558,7 @@ public class OozieClient {
 
     /**
      * Kill a workflow job.
-     * 
+     *
      * @param jobId job Id.
      * @throws OozieClientException thrown if the job could not be killed.
      */
@@ -568,7 +568,7 @@ public class OozieClient {
 
     /**
      * Change a coordinator job.
-     * 
+     *
      * @param jobId job Id.
      * @param changeValue change value.
      * @throws OozieClientException thrown if the job could not be changed.
@@ -621,7 +621,7 @@ public class OozieClient {
 
     /**
      * Get the info of a workflow job.
-     * 
+     *
      * @param jobId job Id.
      * @return the job info.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -632,7 +632,7 @@ public class OozieClient {
 
     /**
      * Get the info of a workflow job and subset actions.
-     * 
+     *
      * @param jobId job Id.
      * @param start starting index in the list of actions belonging to the job
      * @param len number of actions to be returned
@@ -645,7 +645,7 @@ public class OozieClient {
 
     /**
      * Get the info of a workflow action.
-     * 
+     *
      * @param actionId Id.
      * @return the workflow action info.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -656,7 +656,7 @@ public class OozieClient {
 
     /**
      * Get the log of a workflow job.
-     * 
+     *
      * @param jobId job Id.
      * @return the job log.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -674,7 +674,7 @@ public class OozieClient {
 
     /**
      * Get the definition of a workflow job.
-     * 
+     *
      * @param jobId job Id.
      * @return the job log.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -713,7 +713,7 @@ public class OozieClient {
         /**
          * Return a reader as string.
          * <p/>
-         * 
+         *
          * @param reader reader to read into a string.
          * @param maxLen max content length allowed, if -1 there is no limit.
          * @return the reader content.
@@ -807,7 +807,7 @@ public class OozieClient {
 
     /**
      * Get the info of a bundle job.
-     * 
+     *
      * @param jobId job Id.
      * @return the job info.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -818,7 +818,7 @@ public class OozieClient {
 
     /**
      * Get the info of a coordinator job.
-     * 
+     *
      * @param jobId job Id.
      * @return the job info.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -829,7 +829,7 @@ public class OozieClient {
 
     /**
      * Get the info of a coordinator job and subset actions.
-     * 
+     *
      * @param jobId job Id.
      * @param start starting index in the list of actions belonging to the job
      * @param len number of actions to be returned
@@ -842,7 +842,7 @@ public class OozieClient {
 
     /**
      * Get the info of a coordinator action.
-     * 
+     *
      * @param actionId Id.
      * @return the coordinator action info.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -958,7 +958,7 @@ public class OozieClient {
 
     /**
      * Rerun coordinator actions.
-     * 
+     *
      * @param jobId coordinator jobId
      * @param rerunType rerun type 'date' if -date is used, 'action-id' if -action is used
      * @param scope rerun scope for date or actionIds
@@ -973,7 +973,7 @@ public class OozieClient {
 
     /**
      * Rerun bundle coordinators.
-     * 
+     *
      * @param jobId bundle jobId
      * @param coordScope rerun scope for coordinator jobs
      * @param dateScope rerun scope for date
@@ -988,7 +988,7 @@ public class OozieClient {
 
     /**
      * Return the info of the workflow jobs that match the filter.
-     * 
+     *
      * @param filter job filter. Refer to the {@link OozieClient} for the filter syntax.
      * @param start jobs offset, base 1.
      * @param len number of jobs to return.
@@ -1003,7 +1003,7 @@ public class OozieClient {
      * Return the info of the workflow jobs that match the filter.
      * <p/>
      * It returns the first 100 jobs that match the filter.
-     * 
+     *
      * @param filter job filter. Refer to the {@link OozieClient} for the filter syntax.
      * @return a list with the workflow jobs info, without node details.
      * @throws OozieClientException thrown if the jobs info could not be retrieved.
@@ -1014,7 +1014,7 @@ public class OozieClient {
 
     /**
      * Print sla info about coordinator and workflow jobs and actions.
-     * 
+     *
      * @param start starting offset
      * @param len number of results
      * @return
@@ -1075,7 +1075,7 @@ public class OozieClient {
      * Return the workflow job Id for an external Id.
      * <p/>
      * The external Id must have provided at job creation time.
-     * 
+     *
      * @param externalId external Id given at job creation time.
      * @return the workflow job Id for an external Id, <code>null</code> if none.
      * @throws OozieClientException thrown if the operation could not be done.
@@ -1103,7 +1103,7 @@ public class OozieClient {
     /**
      * Enable or disable safe mode. Used by OozieCLI. In safe mode, Oozie would not accept any commands except status
      * command to change and view the safe mode status.
-     * 
+     *
      * @param status true to enable safe mode, false to disable safe mode.
      * @throws OozieClientException if it fails to set the safe mode status.
      */
@@ -1133,7 +1133,7 @@ public class OozieClient {
 
     /**
      * Returns if Oozie is in safe mode or not.
-     * 
+     *
      * @return true if safe mode is ON<br>
      *         false if safe mode is OFF
      * @throws OozieClientException throw if it could not obtain the safe mode status.
@@ -1167,7 +1167,7 @@ public class OozieClient {
 
     /**
      * Return the Oozie server build version.
-     * 
+     *
      * @return the Oozie server build version.
      * @throws OozieClientException throw if it the server build version could not be retrieved.
      */
@@ -1177,7 +1177,7 @@ public class OozieClient {
 
     /**
      * Return the Oozie client build version.
-     * 
+     *
      * @return the Oozie client build version.
      */
     public String getClientBuildVersion() {
@@ -1186,7 +1186,7 @@ public class OozieClient {
 
     /**
      * Return the info of the coordinator jobs that match the filter.
-     * 
+     *
      * @param filter job filter. Refer to the {@link OozieClient} for the filter syntax.
      * @param start jobs offset, base 1.
      * @param len number of jobs to return.
@@ -1228,7 +1228,7 @@ public class OozieClient {
 
     /**
      * Return the Oozie queue's commands' dump
-     * 
+     *
      * @return the list of strings of callable identification in queue
      * @throws OozieClientException throw if it the queue dump could not be retrieved.
      */
@@ -1238,7 +1238,7 @@ public class OozieClient {
 
     /**
      * Check if the string is not null or not empty.
-     * 
+     *
      * @param str
      * @param name
      * @return string
@@ -1255,7 +1255,7 @@ public class OozieClient {
 
     /**
      * Check if the object is not null.
-     * 
+     *
      * @param <T>
      * @param obj
      * @param name

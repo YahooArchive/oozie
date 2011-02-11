@@ -77,7 +77,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert coord job for testing.
-     * 
+     *
      * @param status
      * @return coord job bean
      * @throws Exception
@@ -103,7 +103,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Create coord job bean
-     * 
+     *
      * @param status
      * @param appPath
      * @param appXml
@@ -147,7 +147,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Write coordinator xml
-     * 
+     *
      * @param appPath app path
      * @throws IOException thrown if unable to write xml
      * @throws UnsupportedEncodingException thrown if encoding failed
@@ -167,7 +167,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Write coordinator xml
-     * 
+     *
      * @param appPath app path
      * @return testFileName test file name
      * @throws IOException thrown if unable to write xml
@@ -181,7 +181,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert coord action for testing.
-     * 
+     *
      * @param jobId coord job id
      * @param actionNum action number
      * @param status coord action status
@@ -209,7 +209,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Create coord action bean
-     * 
+     *
      * @param jobId coord job id
      * @param actionNum action number
      * @param status coord action status
@@ -248,7 +248,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert wf job for testing.
-     * 
+     *
      * @param jobStatus workflow job status
      * @param instanceStatus workflow instance status
      * @return workflow job bean
@@ -288,7 +288,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert wf action for testing.
-     * 
+     *
      * @param wfId workflow id
      * @param actionName workflow action name
      * @param status workflow action status
@@ -314,7 +314,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert sla event for testing.
-     * 
+     *
      * @param slaId sla id
      * @throws Exception thrown if unable to create sla bean
      */
@@ -355,7 +355,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert bundle job for testing.
-     * 
+     *
      * @param jobStatus
      * @return bundle job bean
      * @throws Exception
@@ -378,7 +378,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Read coord job xml from test resources
-     * 
+     *
      * @param appPath application path
      * @return content of coord job xml
      */
@@ -401,7 +401,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Read coord job xml from test resources
-     * 
+     *
      * @param testFileName file name of coord job xml
      * @return content of coord job xml
      */
@@ -418,7 +418,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Read coord action xml from test resources
-     * 
+     *
      * @param appPath application path
      * @param resourceXmlName file name of coord action xml
      * @return content of coord action xml
@@ -449,7 +449,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Get coordinator configuration
-     * 
+     *
      * @param appPath application path
      * @return coordinator configuration
      * @throws IOException thrown if unable to get coord conf
@@ -483,7 +483,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Get action nominal time.
-     * 
+     *
      * @param actionXml
      * @return
      */
@@ -502,7 +502,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Create workflow job bean
-     * 
+     *
      * @param app workflow app
      * @param conf workflow configuration
      * @param authToken auth token
@@ -537,7 +537,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Create workflow action bean
-     * 
+     *
      * @param wfId workflow job id
      * @param actionName workflow action name
      * @param status workflow action status
@@ -582,7 +582,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Create bundle job bean
-     * 
+     *
      * @param jobStatus
      * @return bundle job bean
      * @throws Exception

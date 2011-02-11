@@ -24,7 +24,7 @@ import org.apache.oozie.ErrorCode;
 import org.apache.oozie.util.ParamChecker;
 
 /**
- * Load the coordinators in the Coordinator job bean
+ * Load the coordinators for specified bundle in the Coordinator job bean
  */
 public class BundleJobGetCoordinatorsJPAExecutor implements JPAExecutor<List<CoordinatorJobBean>> {
     private String bundleId = null;

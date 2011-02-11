@@ -18,8 +18,9 @@ import org.apache.oozie.client.Job;
 import org.apache.oozie.util.ParamChecker;
 
 /**
- * This is the base class commands for all the jobs . This will drive the statuses for all the jobs
- * 
+ * This is the base commands for all the jobs related commands . This will drive the statuses for all the jobs and all
+ * the jobs will follow the same state machine.
+ *
  * @param <T>
  */
 public abstract class TransitionXCommand<T> extends XCommand<T> {
@@ -36,21 +37,21 @@ public abstract class TransitionXCommand<T> extends XCommand<T> {
 
     /**
      * Transit to the next status based on the result of the Job.
-     * 
+     *
      * @throws CommandException
      */
     public abstract void transitToNext() throws CommandException;
 
     /**
      * Update the parent job.
-     * 
+     *
      * @throws CommandException
      */
     public abstract void updateJob() throws CommandException;
 
     /**
      * This will be used to notify the parent about the status of that perticular job.
-     * 
+     *
      * @throws CommandException
      */
     public abstract void notifyParent() throws CommandException;
@@ -69,7 +70,7 @@ public abstract class TransitionXCommand<T> extends XCommand<T> {
 
     /**
      * Get the Job for the command.
-     * 
+     *
      * @return
      */
     public Job getJob() {
@@ -78,7 +79,7 @@ public abstract class TransitionXCommand<T> extends XCommand<T> {
 
     /**
      * Set the Job for the command.
-     * 
+     *
      * @param job
      */
     public void setJob(Job job) {

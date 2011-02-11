@@ -31,15 +31,15 @@ import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.XLog;
 
 /**
- * Command for loading a coordinators information in the Bundle job.
+ * Command for Getting the Bundle job bean it also gets coordinators information in the Bundle job.
  */
 public class BundleJobXCommand extends XCommand<BundleJobBean> {
     private final String id;
     private final XLog LOG = XLog.getLog(BundleJobXCommand.class);
 
     /**
-     * Command for loading a coordinators information in the Bundle job.
-     * 
+     * Command for Getting the Bundle job bean it also gets coordinators information in the Bundle job.
+     *
      * @param id bundle jobId
      */
     public BundleJobXCommand(String id) {

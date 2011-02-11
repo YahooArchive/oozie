@@ -160,11 +160,22 @@ public class BundleJobBean extends JsonBundleJob implements Writable {
     }
 
     /**
-     * @param kickoffTimestamp the kickoffTimestamp to set
+     * @param startTimestamp the startTimestamp to set
      */
     public void setStartTimestamp(java.sql.Timestamp startTimestamp) {
         super.setStartTime(DateUtils.toDate(startTimestamp));
         this.startTimestamp = startTimestamp;
+    }
+
+    /**
+     * Set startTime
+     *
+     * @param startTime the startTime to set
+     */
+    @Override
+    public void setStartTime(Date startTime) {
+        super.setStartTime(startTime);
+        this.startTimestamp = DateUtils.convertDateToTimestamp(startTime);
     }
 
     /**
@@ -227,7 +238,7 @@ public class BundleJobBean extends JsonBundleJob implements Writable {
 
     /**
      * Set pending to true
-     * 
+     *
      * @param pending set pending to true
      */
     @Override
@@ -237,7 +248,7 @@ public class BundleJobBean extends JsonBundleJob implements Writable {
 
     /**
      * Set pending to false
-     * 
+     *
      * @param pending set pending to false
      */
     @Override
@@ -247,7 +258,7 @@ public class BundleJobBean extends JsonBundleJob implements Writable {
 
     /**
      * Return if the action is pending.
-     * 
+     *
      * @return if the action is pending.
      */
     @Override
@@ -396,7 +407,6 @@ public class BundleJobBean extends JsonBundleJob implements Writable {
      */
     @Override
     public Date getEndTime() {
-        // TODO Auto-generated method stub
         return DateUtils.toDate(endTimestamp);
     }
 

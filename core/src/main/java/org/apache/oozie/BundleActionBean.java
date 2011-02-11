@@ -87,6 +87,8 @@ public class BundleActionBean implements Writable {
     private java.sql.Timestamp lastModifiedTimestamp = null;
 
     /**
+     * bundleActionId to set
+     *
      * @param bundleActionId the bundleActionId to set
      */
     public void setBundleActionId(String bundleActionId) {
@@ -95,7 +97,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Get the Bundle Action Id.
-     * 
+     *
      * @return the bundleActionId
      */
     public String getBundleActionId() {
@@ -104,7 +106,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Get the BundleId
-     * 
+     *
      * @return bundleId
      */
     public String getBundleId() {
@@ -113,7 +115,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Set the Bundle Id.
-     * 
+     *
      * @param bundleId
      */
     public void setBundleId(String bundleId) {
@@ -121,8 +123,8 @@ public class BundleActionBean implements Writable {
     }
 
     /**
-     * Gee the Coordinator name.
-     * 
+     * Get the Coordinator name.
+     *
      * @return coordName
      */
     public String getCoordName() {
@@ -131,7 +133,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Set the Coordinator name.
-     * 
+     *
      * @param coordName
      */
     public void setCoordName(String coordName) {
@@ -140,7 +142,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Get the coordinator Id.
-     * 
+     *
      * @return the coordId
      */
     public String getCoordId() {
@@ -149,7 +151,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Set the coordinator Id.
-     * 
+     *
      * @param coordId
      */
     public void setCoordId(String coordId) {
@@ -158,7 +160,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Get the Status of the Bundle Action
-     * 
+     *
      * @return status object
      */
     public Status getStatus() {
@@ -167,7 +169,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Get the Status of the Bundle Action
-     * 
+     *
      * @return status string
      */
     public String getStatusStr() {
@@ -176,7 +178,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Set the Status of the Bundle Action
-     * 
+     *
      * @param val
      */
     public void setStatus(Status val) {
@@ -185,7 +187,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Set Whether this bundle action is critical or not.
-     * 
+     *
      * @param critical set critical to true
      */
     public void setCritical() {
@@ -194,7 +196,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Reseset Whether this bundle action is critical or not.
-     * 
+     *
      * @param critical set critical to false
      */
     public void resetCritical() {
@@ -203,7 +205,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Return if the action is critical.
-     * 
+     *
      * @return if the action is critical.
      */
     public boolean isCritical() {
@@ -212,7 +214,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Set some actions are in progress for particular bundle action.
-     * 
+     *
      * @param pending set pending to true
      */
     public void setPending(int pending) {
@@ -221,7 +223,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * increment pending and return it
-     * 
+     *
      * @return pending
      */
     public int incrementAndGetPending() {
@@ -231,7 +233,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * decrement pending and return it
-     * 
+     *
      * @return pending
      */
     public int decrementAndGetPending() {
@@ -241,7 +243,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Get some actions are in progress for particular bundle action.
-     * 
+     *
      * @return pending
      */
     public int getPending() {
@@ -250,7 +252,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Return if the action is pending.
-     * 
+     *
      * @return if the action is pending.
      */
     public boolean isPending() {
@@ -259,7 +261,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Set Last modified time.
-     * 
+     *
      * @param lastModifiedTimestamp the lastModifiedTimestamp to set
      */
     public void setLastModifiedTimestamp(java.sql.Timestamp lastModifiedTimestamp) {
@@ -268,7 +270,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Set Last modified time.
-     * 
+     *
      * @param lastModifiedTime the lastModifiedTime to set
      */
     public void setLastModifiedTime(Date lastModifiedTime) {
@@ -277,7 +279,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Get Last modified time.
-     * 
+     *
      * @return lastModifiedTime
      */
     public Date getLastModifiedTime() {
@@ -286,7 +288,7 @@ public class BundleActionBean implements Writable {
 
     /**
      * Get Last modified time.
-     * 
+     *
      * @return lastModifiedTimestamp
      */
     public Timestamp getLastModifiedTimestamp() {
