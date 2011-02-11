@@ -15,6 +15,7 @@
 package org.apache.oozie.test;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -27,6 +28,7 @@ import java.util.regex.Matcher;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.CoordinatorJobBean;
 import org.apache.oozie.SLAEventBean;
@@ -35,6 +37,7 @@ import org.apache.oozie.WorkflowJobBean;
 import org.apache.oozie.action.hadoop.MapperReducerForTest;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.SLAEvent;
 import org.apache.oozie.client.WorkflowAction;
@@ -42,6 +45,7 @@ import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.client.CoordinatorJob.Execution;
 import org.apache.oozie.client.CoordinatorJob.Timeunit;
 import org.apache.oozie.client.SLAEvent.Status;
+import org.apache.oozie.executor.jpa.BundleJobInsertJPAExecutor;
 import org.apache.oozie.executor.jpa.CoordActionInsertJPAExecutor;
 import org.apache.oozie.executor.jpa.CoordJobInsertJPAExecutor;
 import org.apache.oozie.executor.jpa.JPAExecutorException;
@@ -73,7 +77,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert coord job for testing.
-     *
+     * 
      * @param status
      * @return coord job bean
      * @throws Exception
@@ -99,15 +103,14 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Create coord job bean
-     *
+     * 
      * @param status
      * @param appPath
      * @param appXml
      * @return coord job bean
      * @throws IOException
      */
-    protected CoordinatorJobBean createCoordJob(CoordinatorJob.Status status)
-            throws Exception {
+    protected CoordinatorJobBean createCoordJob(CoordinatorJob.Status status) throws Exception {
         Path appPath = new Path(getFsTestCaseDir(), "coord");
         String appXml = writeCoordXml(appPath);
 
@@ -144,7 +147,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Write coordinator xml
-     *
+     * 
      * @param appPath app path
      * @throws IOException thrown if unable to write xml
      * @throws UnsupportedEncodingException thrown if encoding failed
@@ -162,10 +165,9 @@ public abstract class XDataTestCase extends XFsTestCase {
         return appXml;
     }
 
-
     /**
      * Write coordinator xml
-     *
+     * 
      * @param appPath app path
      * @return testFileName test file name
      * @throws IOException thrown if unable to write xml
@@ -179,7 +181,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert coord action for testing.
-     *
+     * 
      * @param jobId coord job id
      * @param actionNum action number
      * @param status coord action status
@@ -187,7 +189,8 @@ public abstract class XDataTestCase extends XFsTestCase {
      * @return coord action bean
      * @throws Exception thrown if unable to create coord action bean
      */
-    protected CoordinatorActionBean addRecordToCoordActionTable(String jobId, int actionNum, CoordinatorAction.Status status, String resourceXmlName) throws Exception {
+    protected CoordinatorActionBean addRecordToCoordActionTable(String jobId, int actionNum,
+            CoordinatorAction.Status status, String resourceXmlName) throws Exception {
         CoordinatorActionBean action = createCoordAction(jobId, actionNum, status, resourceXmlName);
 
         try {
@@ -206,7 +209,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Create coord action bean
-     *
+     * 
      * @param jobId coord job id
      * @param actionNum action number
      * @param status coord action status
@@ -245,13 +248,14 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert wf job for testing.
-     *
+     * 
      * @param jobStatus workflow job status
      * @param instanceStatus workflow instance status
      * @return workflow job bean
      * @throws Exception thrown if unable to create workflow job bean
      */
-    protected WorkflowJobBean addRecordToWfJobTable(WorkflowJob.Status jobStatus, WorkflowInstance.Status instanceStatus) throws Exception {
+    protected WorkflowJobBean addRecordToWfJobTable(WorkflowJob.Status jobStatus, WorkflowInstance.Status instanceStatus)
+            throws Exception {
         WorkflowApp app = new LiteWorkflowApp("testApp", "<workflow-app/>", new StartNodeDef("end"))
                 .addNode(new EndNodeDef("end"));
         Configuration conf = new Configuration();
@@ -284,14 +288,15 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert wf action for testing.
-     *
+     * 
      * @param wfId workflow id
      * @param actionName workflow action name
      * @param status workflow action status
      * @return workflow action bean
      * @throws Exception thrown if unable to create workflow action bean
      */
-    protected WorkflowActionBean addRecordToWfActionTable(String wfId, String actionName, WorkflowAction.Status status) throws Exception {
+    protected WorkflowActionBean addRecordToWfActionTable(String wfId, String actionName, WorkflowAction.Status status)
+            throws Exception {
         WorkflowActionBean action = createWorkflowAction(wfId, actionName, status);
         try {
             JPAService jpaService = Services.get().get(JPAService.class);
@@ -309,7 +314,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Insert sla event for testing.
-     *
+     * 
      * @param slaId sla id
      * @throws Exception thrown if unable to create sla bean
      */
@@ -349,8 +354,31 @@ public abstract class XDataTestCase extends XFsTestCase {
     }
 
     /**
+     * Insert bundle job for testing.
+     * 
+     * @param jobStatus
+     * @return bundle job bean
+     * @throws Exception
+     */
+    protected BundleJobBean addRecordToBundleJobTable(Job.Status jobStatus) throws Exception {
+        BundleJobBean bundle = createBundleJob(jobStatus);
+        try {
+            JPAService jpaService = Services.get().get(JPAService.class);
+            assertNotNull(jpaService);
+            BundleJobInsertJPAExecutor bundleInsertjpa = new BundleJobInsertJPAExecutor(bundle);
+            jpaService.execute(bundleInsertjpa);
+        }
+        catch (JPAExecutorException ce) {
+            ce.printStackTrace();
+            fail("Unable to insert the test bundle job record to table");
+            throw ce;
+        }
+        return bundle;
+    }
+
+    /**
      * Read coord job xml from test resources
-     *
+     * 
      * @param appPath application path
      * @return content of coord job xml
      */
@@ -373,7 +401,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Read coord job xml from test resources
-     *
+     * 
      * @param testFileName file name of coord job xml
      * @return content of coord job xml
      */
@@ -390,7 +418,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Read coord action xml from test resources
-     *
+     * 
      * @param appPath application path
      * @param resourceXmlName file name of coord action xml
      * @return content of coord action xml
@@ -421,7 +449,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Get coordinator configuration
-     *
+     * 
      * @param appPath application path
      * @return coordinator configuration
      * @throws IOException thrown if unable to get coord conf
@@ -455,6 +483,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Get action nominal time.
+     * 
      * @param actionXml
      * @return
      */
@@ -473,7 +502,7 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Create workflow job bean
-     *
+     * 
      * @param app workflow app
      * @param conf workflow configuration
      * @param authToken auth token
@@ -508,14 +537,15 @@ public abstract class XDataTestCase extends XFsTestCase {
 
     /**
      * Create workflow action bean
-     *
+     * 
      * @param wfId workflow job id
      * @param actionName workflow action name
      * @param status workflow action status
      * @return workflow action bean
      * @throws Exception thrown if unable to create workflow action bean
      */
-    protected WorkflowActionBean createWorkflowAction(String wfId, String actionName, WorkflowAction.Status status) throws Exception {
+    protected WorkflowActionBean createWorkflowAction(String wfId, String actionName, WorkflowAction.Status status)
+            throws Exception {
         WorkflowActionBean action = new WorkflowActionBean();
         action.setName(actionName);
         action.setId(Services.get().get(UUIDService.class).generateChildId(wfId, actionName));
@@ -537,21 +567,83 @@ public abstract class XDataTestCase extends XFsTestCase {
         w.write("dummy\n");
         w.close();
 
-        String actionXml = "<map-reduce>" +
-        "<job-tracker>" + getJobTrackerUri() + "</job-tracker>" +
-        "<name-node>" + getNameNodeUri() + "</name-node>" +
-        "<configuration>" +
-        "<property><name>mapred.mapper.class</name><value>" + MapperReducerForTest.class.getName() +
-        "</value></property>" +
-        "<property><name>mapred.reducer.class</name><value>" + MapperReducerForTest.class.getName() +
-        "</value></property>" +
-        "<property><name>mapred.input.dir</name><value>"+inputDir.toString()+"</value></property>" +
-        "<property><name>mapred.output.dir</name><value>"+outputDir.toString()+"</value></property>" +
-        "</configuration>" +
-        "</map-reduce>";
+        String actionXml = "<map-reduce>" + "<job-tracker>" + getJobTrackerUri() + "</job-tracker>" + "<name-node>"
+                + getNameNodeUri() + "</name-node>" + "<configuration>"
+                + "<property><name>mapred.mapper.class</name><value>" + MapperReducerForTest.class.getName()
+                + "</value></property>" + "<property><name>mapred.reducer.class</name><value>"
+                + MapperReducerForTest.class.getName() + "</value></property>"
+                + "<property><name>mapred.input.dir</name><value>" + inputDir.toString() + "</value></property>"
+                + "<property><name>mapred.output.dir</name><value>" + outputDir.toString() + "</value></property>"
+                + "</configuration>" + "</map-reduce>";
         action.setConf(actionXml);
 
         return action;
+    }
+
+    /**
+     * Create bundle job bean
+     * 
+     * @param jobStatus
+     * @return bundle job bean
+     * @throws Exception
+     */
+    protected BundleJobBean createBundleJob(Job.Status jobStatus) throws Exception {
+        Path coordPath1 = new Path(getFsTestCaseDir(), "coord1");
+        Path coordPath2 = new Path(getFsTestCaseDir(), "coord2");
+        writeCoordXml(coordPath1, "coord-job-bundle.xml");
+        writeCoordXml(coordPath2, "coord-job-bundle.xml");
+
+        Path bundleAppPath = new Path(getFsTestCaseDir(), "bundle");
+        String bundleAppXml = getBundleXml("bundle-submit-job.xml");
+
+        bundleAppXml = bundleAppXml
+                .replaceAll("#app_path1", coordPath1.toString() + File.separator + "coordinator.xml");
+        bundleAppXml = bundleAppXml
+                .replaceAll("#app_path2", coordPath2.toString() + File.separator + "coordinator.xml");
+        // bundleAppXml = bundleAppXml.replaceAll("#app_path1", coordPath1.toString());
+        // bundleAppXml = bundleAppXml.replaceAll("#app_path2", coordPath2.toString());
+
+        writeToFile(bundleAppXml, bundleAppPath, "bundle.xml");
+
+        Configuration conf = new XConfiguration();
+        conf.set(OozieClient.BUNDLE_APP_PATH, bundleAppPath.toString());
+        conf.set(OozieClient.USER_NAME, getTestUser());
+        conf.set(OozieClient.GROUP_NAME, getTestGroup());
+        conf.set("jobTracker", getJobTrackerUri());
+        conf.set("nameNode", getNameNodeUri());
+        injectKerberosInfo(conf);
+
+        BundleJobBean bundle = new BundleJobBean();
+        bundle.setId(Services.get().get(UUIDService.class).generateId(ApplicationType.BUNDLE));
+        bundle.setAppName("BUNDLE-TEST");
+        bundle.setAppPath(bundleAppPath.toString());
+        bundle.setAuthToken("authToken");
+        bundle.setConf(XmlUtils.prettyPrint(conf).toString());
+        bundle.setConsoleUrl("consoleUrl");
+        bundle.setCreatedTime(new Date());
+        // TODO bundle.setStartTime(startTime);
+        // TODO bundle.setEndTime(endTime);
+        // TODO bundle.setExternalId(externalId);
+        bundle.setJobXml(bundleAppXml);
+        bundle.setLastModifiedTime(new Date());
+        bundle.setOrigJobXml(bundleAppXml);
+        bundle.resetPending();
+        bundle.setStatus(jobStatus);
+        bundle.setUser(conf.get(OozieClient.USER_NAME));
+        bundle.setGroup(conf.get(OozieClient.GROUP_NAME));
+
+        return bundle;
+    }
+
+    private String getBundleXml(String resourceXmlName) {
+        try {
+            Reader reader = IOUtils.getResourceAsReader(resourceXmlName, -1);
+            String appXml = IOUtils.getReaderAsString(reader, -1);
+            return appXml;
+        }
+        catch (IOException ioe) {
+            throw new RuntimeException(XLog.format("Could not get " + resourceXmlName, ioe));
+        }
     }
 
 }

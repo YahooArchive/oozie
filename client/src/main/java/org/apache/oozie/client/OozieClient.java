@@ -39,6 +39,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.oozie.BuildInfo;
+import org.apache.oozie.client.rest.JsonBundleJob;
 import org.apache.oozie.client.rest.JsonCoordinatorAction;
 import org.apache.oozie.client.rest.JsonCoordinatorJob;
 import org.apache.oozie.client.rest.JsonTags;
@@ -85,6 +86,10 @@ public class OozieClient {
 
     public static final String COORDINATOR_APP_PATH = "oozie.coord.application.path";
 
+    public static final String BUNDLE_APP_PATH = "oozie.bundle.application.path";
+
+    public static final String BUNDLE_ID = "oozie.bundle.id";
+
     public static final String EXTERNAL_ID = "oozie.wf.external.id";
 
     public static final String WORKFLOW_NOTIFICATION_URL = "oozie.wf.workflow.notification.url";
@@ -114,7 +119,7 @@ public class OozieClient {
     public static final String CHANGE_VALUE_PAUSETIME = "pausetime";
 
     public static final String CHANGE_VALUE_CONCURRENCY = "concurrency";
-    
+
     public static final String LIBPATH = "oozie.libpath";
 
     public static final String USE_SYSTEM_LIBPATH = "oozie.use.system.libpath";
@@ -126,16 +131,14 @@ public class OozieClient {
     private String baseUrl;
     private String protocolUrl;
     private boolean validatedVersion = false;
-    private Map<String, String> headers = new HashMap<String, String>();
-
-
+    private final Map<String, String> headers = new HashMap<String, String>();
 
     protected OozieClient() {
     }
 
     /**
      * Create a Workflow client instance.
-     *
+     * 
      * @param oozieUrl URL of the Oozie instance it will interact with.
      */
     public OozieClient(String oozieUrl) {
@@ -149,7 +152,7 @@ public class OozieClient {
      * Return the Oozie URL of the workflow client instance.
      * <p/>
      * This URL is the base URL fo the Oozie system, with not protocol versioning.
-     *
+     * 
      * @return the Oozie URL of the workflow client instance.
      */
     public String getOozieUrl() {
@@ -160,7 +163,7 @@ public class OozieClient {
      * Return the Oozie URL used by the client and server for WS communications.
      * <p/>
      * This URL is the original URL plus the versioning element path.
-     *
+     * 
      * @return the Oozie URL used by the client and server for communication.
      * @throws OozieClientException thrown in the client and the server are not protocol compatible.
      */
@@ -171,7 +174,7 @@ public class OozieClient {
 
     /**
      * Validate that the Oozie client and server instances are protocol compatible.
-     *
+     * 
      * @throws OozieClientException thrown in the client and the server are not protocol compatible.
      */
     public synchronized void validateWSVersion() throws OozieClientException {
@@ -187,7 +190,7 @@ public class OozieClient {
                     if (!array.contains(WS_PROTOCOL_VERSION) && !array.contains(WS_PROTOCOL_VERSION_0)) {
                         StringBuilder msg = new StringBuilder();
                         msg.append("Supported version [").append(WS_PROTOCOL_VERSION).append(
-                        "] or less, Unsupported versions[");
+                                "] or less, Unsupported versions[");
                         String separator = "";
                         for (Object version : array) {
                             msg.append(separator).append(version);
@@ -217,7 +220,7 @@ public class OozieClient {
 
     /**
      * Create an empty configuration with just the {@link #USER_NAME} set to the JVM user name.
-     *
+     * 
      * @return an empty configuration.
      */
     public Properties createConfiguration() {
@@ -228,7 +231,7 @@ public class OozieClient {
 
     /**
      * Set a HTTP header to be used in the WS requests by the workflow instance.
-     *
+     * 
      * @param name header name.
      * @param value header value.
      */
@@ -238,7 +241,7 @@ public class OozieClient {
 
     /**
      * Get the value of a set HTTP header from the workflow instance.
-     *
+     * 
      * @param name header name.
      * @return header value, <code>null</code> if not set.
      */
@@ -248,7 +251,7 @@ public class OozieClient {
 
     /**
      * Get the set HTTP header
-     *
+     * 
      * @return map of header key and value
      */
     public Map<String, String> getHeaders() {
@@ -257,7 +260,7 @@ public class OozieClient {
 
     /**
      * Remove a HTTP header from the workflow client instance.
-     *
+     * 
      * @param name header name.
      */
     public void removeHeader(String name) {
@@ -266,7 +269,7 @@ public class OozieClient {
 
     /**
      * Return an iterator with all the header names set in the workflow instance.
-     *
+     * 
      * @return header names.
      */
     public Iterator<String> getHeaderNames() {
@@ -274,7 +277,7 @@ public class OozieClient {
     }
 
     private URL createURL(String collection, String resource, Map<String, String> parameters) throws IOException,
-    OozieClientException {
+            OozieClientException {
         validateWSVersion();
         StringBuilder sb = new StringBuilder();
         sb.append(protocolUrl).append(collection);
@@ -307,7 +310,7 @@ public class OozieClient {
 
     /**
      * Create http connection to oozie server.
-     *
+     * 
      * @param url
      * @param method
      * @return connection
@@ -327,10 +330,10 @@ public class OozieClient {
     }
 
     protected abstract class ClientCallable<T> implements Callable<T> {
-        private String method;
-        private String collection;
-        private String resource;
-        private Map<String, String> params;
+        private final String method;
+        private final String collection;
+        private final String resource;
+        private final Map<String, String> params;
 
         public ClientCallable(String method, String collection, String resource, Map<String, String> params) {
             this.method = method;
@@ -348,7 +351,7 @@ public class OozieClient {
                 }
                 else {
                     System.out
-                    .println("Option not supported in target server. Supported only on Oozie-2.0 or greater. Use 'oozie help' for details");
+                            .println("Option not supported in target server. Supported only on Oozie-2.0 or greater. Use 'oozie help' for details");
                     throw new OozieClientException(OozieClientException.UNSUPPORTED_VERSION, new Exception());
                 }
             }
@@ -426,7 +429,7 @@ public class OozieClient {
     }
 
     private class JobSubmit extends ClientCallable<String> {
-        private Properties conf;
+        private final Properties conf;
 
         JobSubmit(Properties conf, boolean start) {
             super("POST", RestConstants.JOBS, "", (start) ? prepareParams(RestConstants.ACTION_PARAM,
@@ -463,7 +466,7 @@ public class OozieClient {
 
     /**
      * Submit a workflow job.
-     *
+     * 
      * @param conf job configuration.
      * @return the job Id.
      * @throws OozieClientException thrown if the job could not be submitted.
@@ -494,7 +497,7 @@ public class OozieClient {
 
     /**
      * dryrun for a given job
-     *
+     * 
      * @param conf Job configuration.
      */
     public String dryrun(Properties conf) throws OozieClientException {
@@ -503,7 +506,7 @@ public class OozieClient {
 
     /**
      * Start a workflow job.
-     *
+     * 
      * @param jobId job Id.
      * @throws OozieClientException thrown if the job could not be started.
      */
@@ -513,7 +516,7 @@ public class OozieClient {
 
     /**
      * Submit and start a workflow job.
-     *
+     * 
      * @param conf job configuration.
      * @return the job Id.
      * @throws OozieClientException thrown if the job could not be submitted.
@@ -524,7 +527,7 @@ public class OozieClient {
 
     /**
      * Rerun a workflow job.
-     *
+     * 
      * @param jobId job Id to rerun.
      * @param conf configuration information for the rerun.
      * @throws OozieClientException thrown if the job could not be started.
@@ -535,7 +538,7 @@ public class OozieClient {
 
     /**
      * Suspend a workflow job.
-     *
+     * 
      * @param jobId job Id.
      * @throws OozieClientException thrown if the job could not be suspended.
      */
@@ -545,7 +548,7 @@ public class OozieClient {
 
     /**
      * Resume a workflow job.
-     *
+     * 
      * @param jobId job Id.
      * @throws OozieClientException thrown if the job could not be resume.
      */
@@ -555,7 +558,7 @@ public class OozieClient {
 
     /**
      * Kill a workflow job.
-     *
+     * 
      * @param jobId job Id.
      * @throws OozieClientException thrown if the job could not be killed.
      */
@@ -565,7 +568,7 @@ public class OozieClient {
 
     /**
      * Change a coordinator job.
-     *
+     * 
      * @param jobId job Id.
      * @param changeValue change value.
      * @throws OozieClientException thrown if the job could not be changed.
@@ -618,7 +621,7 @@ public class OozieClient {
 
     /**
      * Get the info of a workflow job.
-     *
+     * 
      * @param jobId job Id.
      * @return the job info.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -629,7 +632,7 @@ public class OozieClient {
 
     /**
      * Get the info of a workflow job and subset actions.
-     *
+     * 
      * @param jobId job Id.
      * @param start starting index in the list of actions belonging to the job
      * @param len number of actions to be returned
@@ -642,7 +645,7 @@ public class OozieClient {
 
     /**
      * Get the info of a workflow action.
-     *
+     * 
      * @param actionId Id.
      * @return the workflow action info.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -653,7 +656,7 @@ public class OozieClient {
 
     /**
      * Get the log of a workflow job.
-     *
+     * 
      * @param jobId job Id.
      * @return the job log.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -671,7 +674,7 @@ public class OozieClient {
 
     /**
      * Get the definition of a workflow job.
-     *
+     * 
      * @param jobId job Id.
      * @return the job log.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -710,7 +713,7 @@ public class OozieClient {
         /**
          * Return a reader as string.
          * <p/>
-         *
+         * 
          * @param reader reader to read into a string.
          * @param maxLen max content length allowed, if -1 there is no limit.
          * @return the reader content.
@@ -761,6 +764,27 @@ public class OozieClient {
         }
     }
 
+    private class BundleJobInfo extends ClientCallable<BundleJob> {
+
+        BundleJobInfo(String jobId) {
+            super("GET", RestConstants.JOB, notEmpty(jobId, "jobId"), prepareParams(RestConstants.JOB_SHOW_PARAM,
+                    RestConstants.JOB_SHOW_INFO));
+        }
+
+        @Override
+        protected BundleJob call(HttpURLConnection conn) throws IOException, OozieClientException {
+            if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
+                Reader reader = new InputStreamReader(conn.getInputStream());
+                JSONObject json = (JSONObject) JSONValue.parse(reader);
+                return new JsonBundleJob(json);
+            }
+            else {
+                handleError(conn);
+            }
+            return null;
+        }
+    }
+
     private class CoordActionInfo extends ClientCallable<CoordinatorAction> {
         CoordActionInfo(String actionId) {
             super("GET", RestConstants.JOB, notEmpty(actionId, "id"), prepareParams(RestConstants.JOB_SHOW_PARAM,
@@ -782,8 +806,19 @@ public class OozieClient {
     }
 
     /**
+     * Get the info of a bundle job.
+     * 
+     * @param jobId job Id.
+     * @return the job info.
+     * @throws OozieClientException thrown if the job info could not be retrieved.
+     */
+    public BundleJob getBundleJobInfo(String jobId) throws OozieClientException {
+        return new BundleJobInfo(jobId).call();
+    }
+
+    /**
      * Get the info of a coordinator job.
-     *
+     * 
      * @param jobId job Id.
      * @return the job info.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -794,7 +829,7 @@ public class OozieClient {
 
     /**
      * Get the info of a coordinator job and subset actions.
-     *
+     * 
      * @param jobId job Id.
      * @param start starting index in the list of actions belonging to the job
      * @param len number of actions to be returned
@@ -807,7 +842,7 @@ public class OozieClient {
 
     /**
      * Get the info of a coordinator action.
-     *
+     * 
      * @param actionId Id.
      * @return the coordinator action info.
      * @throws OozieClientException thrown if the job info could not be retrieved.
@@ -844,7 +879,7 @@ public class OozieClient {
         }
     }
 
-    private class CoordJobsStatus extends ClientCallable<List<CoordinatorJob>> {
+    private class CoordJobsStatus extends ClientCallable<List<JsonCoordinatorJob>> {
 
         CoordJobsStatus(String filter, int start, int len) {
             super("GET", RestConstants.JOBS, "", prepareParams(RestConstants.JOBS_FILTER_PARAM, filter,
@@ -854,7 +889,7 @@ public class OozieClient {
 
         @Override
         @SuppressWarnings("unchecked")
-        protected List<CoordinatorJob> call(HttpURLConnection conn) throws IOException, OozieClientException {
+        protected List<JsonCoordinatorJob> call(HttpURLConnection conn) throws IOException, OozieClientException {
             conn.setRequestProperty("content-type", RestConstants.XML_CONTENT_TYPE);
             if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
                 Reader reader = new InputStreamReader(conn.getInputStream());
@@ -879,7 +914,7 @@ public class OozieClient {
                     RestConstants.JOB_COORD_ACTION_RERUN, RestConstants.JOB_COORD_RERUN_TYPE_PARAM, rerunType,
                     RestConstants.JOB_COORD_RERUN_SCOPE_PARAM, scope, RestConstants.JOB_COORD_RERUN_REFRESH_PARAM,
                     Boolean.toString(refresh), RestConstants.JOB_COORD_RERUN_NOCLEANUP_PARAM, Boolean
-                    .toString(noCleanup)));
+                            .toString(noCleanup)));
         }
 
         @Override
@@ -898,9 +933,32 @@ public class OozieClient {
         }
     }
 
+    private class BundleRerun extends ClientCallable<Void> {
+
+        BundleRerun(String jobId, String coordScope, String dateScope, boolean refresh, boolean noCleanup) {
+            super("PUT", RestConstants.JOB, notEmpty(jobId, "jobId"), prepareParams(RestConstants.ACTION_PARAM,
+                    RestConstants.JOB_BUNDLE_ACTION_RERUN, RestConstants.JOB_BUNDLE_RERUN_COORD_SCOPE_PARAM,
+                    coordScope, RestConstants.JOB_BUNDLE_RERUN_DATE_SCOPE_PARAM, dateScope,
+                    RestConstants.JOB_COORD_RERUN_REFRESH_PARAM, Boolean.toString(refresh),
+                    RestConstants.JOB_COORD_RERUN_NOCLEANUP_PARAM, Boolean.toString(noCleanup)));
+        }
+
+        @Override
+        protected Void call(HttpURLConnection conn) throws IOException, OozieClientException {
+            conn.setRequestProperty("content-type", RestConstants.XML_CONTENT_TYPE);
+            if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
+                return null;
+            }
+            else {
+                handleError(conn);
+            }
+            return null;
+        }
+    }
+
     /**
      * Rerun coordinator actions.
-     *
+     * 
      * @param jobId coordinator jobId
      * @param rerunType rerun type 'date' if -date is used, 'action-id' if -action is used
      * @param scope rerun scope for date or actionIds
@@ -914,8 +972,23 @@ public class OozieClient {
     }
 
     /**
+     * Rerun bundle coordinators.
+     * 
+     * @param jobId bundle jobId
+     * @param coordScope rerun scope for coordinator jobs
+     * @param dateScope rerun scope for date
+     * @param refresh true if -refresh is given in command option
+     * @param noCleanup true if -nocleanup is given in command option
+     * @throws OozieClientException
+     */
+    public Void reRunBundle(String jobId, String coordScope, String dateScope, boolean refresh, boolean noCleanup)
+            throws OozieClientException {
+        return new BundleRerun(jobId, coordScope, dateScope, refresh, noCleanup).call();
+    }
+
+    /**
      * Return the info of the workflow jobs that match the filter.
-     *
+     * 
      * @param filter job filter. Refer to the {@link OozieClient} for the filter syntax.
      * @param start jobs offset, base 1.
      * @param len number of jobs to return.
@@ -930,7 +1003,7 @@ public class OozieClient {
      * Return the info of the workflow jobs that match the filter.
      * <p/>
      * It returns the first 100 jobs that match the filter.
-     *
+     * 
      * @param filter job filter. Refer to the {@link OozieClient} for the filter syntax.
      * @return a list with the workflow jobs info, without node details.
      * @throws OozieClientException thrown if the jobs info could not be retrieved.
@@ -941,7 +1014,7 @@ public class OozieClient {
 
     /**
      * Print sla info about coordinator and workflow jobs and actions.
-     *
+     * 
      * @param start starting offset
      * @param len number of results
      * @return
@@ -1002,7 +1075,7 @@ public class OozieClient {
      * Return the workflow job Id for an external Id.
      * <p/>
      * The external Id must have provided at job creation time.
-     *
+     * 
      * @param externalId external Id given at job creation time.
      * @return the workflow job Id for an external Id, <code>null</code> if none.
      * @throws OozieClientException thrown if the operation could not be done.
@@ -1030,7 +1103,7 @@ public class OozieClient {
     /**
      * Enable or disable safe mode. Used by OozieCLI. In safe mode, Oozie would not accept any commands except status
      * command to change and view the safe mode status.
-     *
+     * 
      * @param status true to enable safe mode, false to disable safe mode.
      * @throws OozieClientException if it fails to set the safe mode status.
      */
@@ -1060,7 +1133,7 @@ public class OozieClient {
 
     /**
      * Returns if Oozie is in safe mode or not.
-     *
+     * 
      * @return true if safe mode is ON<br>
      *         false if safe mode is OFF
      * @throws OozieClientException throw if it could not obtain the safe mode status.
@@ -1094,7 +1167,7 @@ public class OozieClient {
 
     /**
      * Return the Oozie server build version.
-     *
+     * 
      * @return the Oozie server build version.
      * @throws OozieClientException throw if it the server build version could not be retrieved.
      */
@@ -1104,7 +1177,7 @@ public class OozieClient {
 
     /**
      * Return the Oozie client build version.
-     *
+     * 
      * @return the Oozie client build version.
      */
     public String getClientBuildVersion() {
@@ -1113,14 +1186,14 @@ public class OozieClient {
 
     /**
      * Return the info of the coordinator jobs that match the filter.
-     *
+     * 
      * @param filter job filter. Refer to the {@link OozieClient} for the filter syntax.
      * @param start jobs offset, base 1.
      * @param len number of jobs to return.
      * @return a list with the coordinator jobs info
      * @throws OozieClientException thrown if the jobs info could not be retrieved.
      */
-    public List<CoordinatorJob> getCoordJobsInfo(String filter, int start, int len) throws OozieClientException {
+    public List<JsonCoordinatorJob> getCoordJobsInfo(String filter, int start, int len) throws OozieClientException {
         return new CoordJobsStatus(filter, start, len).call();
     }
 
@@ -1155,7 +1228,7 @@ public class OozieClient {
 
     /**
      * Return the Oozie queue's commands' dump
-     *
+     * 
      * @return the list of strings of callable identification in queue
      * @throws OozieClientException throw if it the queue dump could not be retrieved.
      */
@@ -1165,7 +1238,7 @@ public class OozieClient {
 
     /**
      * Check if the string is not null or not empty.
-     *
+     * 
      * @param str
      * @param name
      * @return string
@@ -1182,7 +1255,7 @@ public class OozieClient {
 
     /**
      * Check if the object is not null.
-     *
+     * 
      * @param <T>
      * @param obj
      * @param name
