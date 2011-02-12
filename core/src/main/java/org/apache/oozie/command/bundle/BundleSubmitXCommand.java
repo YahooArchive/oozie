@@ -96,10 +96,10 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
     }
 
     /**
-     * Constructor to create the Bundle Submit Command.
+     * Constructor to create the bundle submit command.
      *
-     * @param conf : Configuration for bundle job
-     * @param authToken : To be used for authentication
+     * @param conf configuration for bundle job
+     * @param authToken to be used for authentication
      */
     public BundleSubmitXCommand(Configuration conf, String authToken) {
         super("bundle_submit", "bundle_submit", 1);
@@ -110,9 +110,9 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
     /**
      * Constructor to create the bundle submit command.
      *
-     * @param dryrun
-     * @param conf
-     * @param authToken
+     * @param dryrun true if dryrun is enable
+     * @param conf configuration for bundle job
+     * @param authToken to be used for authentication
      */
     public BundleSubmitXCommand(boolean dryrun, Configuration conf, String authToken) {
         this(conf, authToken);
@@ -250,12 +250,11 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
     /**
      * Merge default configuration with user-defined configuration.
      *
-     * @throws CommandException
+     * @throws CommandException thrown if failed to merge configuration
      */
     protected void mergeDefaultConfig() throws CommandException {
         Path appPath = new Path(conf.get(OozieClient.BUNDLE_APP_PATH));
         Path configDefault = new Path(appPath.getParent(), CONFIG_DEFAULT);
-        //CoordUtils.getHadoopConf(conf);
         FileSystem fs;
         try {
             String user = ParamChecker.notEmpty(conf.get(OozieClient.USER_NAME), OozieClient.USER_NAME);
@@ -286,7 +285,7 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
      * Read the application XML and validate against bundle Schema
      *
      * @return validated bundle XML
-     * @throws BundleJobException
+     * @throws BundleJobException thrown if failed to read or validate xml
      */
     private String readAndValidateXml() throws BundleJobException {
         String appPath = ParamChecker.notEmpty(conf.get(OozieClient.BUNDLE_APP_PATH), OozieClient.BUNDLE_APP_PATH);
@@ -341,8 +340,8 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
     /**
      * Validate against Bundle XSD file
      *
-     * @param xmlContent : Input Bundle xml
-     * @throws BundleJobException
+     * @param xmlContent input bundle xml
+     * @throws BundleJobException thrown if failed to validate xml
      */
     private void validateXml(String xmlContent) throws BundleJobException {
         javax.xml.validation.Schema schema = Services.get().get(SchemaService.class).getSchema(SchemaName.BUNDLE);
@@ -365,7 +364,7 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
      *
      * @param Bundle job bean
      * @return job id
-     * @throws CommandException
+     * @throws CommandException thrown if failed to store bundle job bean to db
      */
     private String storeToDB(BundleJobBean bundleJob, String resolvedJobXml) throws CommandException {
         try {
@@ -415,10 +414,10 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
     /**
      * Resolve job xml with conf
      *
-     * @param bundleXml
-     * @param conf
+     * @param bundleXml bundle job xml
+     * @param conf job configuration
      * @return resolved job xml
-     * @throws BundleJobException
+     * @throws BundleJobException thrown if failed to resolve variables
      */
     private String resolvedVars(String bundleXml, Configuration conf) throws BundleJobException {
         try {
@@ -433,9 +432,9 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
     /**
      * Create ELEvaluator
      *
-     * @param conf
-     * @return ELEvaluator
-     * @throws BundleJobException
+     * @param conf job configuration
+     * @return ELEvaluator the evaluator for el function
+     * @throws BundleJobException thrown if failed to create evaluator
      */
     public ELEvaluator createEvaluator(Configuration conf) throws BundleJobException {
         ELEvaluator eval;
@@ -454,10 +453,10 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
     }
 
     /**
-     * Verify the uniqueness of coord names
+     * Verify the uniqueness of coordinator names
      *
      * @param resolved job xml
-     * @throws CommandException
+     * @throws CommandException thrown if failed to verify the uniqueness of coordinator names
      */
     @SuppressWarnings("unchecked")
     private Void verifyCoordNameUnique(String resolvedJobXml) throws CommandException {

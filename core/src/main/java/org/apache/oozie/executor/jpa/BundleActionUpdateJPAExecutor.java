@@ -25,6 +25,11 @@ public class BundleActionUpdateJPAExecutor implements JPAExecutor<Void> {
 
     private BundleActionBean bundleAction = null;
 
+    /**
+     * The constructor for class {@link BundleActionUpdateJPAExecutor}
+     *
+     * @param bundleAction bundle action bean
+     */
     public BundleActionUpdateJPAExecutor(BundleActionBean bundleAction) {
         ParamChecker.notNull(bundleAction, " bundleAction");
         this.bundleAction = bundleAction;

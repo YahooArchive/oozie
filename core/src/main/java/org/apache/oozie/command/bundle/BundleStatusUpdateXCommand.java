@@ -31,12 +31,22 @@ import org.apache.oozie.executor.jpa.JPAExecutorException;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 
+/**
+ * The command to update Bundle status
+ *
+ */
 public class BundleStatusUpdateXCommand extends StatusUpdateXCommand {
     private final CoordinatorJobBean coordjob;
     private JPAService jpaService = null;
     private BundleActionBean bundleaction;
     private final Job.Status prevStatus;
 
+    /**
+     * The constructor for class {@link BundleStatusUpdateXCommand}
+     *
+     * @param coordjob coordinator job bean
+     * @param prevStatus coordinator job old status
+     */
     public BundleStatusUpdateXCommand(CoordinatorJobBean coordjob, CoordinatorJob.Status prevStatus) {
         super("BundleStatusUpdate", "BundleStatusUpdate", 1);
         this.coordjob = coordjob;
@@ -176,9 +186,9 @@ public class BundleStatusUpdateXCommand extends StatusUpdateXCommand {
     }
 
     /**
-     * Convert coord job status to job status.
+     * Convert coordinator job status to job status.
      *
-     * @param coordStatus
+     * @param coordStatus coordinator job status
      * @return job status
      */
     public static Job.Status convertCoordStatustoJob(CoordinatorJob.Status coordStatus) {

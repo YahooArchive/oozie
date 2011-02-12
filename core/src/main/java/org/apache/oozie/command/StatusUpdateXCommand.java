@@ -16,24 +16,31 @@ package org.apache.oozie.command;
 
 import org.apache.oozie.util.XLog;
 
+/**
+ * Transition command for update status.
+ */
 public abstract class StatusUpdateXCommand extends TransitionXCommand<Void>{
 
-    protected final XLog LOG = XLog.getLog(SubmitTransitionXCommand.class);
+    protected final XLog LOG = XLog.getLog(StatusUpdateXCommand.class);
 
     /**
-     * @param name
-     * @param type
-     * @param priority
+     * The constructor for abstract class {@link StatusUpdateXCommand}
+     *
+     * @param name the command name
+     * @param type the command type
+     * @param priority the command priority
      */
     public StatusUpdateXCommand(String name, String type, int priority) {
         super(name, type, priority);
     }
 
     /**
-     * @param name
-     * @param type
-     * @param priority
-     * @param dryrun
+     * The constructor for abstract class {@link StatusUpdateXCommand}
+     *
+     * @param name the command name
+     * @param type the command type
+     * @param priority the command priority
+     * @param dryrun true if dryrun is enable
      */
     public StatusUpdateXCommand(String name, String type, int priority, boolean dryrun) {
         super(name, type, priority, dryrun);

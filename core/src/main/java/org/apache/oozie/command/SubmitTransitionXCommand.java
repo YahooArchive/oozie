@@ -17,36 +17,44 @@ package org.apache.oozie.command;
 import org.apache.oozie.client.Job;
 
 /**
- * Base class for submit transition command.
+ * Base class for submit transition command. The derived class has to override these following functions:
+ * <p/>
+ * loadState() : load the job's and/or actions' state
+ * submit() : submit the job
+ * notifyParent() : update the status to upstream if any
  */
 public abstract class SubmitTransitionXCommand extends TransitionXCommand<String> {
 
     /**
-     * Submit the job
+     * The constructor for abstract class {@link SubmitTransitionXCommand}
      *
-     * @return String
-     * @throws CommandException
-     */
-    public abstract String submit() throws CommandException;
-
-    /**
-     * @param name
-     * @param type
-     * @param priority
+     * @param name the command name
+     * @param type the command type
+     * @param priority the command priority
      */
     public SubmitTransitionXCommand(String name, String type, int priority) {
         super(name, type, priority);
     }
 
     /**
-     * @param name
-     * @param type
-     * @param priority
-     * @param dryrun
+     * The constructor for abstract class {@link SubmitTransitionXCommand}
+     *
+     * @param name the command name
+     * @param type the command type
+     * @param priority the command priority
+     * @param dryrun true if dryrun is enable
      */
     public SubmitTransitionXCommand(String name, String type, int priority, boolean dryrun) {
         super(name, type, priority, dryrun);
     }
+
+    /**
+     * Submit the job
+     *
+     * @return the id
+     * @throws CommandException thrown if unable to submit
+     */
+    public abstract String submit() throws CommandException;
 
     /* (non-Javadoc)
      * @see org.apache.oozie.command.TransitionXCommand#transitToNext()

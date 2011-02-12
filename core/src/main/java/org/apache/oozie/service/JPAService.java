@@ -23,6 +23,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.oozie.BundleActionBean;
 import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.CoordinatorJobBean;
@@ -148,6 +149,7 @@ public class JPAService implements Service, Instrumentable {
         entityManager.find(JsonSLAEvent.class, 1);
         entityManager.find(BundleJobBean.class, 1);
         entityManager.find(JsonBundleJob.class, 1);
+        entityManager.find(BundleActionBean.class, 1);
 
         LOG.info(XLog.STD, "All entities initialized");
         // need to use a pseudo no-op transaction so all entities, datasource

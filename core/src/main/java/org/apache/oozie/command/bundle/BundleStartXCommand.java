@@ -51,17 +51,31 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 
+/**
+ * The command to start Bundle job
+ */
 public class BundleStartXCommand extends StartTransitionXCommand {
     private final String jobId;
     private BundleJobBean bundleJob;
     private JPAService jpaService = null;
     protected final XLog LOG = XLog.getLog(BundleStartXCommand.class);
 
+    /**
+     * The constructor for class {@link BundleStartXCommand}
+     *
+     * @param jobId the bundle job id
+     */
     public BundleStartXCommand(String jobId) {
         super("bundle_start", "bundle_start", 1);
         this.jobId = ParamChecker.notEmpty(jobId, "jobId");
     }
 
+    /**
+     * The constructor for class {@link BundleStartXCommand}
+     *
+     * @param jobId the bundle job id
+     * @param dryrun true if dryrun is enable
+     */
     public BundleStartXCommand(String jobId, boolean dryrun) {
         super("bundle_start", "bundle_start", 1, dryrun);
         this.jobId = ParamChecker.notEmpty(jobId, "jobId");
@@ -134,7 +148,7 @@ public class BundleStartXCommand extends StartTransitionXCommand {
     /**
      * Insert bundle actions
      *
-     * @throws CommandException
+     * @throws CommandException thrown if failed to create bundle actions
      */
     @SuppressWarnings("unchecked")
     private void insertBundleActions() throws CommandException {
@@ -201,7 +215,7 @@ public class BundleStartXCommand extends StartTransitionXCommand {
     /**
      * Start Coord Jobs
      *
-     * @throws CommandException
+     * @throws CommandException thrown if failed to start coord jobs
      */
     @SuppressWarnings("unchecked")
     private void startCoordJobs() throws CommandException {
@@ -242,9 +256,9 @@ public class BundleStartXCommand extends StartTransitionXCommand {
      * Merge Bundle job config and the configuration from the coord job to pass
      * to Coord Engine
      *
-     * @param coordElem
-     * @return Configuration
-     * @throws CommandException
+     * @param coordElem the coordinator configuration
+     * @return Configuration merged configuration
+     * @throws CommandException thrown if failed to merge configuration
      */
     private Configuration mergeConfig(Element coordElem) throws CommandException {
         String jobConf = bundleJob.getConf();

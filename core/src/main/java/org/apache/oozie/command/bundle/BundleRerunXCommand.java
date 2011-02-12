@@ -25,6 +25,13 @@ import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.XException;
 
+/**
+ * Rerun bundle coordinator jobs by a list of coordinator names or dates. User can specify if refresh or noCleanup.
+ * <p/>
+ * The "refresh" is used to indicate if user wants to refresh an action's input/outpur dataset urls
+ * <p/>
+ * The "noCleanup" is used to indicate if user wants to cleanup output events for given rerun actions
+ */
 public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
 
     protected final XLog LOG = XLog.getLog(BundleRerunXCommand.class);
@@ -37,6 +44,15 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
 
     private JPAService jpaService = null;
 
+    /**
+     * The constructor for class {@link BundleRerunXCommand}
+     *
+     * @param jobId the bundle job id
+     * @param coordScope the rerun scope for coordinator job names separated by ","
+     * @param dateScope the rerun scope for coordinator nominal times separated by ","
+     * @param refresh true if user wants to refresh input/outpur dataset urls
+     * @param noCleanup false if user wants to cleanup output events for given rerun actions
+     */
     public BundleRerunXCommand(String jobId, String coordScope, String dateScope, boolean refresh, boolean noCleanup) {
         super("bundle_rerun", "bundle_rerun", 1);
         this.jobId = ParamChecker.notEmpty(jobId, "jobId");
@@ -46,6 +62,9 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
         this.noCleanup = noCleanup;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.XCommand#loadState()
+     */
     @Override
     protected void loadState() throws CommandException {
         try {
@@ -67,8 +86,11 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
 
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.RerunTransitionXCommand#rerunChildren()
+     */
     @Override
-    public void RerunChildren() throws CommandException {
+    public void rerunChildren() throws CommandException {
         Map<String, BundleActionBean> coordNameToBAMapping = new HashMap<String, BundleActionBean>();
         if (bundleActions != null) {
             for (BundleActionBean action : bundleActions) {
@@ -109,8 +131,8 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
     /**
      * Update bundle action
      *
-     * @param action
-     * @throws CommandException
+     * @param action the bundle action
+     * @throws CommandException thrown if failed to update bundle action
      */
     private void updateBundleAction(BundleActionBean action) throws CommandException {
         action.incrementAndGetPending();
@@ -123,6 +145,9 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.TransitionXCommand#updateJob()
+     */
     @Override
     public void updateJob() throws CommandException {
         try {
@@ -134,11 +159,17 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
 
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.XCommand#getEntityKey()
+     */
     @Override
     protected String getEntityKey() {
         return jobId;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.XCommand#isLockRequired()
+     */
     @Override
     protected boolean isLockRequired() {
         return true;
@@ -146,7 +177,6 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
 
     /*
      * (non-Javadoc)
-     *
      * @see org.apache.oozie.command.TransitionXCommand#getJob()
      */
     @Override
@@ -154,12 +184,17 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
         return bundleJob;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.TransitionXCommand#notifyParent()
+     */
     @Override
     public void notifyParent() throws CommandException {
-        // TODO Auto-generated method stub
 
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.RerunTransitionXCommand#getLog()
+     */
     @Override
     public XLog getLog() {
         return LOG;

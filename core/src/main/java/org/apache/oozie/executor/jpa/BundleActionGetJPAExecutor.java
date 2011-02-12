@@ -30,6 +30,12 @@ public class BundleActionGetJPAExecutor implements JPAExecutor<BundleActionBean>
 
     private String bundleActionId = null;
 
+    /**
+     * The constructor for class {@link BundleActionGetJPAExecutor}
+     *
+     * @param bundleId bundle job id
+     * @param coordName coordinator name
+     */
     public BundleActionGetJPAExecutor(String bundleId, String coordName) {
         ParamChecker.notNull(bundleId, "bundleId");
         ParamChecker.notNull(coordName, "coordName");
