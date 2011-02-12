@@ -18,8 +18,8 @@ import java.util.Date;
 
 import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.client.Job;
-import org.apache.oozie.command.jpa.BundleJobGetCommand;
-import org.apache.oozie.command.jpa.BundleJobUpdateCommand;
+import org.apache.oozie.executor.jpa.BundleJobGetJPAExecutor;
+import org.apache.oozie.executor.jpa.BundleJobUpdateJPAExecutor;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.test.XDataTestCase;
@@ -53,30 +53,30 @@ public class TestBundlePauseStartService extends XDataTestCase {
         
         job.setPauseTime(new Date(new Date().getTime() + 30 * 1000));
         job.setKickoffTime(new Date(new Date().getTime() + 3600 * 1000));
-        jpaService.execute(new BundleJobUpdateCommand(job));
+        jpaService.execute(new BundleJobUpdateJPAExecutor(job));
         
         final String jobId = job.getId();
         waitFor(120 * 1000, new Predicate() {
             public boolean evaluate() throws Exception {
-                BundleJobBean job1 = jpaService.execute(new BundleJobGetCommand(jobId));
+                BundleJobBean job1 = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
                 return job1.getStatus() == Job.Status.PREPPAUSED;
             }
         });
         
-        job = jpaService.execute(new BundleJobGetCommand(jobId));
+        job = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
         assertEquals(Job.Status.PREPPAUSED, job.getStatus());
 
         job.setPauseTime(new Date(new Date().getTime() + 3600 * 1000));
-        jpaService.execute(new BundleJobUpdateCommand(job));
+        jpaService.execute(new BundleJobUpdateJPAExecutor(job));
         
         waitFor(120 * 1000, new Predicate() {
             public boolean evaluate() throws Exception {
-                BundleJobBean job1 = jpaService.execute(new BundleJobGetCommand(jobId));
+                BundleJobBean job1 = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
                 return job1.getStatus() == Job.Status.PREP;
             }
         });
         
-        job = jpaService.execute(new BundleJobGetCommand(jobId));
+        job = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
         assertEquals(Job.Status.PREP, job.getStatus());
     }
     
@@ -92,30 +92,30 @@ public class TestBundlePauseStartService extends XDataTestCase {
         
         job.setPauseTime(new Date(new Date().getTime() + 30 * 1000));
         job.setKickoffTime(new Date(new Date().getTime() + 3600 * 1000));
-        jpaService.execute(new BundleJobUpdateCommand(job));
+        jpaService.execute(new BundleJobUpdateJPAExecutor(job));
         
         final String jobId = job.getId();
         waitFor(120 * 1000, new Predicate() {
             public boolean evaluate() throws Exception {
-                BundleJobBean job1 = jpaService.execute(new BundleJobGetCommand(jobId));
+                BundleJobBean job1 = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
                 return job1.getStatus() == Job.Status.PREPPAUSED;
             }
         });
         
-        job = jpaService.execute(new BundleJobGetCommand(jobId));
+        job = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
         assertEquals(Job.Status.PREPPAUSED, job.getStatus());
 
         job.setPauseTime(null);
-        jpaService.execute(new BundleJobUpdateCommand(job));
+        jpaService.execute(new BundleJobUpdateJPAExecutor(job));
         
         waitFor(120 * 1000, new Predicate() {
             public boolean evaluate() throws Exception {
-                BundleJobBean job1 = jpaService.execute(new BundleJobGetCommand(jobId));
+                BundleJobBean job1 = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
                 return job1.getStatus() == Job.Status.PREP;
             }
         });
         
-        job = jpaService.execute(new BundleJobGetCommand(jobId));
+        job = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
         assertEquals(Job.Status.PREP, job.getStatus());
     }
     
@@ -130,17 +130,17 @@ public class TestBundlePauseStartService extends XDataTestCase {
         assertNotNull(jpaService);
         
         job.setKickoffTime(new Date(new Date().getTime() + 30 * 1000));
-        jpaService.execute(new BundleJobUpdateCommand(job));
+        jpaService.execute(new BundleJobUpdateJPAExecutor(job));
         
         final String jobId = job.getId();
         waitFor(120 * 1000, new Predicate() {
             public boolean evaluate() throws Exception {
-                BundleJobBean job1 = jpaService.execute(new BundleJobGetCommand(jobId));
+                BundleJobBean job1 = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
                 return job1.getStatus() == Job.Status.RUNNING;
             }
         });
         
-        job = jpaService.execute(new BundleJobGetCommand(jobId));
+        job = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
         assertEquals(Job.Status.RUNNING, job.getStatus());
    }
     
@@ -155,17 +155,17 @@ public class TestBundlePauseStartService extends XDataTestCase {
         assertNotNull(jpaService);
         
         job.setKickoffTime(new Date(new Date().getTime() - 30 * 1000));
-        jpaService.execute(new BundleJobUpdateCommand(job));
+        jpaService.execute(new BundleJobUpdateJPAExecutor(job));
         
         final String jobId = job.getId();
         waitFor(120 * 1000, new Predicate() {
             public boolean evaluate() throws Exception {
-                BundleJobBean job1 = jpaService.execute(new BundleJobGetCommand(jobId));
+                BundleJobBean job1 = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
                 return job1.getStatus() == Job.Status.RUNNING;
             }
         });
         
-        job = jpaService.execute(new BundleJobGetCommand(jobId));
+        job = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
         assertEquals(Job.Status.RUNNING, job.getStatus());
    }
     
@@ -182,12 +182,12 @@ public class TestBundlePauseStartService extends XDataTestCase {
         final String jobId = job.getId();
         waitFor(120 * 1000, new Predicate() {
             public boolean evaluate() throws Exception {
-                BundleJobBean job1 = jpaService.execute(new BundleJobGetCommand(jobId));
+                BundleJobBean job1 = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
                 return job1.getStatus() == Job.Status.RUNNING;
             }
         });
         
-        job = jpaService.execute(new BundleJobGetCommand(jobId));
+        job = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
         assertEquals(Job.Status.RUNNING, job.getStatus());
    }
 }

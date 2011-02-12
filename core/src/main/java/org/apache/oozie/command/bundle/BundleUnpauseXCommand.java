@@ -19,7 +19,8 @@ import org.apache.oozie.client.Job;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.PreconditionException;
 import org.apache.oozie.command.UnpauseTransitionXCommand;
-import org.apache.oozie.command.jpa.BundleJobUpdateCommand;
+import org.apache.oozie.executor.jpa.BundleJobUpdateJPAExecutor;
+import org.apache.oozie.executor.jpa.JPAExecutorException;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.XLog;
@@ -99,7 +100,12 @@ public class BundleUnpauseXCommand extends UnpauseTransitionXCommand {
      */
     @Override
     public void updateJob() throws CommandException {
-        jpaService.execute(new BundleJobUpdateCommand(bundleJob));
+        try {
+            jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
+        }
+        catch (JPAExecutorException e) {
+            throw new CommandException(e);
+        }
     }
 
     @Override

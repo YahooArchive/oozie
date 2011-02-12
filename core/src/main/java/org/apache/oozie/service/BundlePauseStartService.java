@@ -22,15 +22,20 @@ import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.command.bundle.BundlePauseXCommand;
 import org.apache.oozie.command.bundle.BundleStartXCommand;
 import org.apache.oozie.command.bundle.BundleUnpauseXCommand;
-import org.apache.oozie.command.jpa.BundleJobsGetNeedStartCommand;
-import org.apache.oozie.command.jpa.BundleJobsGetPausedCommand;
-import org.apache.oozie.command.jpa.BundleJobsGetUnpausedCommand;
+import org.apache.oozie.executor.jpa.BundleJobsGetNeedStartJPAExecutor;
+import org.apache.oozie.executor.jpa.BundleJobsGetPausedJPAExecutor;
+import org.apache.oozie.executor.jpa.BundleJobsGetUnpausedJPAExecutor;
 import org.apache.oozie.service.SchedulerService;
 import org.apache.oozie.service.Service;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.MemoryLocks;
 import org.apache.oozie.util.XLog;
 
+/**
+ * BundlePauseStartService is the runnable which is scheduled to run at the
+ * configured interval, it checks all bundles to see if they should be paused,
+ * un-paused or started.
+ */
 public class BundlePauseStartService implements Service {
     public static final String CONF_PREFIX = Service.CONF_PREFIX + "BundlePauseStartService.";
     public static final String CONF_BUNDLE_PAUSE_START_INTERVAL = CONF_PREFIX + "BundlePauseStart.interval";
@@ -38,7 +43,7 @@ public class BundlePauseStartService implements Service {
     
     /**
      * BundlePauseStartRunnable is the runnable which is scheduled to run at the configured interval, 
-     * it checks all bundles to see if they should be paused, unpaused or started.
+     * it checks all bundles to see if they should be paused, un-paused or started.
      */
     static class BundlePauseStartRunnable implements Runnable {
         private JPAService jpaService = null;
@@ -56,15 +61,15 @@ public class BundlePauseStartService implements Service {
                 Date d = new Date(); // records the start time of this service run;
                 
                 // first check if there is some other running instance from the same service;
-                lock = Services.get().get(MemoryLocksService.class).getWriteLock(CONF_PREFIX, lockTimeout);                
+                lock = Services.get().get(MemoryLocksService.class).getWriteLock(BundlePauseStartService.class.getName(), lockTimeout);                
                 if (lock == null) {
                     LOG.info("This BundlePauseStartService instance will not run since there is already an instance running");
                 }
                 else {
-                    LOG.info("Acquired lock for [{0}]", CONF_PREFIX);
+                    LOG.info("Acquired lock for [{0}]", BundlePauseStartService.class.getName());
                      
                     // pause bundles as needed;
-                    List<BundleJobBean> jobList = jpaService.execute(new BundleJobsGetUnpausedCommand(-1));
+                    List<BundleJobBean> jobList = jpaService.execute(new BundleJobsGetUnpausedJPAExecutor(-1));
                     for (BundleJobBean bundleJob : jobList) {
                         if ((bundleJob.getPauseTime() != null) &&  !bundleJob.getPauseTime().after(d)) {
                             (new BundlePauseXCommand(bundleJob)).call();
@@ -72,7 +77,7 @@ public class BundlePauseStartService implements Service {
                     }
 
                     // unpause bundles as needed;
-                    jobList = jpaService.execute(new BundleJobsGetPausedCommand(-1));
+                    jobList = jpaService.execute(new BundleJobsGetPausedJPAExecutor(-1));
                     for (BundleJobBean bundleJob : jobList) {
                         if ((bundleJob.getPauseTime() == null || bundleJob.getPauseTime().after(d))) {
                             (new BundleUnpauseXCommand(bundleJob)).call();
@@ -80,7 +85,7 @@ public class BundlePauseStartService implements Service {
                     }
                     
                     // start bundles as needed;
-                    jobList = jpaService.execute(new BundleJobsGetNeedStartCommand(d));
+                    jobList = jpaService.execute(new BundleJobsGetNeedStartJPAExecutor(d));
                     for (BundleJobBean bundleJob : jobList) {
                         bundleJob.setKickoffTime(d);
                         (new BundleStartXCommand(bundleJob.getId())).call();
@@ -94,7 +99,7 @@ public class BundlePauseStartService implements Service {
                 // release lock;
                 if (lock != null) {
                     lock.release();
-                    LOG.info("Released lock for [{0}]", CONF_PREFIX);
+                    LOG.info("Released lock for [{0}]", BundlePauseStartService.class.getName());
                 }                
             }
         }

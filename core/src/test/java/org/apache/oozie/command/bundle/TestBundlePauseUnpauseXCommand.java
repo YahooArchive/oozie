@@ -16,7 +16,7 @@ package org.apache.oozie.command.bundle;
 
 import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.client.Job;
-import org.apache.oozie.command.jpa.BundleJobGetCommand;
+import org.apache.oozie.executor.jpa.BundleJobGetJPAExecutor;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.test.XDataTestCase;
@@ -48,7 +48,7 @@ public class TestBundlePauseUnpauseXCommand extends XDataTestCase {
 
         JPAService jpaService = Services.get().get(JPAService.class);
         assertNotNull(jpaService);
-        BundleJobGetCommand bundleJobGetCmd = new BundleJobGetCommand(job.getId());
+        BundleJobGetJPAExecutor bundleJobGetCmd = new BundleJobGetJPAExecutor(job.getId());
         job = jpaService.execute(bundleJobGetCmd);
         assertEquals(job.getStatus(), Job.Status.PREP);
 
@@ -72,7 +72,7 @@ public class TestBundlePauseUnpauseXCommand extends XDataTestCase {
 
         JPAService jpaService = Services.get().get(JPAService.class);
         assertNotNull(jpaService);
-        BundleJobGetCommand bundleJobGetCmd = new BundleJobGetCommand(job.getId());
+        BundleJobGetJPAExecutor bundleJobGetCmd = new BundleJobGetJPAExecutor(job.getId());
         job = jpaService.execute(bundleJobGetCmd);
         assertEquals(job.getStatus(), Job.Status.RUNNING);
 
@@ -96,7 +96,7 @@ public class TestBundlePauseUnpauseXCommand extends XDataTestCase {
 
         JPAService jpaService = Services.get().get(JPAService.class);
         assertNotNull(jpaService);
-        BundleJobGetCommand bundleJobGetCmd = new BundleJobGetCommand(job.getId());
+        BundleJobGetJPAExecutor bundleJobGetCmd = new BundleJobGetJPAExecutor(job.getId());
         job = jpaService.execute(bundleJobGetCmd);
         assertEquals(job.getStatus(), Job.Status.RUNNINGWITHERROR);
 
@@ -120,7 +120,7 @@ public class TestBundlePauseUnpauseXCommand extends XDataTestCase {
 
         JPAService jpaService = Services.get().get(JPAService.class);
         assertNotNull(jpaService);
-        BundleJobGetCommand bundleJobGetCmd = new BundleJobGetCommand(job.getId());
+        BundleJobGetJPAExecutor bundleJobGetCmd = new BundleJobGetJPAExecutor(job.getId());
         job = jpaService.execute(bundleJobGetCmd);
         assertEquals(job.getStatus(), Job.Status.SUSPENDED);
 

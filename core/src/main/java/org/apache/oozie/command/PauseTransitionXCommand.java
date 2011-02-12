@@ -17,14 +17,37 @@ package org.apache.oozie.command;
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.client.Job;
 
+/**
+ * Transition command for pause the job. The derived class has to override these following functions:
+ * <p/>
+ * updateJob() : update job status and attributes
+ * pauseChildren() : submit or queue commands to pause children
+ * notifyParent() : update the status to upstream if any
+ *
+ * @param <T>
+ */
 public abstract class PauseTransitionXCommand extends TransitionXCommand<Void> {
-
+    /**
+     * The constructor for abstract class {@link PauseTransitionXCommand}
+     *
+     * @param name the command name
+     * @param type the command type
+     * @param priority the command priority
+     */
     public PauseTransitionXCommand(String name, String type, int priority) {
         super(name, type, priority);
     }
 
+    /**
+     * pause actions associated with the job
+     *
+     * @throws CommandException thrown if failed to pause actions
+     */
     public abstract void pauseChildren() throws CommandException;
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.TransitionXCommand#transitToNext()
+     */
     @Override
     public final void transitToNext() throws CommandException {
         if (job == null) {
@@ -48,6 +71,9 @@ public abstract class PauseTransitionXCommand extends TransitionXCommand<Void> {
         //job.setPending();
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.oozie.command.TransitionXCommand#execute()
+     */
     @Override
     protected Void execute() throws CommandException {
         loadState();

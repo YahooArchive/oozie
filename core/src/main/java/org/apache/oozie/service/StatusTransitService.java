@@ -24,18 +24,25 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.oozie.BundleActionBean;
 import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.client.Job;
-import org.apache.oozie.command.jpa.BundleActionsGetByLastModifiedTimeCommand;
-import org.apache.oozie.command.jpa.BundleActionsGetCommand;
-import org.apache.oozie.command.jpa.BundleJobGetCommand;
-import org.apache.oozie.command.jpa.BundleJobUpdateCommand;
-import org.apache.oozie.command.jpa.BundleJobsGetPendingCommand;
-import org.apache.oozie.command.jpa.BundleJobsGetRunningCommand;
+import org.apache.oozie.executor.jpa.BundleActionsGetByLastModifiedTimeJPAExecutor;
+import org.apache.oozie.executor.jpa.BundleActionsGetJPAExecutor;
+import org.apache.oozie.executor.jpa.BundleJobGetJPAExecutor;
+import org.apache.oozie.executor.jpa.BundleJobUpdateJPAExecutor;
+import org.apache.oozie.executor.jpa.BundleJobsGetPendingJPAExecutor;
+import org.apache.oozie.executor.jpa.BundleJobsGetRunningJPAExecutor;
 import org.apache.oozie.service.SchedulerService;
 import org.apache.oozie.service.Service;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.MemoryLocks;
 import org.apache.oozie.util.XLog;
 
+/**
+ * StateTransitService is scheduled to run at the configured interval. It is to
+ * update bundle job's status according to its child actions' status. If all
+ * child actions' pending flag equals 0 (job done), we reset the job's pending
+ * flag to 0. If all child actions are succeeded, we set the job's status to
+ * SUCCEEDED.
+ */
 public class StatusTransitService implements Service {
     public static final String CONF_PREFIX = Service.CONF_PREFIX + "StatusTransitService.";
     public static final String CONF_STATUSTRANSIT_INTERVAL = CONF_PREFIX + "statusTransit.interval";
@@ -46,7 +53,8 @@ public class StatusTransitService implements Service {
     /**
      * StateTransitRunnable is the runnable which is scheduled to run at the configured interval. It is to
      * update bundle job's status according to its child actions' status. If all child actions' pending flag equals
-     * 0 (job done), we reset the job's pending flag to 0.
+     * 0 (job done), we reset the job's pending flag to 0. If all child actions are succeeded, we set the job's status to
+     * SUCCEEDED.
      */
     static class StatusTransitRunnable implements Runnable {
         private JPAService jpaService = null;
@@ -64,29 +72,29 @@ public class StatusTransitService implements Service {
                 Date d = new Date(); // records the start time of this service run;
                 
                 // first check if there is some other instance running;
-                lock = Services.get().get(MemoryLocksService.class).getWriteLock(CONF_PREFIX, lockTimeout);
+                lock = Services.get().get(MemoryLocksService.class).getWriteLock(StatusTransitService.class.getName(), lockTimeout);
                 if (lock == null) {
                     LOG.info("This StatusTransitService instance will not run since there is already an instance running");
                 }
                 else {
-                    LOG.info("Acquired lock for [{0}]", CONF_PREFIX);
+                    LOG.info("Acquired lock for [{0}]", StatusTransitService.class.getName());
                     
                     List<BundleJobBean> pendingJobCheckList = null;
                     List<BundleJobBean> runningJobCheckList = null;
                     if (lastInstanceStartTime == null) { // this is the first instance, we need to check for all pending jobs;
-                        pendingJobCheckList = jpaService.execute(new BundleJobsGetPendingCommand(limit));
-                        runningJobCheckList = jpaService.execute(new BundleJobsGetRunningCommand(limit));
+                        pendingJobCheckList = jpaService.execute(new BundleJobsGetPendingJPAExecutor(limit));
+                        runningJobCheckList = jpaService.execute(new BundleJobsGetRunningJPAExecutor(limit));
                     }
                     else { // this is not the first instance, we should only check jobs that have actions been 
                            // updated >= start time of last service run;
-                        List<BundleActionBean> actionList = jpaService.execute(new BundleActionsGetByLastModifiedTimeCommand(lastInstanceStartTime));
+                        List<BundleActionBean> actionList = jpaService.execute(new BundleActionsGetByLastModifiedTimeJPAExecutor(lastInstanceStartTime));
                         Set<String> bundleIds = new HashSet<String>();
                         for (BundleActionBean action : actionList) {
                             bundleIds.add(action.getBundleId());
                         }
                         pendingJobCheckList = new ArrayList<BundleJobBean>();
                         for (String bundleId : bundleIds.toArray(new String[bundleIds.size()])) {
-                            BundleJobBean bundle = jpaService.execute(new BundleJobGetCommand(bundleId));
+                            BundleJobBean bundle = jpaService.execute(new BundleJobGetJPAExecutor(bundleId));
                             pendingJobCheckList.add(bundle);
                         }
                         
@@ -95,19 +103,19 @@ public class StatusTransitService implements Service {
                     
                     for (BundleJobBean bundleJob : pendingJobCheckList) {
                         String jobId = bundleJob.getId();
-                        List<BundleActionBean> actionList = jpaService.execute(new BundleActionsGetCommand(jobId));
+                        List<BundleActionBean> actionList = jpaService.execute(new BundleActionsGetJPAExecutor(jobId));
                         if (checkAllBundleActionsDone(actionList)) {
                             bundleJob.resetPending();
-                            jpaService.execute(new BundleJobUpdateCommand(bundleJob));
+                            jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
                         }
                     }
 
                     for (BundleJobBean bundleJob : runningJobCheckList) {
                         String jobId = bundleJob.getId();
-                        List<BundleActionBean> actionList = jpaService.execute(new BundleActionsGetCommand(jobId));
+                        List<BundleActionBean> actionList = jpaService.execute(new BundleActionsGetJPAExecutor(jobId));
                         if (checkAllBundleActionsSucceeded(actionList)) {
                             bundleJob.setStatus(Job.Status.SUCCEEDED);
-                            jpaService.execute(new BundleJobUpdateCommand(bundleJob));
+                            jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
                         }
                     }
 
@@ -121,7 +129,7 @@ public class StatusTransitService implements Service {
                 // release lock;
                 if (lock != null) {
                     lock.release();
-                    LOG.info("Released lock for [{0}]", CONF_PREFIX);
+                    LOG.info("Released lock for [{0}]", StatusTransitService.class.getName());
                 }                
             }
         }
