@@ -106,7 +106,7 @@ public class TestCoordActionMaterializeXCommand extends XDataTestCase {
 
         JPAService jpaService = Services.get().get(JPAService.class);
         List<CoordinatorActionBean> actions = jpaService.execute(new CoordJobGetActionsJPAExecutor(job.getId()));
-        checkCoordActionsTO(job.getId() + "@1", 300);
+        checkCoordActionsTimeout(job.getId() + "@1", 300);
     }
 
     protected CoordinatorJobBean addRecordToCoordJobTable(CoordinatorJob.Status status, Date startTime, Date endTime)
@@ -210,7 +210,7 @@ public class TestCoordActionMaterializeXCommand extends XDataTestCase {
         }
     }
     
-    private void checkCoordActionsTO(String actionId, int expected) {
+    private void checkCoordActionsTimeout(String actionId, int expected) {
         try {
             JPAService jpaService = Services.get().get(JPAService.class);
             CoordinatorActionBean action = jpaService.execute(new CoordActionGetJPAExecutor(actionId));

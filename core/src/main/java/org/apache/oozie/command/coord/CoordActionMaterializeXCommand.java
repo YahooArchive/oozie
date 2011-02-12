@@ -171,8 +171,7 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
                     + ", lastactionnumber=" + lastActionNumber);
             action = CoordCommandUtils.materializeOneInstance(jobId, dryrun, (Element) eJob.clone(),
                     effStart.getTime(), lastActionNumber, conf, actionBean);
-            int catchUpTOMultiplier = 1; // This value might be could be changed
-                                         // in future
+            int catchUpTOMultiplier = 1; // This value might be could be changed in future
             if (actionBean.getNominalTimestamp().before(jobBean.getCreatedTimestamp())) {
                 // Catchup action
                 timeout = catchUpTOMultiplier * timeout;
