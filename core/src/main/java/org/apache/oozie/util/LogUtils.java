@@ -26,6 +26,25 @@ import org.apache.oozie.service.XLogService;
  * logging utilities.
  */
 public class LogUtils {
+
+    /**
+     * Set the log info with the context of the given Bundle bean.
+     *
+     * @param bBean Bundle bean.
+     */
+    public static void setLogInfo(BundleJobBean bBean, XLog.Info logInfo) {
+        if (logInfo.getParameter(XLogService.GROUP) == null) {
+            logInfo.setParameter(XLogService.GROUP, bBean.getGroup());
+        }
+        if (logInfo.getParameter(XLogService.USER) == null) {
+            logInfo.setParameter(XLogService.USER, bBean.getUser());
+        }
+        logInfo.setParameter(DagXLogInfoService.JOB, bBean.getId());
+        logInfo.setParameter(DagXLogInfoService.TOKEN, "");
+        logInfo.setParameter(DagXLogInfoService.APP, bBean.getAppName());
+        XLog.Info.get().setParameters(logInfo);
+    }
+
     /**
      * Set the log info with the context of the given coordinator bean.
      *
@@ -44,7 +63,6 @@ public class LogUtils {
         logInfo.setParameter(DagXLogInfoService.APP, cBean.getAppName());
         XLog.Info.get().setParameters(logInfo);
     }
-
 
     /**
      * Set the log info with the context of the given coordinator action bean.
