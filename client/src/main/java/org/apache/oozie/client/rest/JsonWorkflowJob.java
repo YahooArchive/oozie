@@ -121,8 +121,8 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
         json.put(JsonTags.WORKFLOW_APP_PATH, appPath);
         json.put(JsonTags.WORKFLOW_APP_NAME, appName);
         json.put(JsonTags.WORKFLOW_ID, id);
-        json.put(JsonTags.WORKFLOW_PARENT_ID, parentId);
         json.put(JsonTags.WORKFLOW_EXTERNAL_ID, externalId);
+        json.put(JsonTags.WORKFLOW_PARENT_ID, parentId);
         json.put(JsonTags.WORKFLOW_CONF, conf);
         json.put(JsonTags.WORKFLOW_STATUS, status.toString());
         json.put(JsonTags.WORKFLOW_LAST_MOD_TIME, JsonUtils.formatDateRfc822(lastModifiedTime));
@@ -259,6 +259,11 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
         return parentId;
     }
 
+    /**
+     * Set coordinator action id
+     *
+     * @param parentId : coordinator action id
+     */
     public void setParentId(String parentId) {
         this.parentId = parentId;
     }

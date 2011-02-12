@@ -167,7 +167,7 @@ public class CoordActionStartXCommand extends CoordinatorXCommand<Void> {
                 //store.updateCoordinatorAction(coordAction);
                 JPAService jpaService = Services.get().get(JPAService.class);
                 if (jpaService != null) {
-                    log.debug("Updating WF record for WFID :" + wfId + " with parent id " + actionId);
+                    log.debug("Updating WF record for WFID :" + wfId + " with parent id: " + actionId);
                     WorkflowJobBean wfJob = jpaService.execute(new WorkflowJobGetJPAExecutor(wfId));
                     wfJob.setParentId(actionId);
                     jpaService.execute(new WorkflowJobUpdateJPAExecutor(wfJob));
