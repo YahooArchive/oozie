@@ -84,7 +84,6 @@ public class TestCoordJobMatLookupTriggerService extends XFsTestCase {
         }
         JPAService jpaService = Services.get().get(JPAService.class);
         int numWaitingActions = jpaService.execute(new CoordJobGetRunningActionsCountJPAExecutor(coordJob.getId()));
-        System.out.println("AAA " + numWaitingActions);
         assert(numWaitingActions <= coordJob.getConcurrency());
     }
 

@@ -123,7 +123,7 @@ public class CoordJobMatLookupTriggerService implements Service {
                                 coordJob.getId()));
                         if (numWaitingActions > coordJob.getConcurrency()) {
                             log.debug("Materialization skipped for JobID [" + coordJob.getId() + " already waiting "
-                                    + numWaitingActions + " actions");
+                                    + numWaitingActions + " actions. Concurrency is : " + coordJob.getConcurrency());
                             continue;
                         }
                         queueCallable(new CoordJobMatLookupXCommand(coordJob.getId(), materializationWindow));
