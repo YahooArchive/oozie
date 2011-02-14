@@ -63,8 +63,8 @@ public class DateList {
 		Properties props = new Properties();
 		props.setProperty("datelist", dateList.toString());
 		OutputStream os = new FileOutputStream(file);
-        props.store(os, "");
-        os.close();
+        	props.store(os, "");
+        	os.close();
 	}
 
 	//Utility methods
