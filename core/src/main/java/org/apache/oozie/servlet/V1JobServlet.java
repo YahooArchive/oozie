@@ -200,13 +200,7 @@ public class V1JobServlet extends BaseJobServlet {
         while (is.readLine(b, 0, 100) != -1) {
             XLog.getLog(getClass()).warn("Printing :" + new String(b));
         }
-        /*
-         * Configuration conf = new XConfiguration(request.getInputStream());
-         * String wfPath = conf.get(OozieClient.APP_PATH); String coordPath =
-         * conf.get(OozieClient.COORDINATOR_APP_PATH);
-         *
-         * ServletUtilities.ValidateAppPath(wfPath, coordPath);
-         */
+
         JsonBean jobBean = null;
         String jobId = getResourceName(request);
         if (jobId.endsWith("-B")) {
@@ -273,8 +267,10 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * @param request
-     * @param response
+     * Start wf job
+     * 
+     * @param request servlet request
+     * @param response servlet response 
      * @throws XServletException
      */
     private void startWorkflowJob(HttpServletRequest request, HttpServletResponse response) throws XServletException {
@@ -293,8 +289,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Start bundle job
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void startBundleJob(HttpServletRequest request, HttpServletResponse response) throws XServletException {
@@ -312,8 +308,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Resume workflow job
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void resumeWorkflowJob(HttpServletRequest request, HttpServletResponse response) throws XServletException {
@@ -332,8 +328,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Resume bundle job
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void resumeBundleJob(HttpServletRequest request, HttpServletResponse response) throws XServletException {
@@ -351,8 +347,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Resume coordinator job
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      * @throws CoordinatorEngineException
      */
@@ -370,8 +366,10 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * @param request
-     * @param response
+     * Suspend a wf job
+     * 
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void suspendWorkflowJob(HttpServletRequest request, HttpServletResponse response) throws XServletException {
@@ -390,8 +388,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Suspend bundle job
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void suspendBundleJob(HttpServletRequest request, HttpServletResponse response) throws XServletException {
@@ -409,8 +407,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Suspend coordinator job
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void suspendCoordinatorJob(HttpServletRequest request, HttpServletResponse response)
@@ -427,8 +425,9 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * @param request
-     * @param response
+     * Kill a wf job
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void killWorkflowJob(HttpServletRequest request, HttpServletResponse response) throws XServletException {
@@ -445,8 +444,9 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * @param request
-     * @param response
+     * Kill a coord job
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void killCoordinatorJob(HttpServletRequest request, HttpServletResponse response) throws XServletException {
@@ -464,8 +464,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Kill bundle job
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void killBundleJob(HttpServletRequest request, HttpServletResponse response) throws XServletException {
@@ -483,8 +483,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Rerun workflow job
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void changeCoordinatorJob(HttpServletRequest request, HttpServletResponse response)
@@ -502,9 +502,11 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * @param request
-     * @param response
-     * @param conf
+     * Rerun a wf job
+     * 
+     * @param request servlet request
+     * @param response servlet response
+     * @param conf configuration object
      * @throws XServletException
      */
     private void reRunWorkflowJob(HttpServletRequest request, HttpServletResponse response, Configuration conf)
@@ -524,9 +526,9 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Rerun bundle job
      *
-     * @param request
-     * @param response
-     * @param conf
+     * @param request servlet request
+     * @param response servlet response
+     * @param conf configration object
      * @throws XServletException
      */
     private void rerunBundleJob(HttpServletRequest request, HttpServletResponse response, Configuration conf)
@@ -556,9 +558,9 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Rerun coordinator actions
      *
-     * @param request
-     * @param response
-     * @param conf
+     * @param request servlet request
+     * @param response servlet response
+     * @param conf configuration object
      * @throws XServletException
      */
     @SuppressWarnings("unchecked")
@@ -595,8 +597,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Get workflow job
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @return JsonBean WorkflowJobBean
      * @throws XServletException
      */
@@ -622,8 +624,10 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * @param request
-     * @param response
+     * Get wf action info
+     * 
+     * @param request servlet request 
+     * @param response servlet response
      * @return JsonBean WorkflowActionBean
      * @throws XServletException
      */
@@ -645,8 +649,10 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * @param request
-     * @param response
+     * Get coord job info
+     * 
+     * @param request servlet request
+     * @param response servlet response
      * @return JsonBean CoordinatorJobBean
      * @throws XServletException
      * @throws BaseEngineException
@@ -675,11 +681,11 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * Get bundle job
+     * Get bundle job info
      *
-     * @param request
-     * @param response
-     * @return JsonBean BundleJobBean
+     * @param request servlet request
+     * @param response servlet response
+     * @return JsonBean bundle job bean
      * @throws XServletException
      * @throws BaseEngineException
      */
@@ -703,8 +709,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Get coordinator action
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @return JsonBean CoordinatorActionBean
      * @throws XServletException
      * @throws BaseEngineException
@@ -726,8 +732,10 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * @param request
-     * @param response
+     * Get wf job definition
+     * 
+     * @param request servlet request
+     * @param response servlet response
      * @return String wf definition
      * @throws XServletException
      */
@@ -750,8 +758,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Get bundle job definition
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @return String bundle definition
      * @throws XServletException
      */
@@ -772,8 +780,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Get coordinator job definition
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @return String coord definition
      * @throws XServletException
      */
@@ -796,8 +804,10 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * @param request
-     * @param response
+     * Stream wf job log
+     * 
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      * @throws IOException
      */
@@ -815,10 +825,10 @@ public class V1JobServlet extends BaseJobServlet {
     }
 
     /**
-     * Stream bundle job
+     * Stream bundle job log
      *
-     * @param request
-     * @param response
+     * @param request servlet request
+     * @param response servlet response
      * @throws XServletException
      */
     private void streamBundleJob(HttpServletRequest request, HttpServletResponse response)
@@ -837,8 +847,8 @@ public class V1JobServlet extends BaseJobServlet {
     /**
      * Stream coordinator job log
      *
-     * @param request
-     * @param response
+     * @param request servlet request 
+     * @param response servlet response
      * @throws XServletException
      * @throws IOException
      */
@@ -856,6 +866,5 @@ public class V1JobServlet extends BaseJobServlet {
         catch (BaseEngineException ex) {
             throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ex);
         }
-
     }
 }
