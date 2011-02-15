@@ -1,5 +1,6 @@
 -- Oozie 2.3.2 release
 
+GH-0483 tests using pig 0.8 fails if a hadoop-site.xml or core-site.xml file is not in the classpath
 GH-0479 Add time ratio property to XTestCase waitFor
 OOZIE-0007 remove SSH action from TestRerun (bp GH-0500)
 GH-0573 bump 2.3.1 version to 2.3.2-SNAPSHOT
