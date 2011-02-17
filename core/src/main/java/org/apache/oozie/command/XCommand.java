@@ -53,7 +53,7 @@ public abstract class XCommand<T> implements XCallable<T> {
 
     public static final String INSTRUMENTATION_GROUP = "commands";
 
-    protected final Long DEFAULT_REQUEUE_DELAY = 10L;
+    public static final Long DEFAULT_REQUEUE_DELAY = 10L;
 
     private static XLog LOG = XLog.getLog(XCommand.class);
 
