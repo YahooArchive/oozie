@@ -53,6 +53,8 @@ public abstract class XCommand<T> implements XCallable<T> {
 
     public static final String INSTRUMENTATION_GROUP = "commands";
 
+    protected final Long DEFAULT_REQUEUE_DELAY = 10L;
+
     private static XLog LOG = XLog.getLog(XCommand.class);
 
     private String name;
@@ -188,9 +190,9 @@ public abstract class XCommand<T> implements XCallable<T> {
             Instrumentation instrumentation = Services.get().get(InstrumentationService.class).get();
             instrumentation.incr(INSTRUMENTATION_GROUP, getName() + ".lockTimeOut", 1);
             if (isReQueueRequired()) {
-                //if not acquire the lock, re-queue itself.
+                //if not acquire the lock, re-queue itself with default delay
                 resetUsed();
-                queue(this);
+                queue(this, getRequeueDelay());
                 LOG.debug("Could not get lock [{0}], timed out [{1}]ms, and requeue itself", this.toString(), getLockTimeOut());
             } else {
                 throw new CommandException(ErrorCode.E0606, this.toString(), getLockTimeOut());
@@ -407,6 +409,16 @@ public abstract class XCommand<T> implements XCallable<T> {
      */
     public void resetUsed() {
         this.used = false;
+    }
+
+
+    /**
+     * Return the delay time for requeue
+     *
+     * @return delay time when requeue itself
+     */
+    protected Long getRequeueDelay() {
+        return DEFAULT_REQUEUE_DELAY;
     }
 
 }
