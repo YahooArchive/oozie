@@ -14,6 +14,7 @@
  */
 package org.apache.oozie.command.bundle;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,7 @@ public class BundleJobChangeXCommand extends TransitionXCommand<Void> {
     private List<BundleActionBean> bundleActions;
     private BundleJobBean bundleJob;
     private static final XLog LOG = XLog.getLog(BundleJobChangeXCommand.class);
+    private Date newPauseTime;
     
     private static final Set<String> ALLOWED_CHANGE_OPTIONS = new HashSet<String>();
     static {
@@ -69,6 +71,21 @@ public class BundleJobChangeXCommand extends TransitionXCommand<Void> {
     }
     
     /**
+     * Check if new pause time is future time.
+     * 
+     * @param newPauseTime new pause time.
+     * @param newEndTime new end time, can be null meaning no change on end time.
+     * @throws CommandException thrown if new pause time is not valid.
+     */
+    private void checkPauseTime(Date newPauseTime) throws CommandException {
+        // New pauseTime has to be a non-past time.
+        Date d = new Date();
+        if (newPauseTime.before(d)) {
+            throw new CommandException(ErrorCode.E1317, newPauseTime, "must be a non-past time");            
+        }
+    }
+    
+    /**
      * validate if change value is valid.
      * 
      * @param changeValue change value.
@@ -78,17 +95,19 @@ public class BundleJobChangeXCommand extends TransitionXCommand<Void> {
         Map<String, String> map = JobUtils.parseChangeValue(changeValue);
 
         if (map.size() > ALLOWED_CHANGE_OPTIONS.size() || !map.containsKey(OozieClient.CHANGE_VALUE_PAUSETIME)) {
-            throw new CommandException(ErrorCode.E1015, changeValue, "can only change pausetime");
+            throw new CommandException(ErrorCode.E1317, changeValue, "can only change pausetime");
         }
 
         String value = map.get(OozieClient.CHANGE_VALUE_PAUSETIME);
         if (!value.equals("")) {
             try {
-                DateUtils.parseDateUTC(value);
+                newPauseTime = DateUtils.parseDateUTC(value);
             }
             catch (Exception ex) {
-                throw new CommandException(ErrorCode.E1015, value, "is not a valid date");
+                throw new CommandException(ErrorCode.E1317, value, "is not a valid date");
             }
+            
+            checkPauseTime(newPauseTime);
         }
     }
 
@@ -128,6 +147,7 @@ public class BundleJobChangeXCommand extends TransitionXCommand<Void> {
     protected Void execute() throws CommandException {
         try {
             bundleJob.setPending();
+            bundleJob.setPauseTime(newPauseTime);
 
             for (BundleActionBean action : this.bundleActions) {
                 if (action.getStatus() == Job.Status.RUNNING || action.getStatus() == Job.Status.PREP) {
