@@ -123,6 +123,8 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
     }
 
     /**
+     * Check if new end time is valid.
+     * 
      * @param coordJob coordinator job id.
      * @param newEndTime new end time.
      * @throws CommandException thrown if new end time is not valid.
@@ -147,6 +149,8 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
     }
 
     /**
+     * Check if new pause time is valid.
+     * 
      * @param coordJob coordinator job id.
      * @param newPauseTime new pause time.
      * @param newEndTime new end time, can be null meaning no change on end time.
@@ -219,6 +223,8 @@ public class CoordChangeXCommand extends CoordinatorXCommand<Void> {
     }
 
     /**
+     * Check if new end time, new concurrency, new pause time are valid.
+     * 
      * @param coordJob coordinator job id.
      * @param newEndTime new end time.
      * @param newConcurrency new concurrency.
