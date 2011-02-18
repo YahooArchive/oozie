@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.command.CommandException;
@@ -182,12 +183,12 @@ public class BundleEngine extends BaseEngine {
     /**
      * Rerun Bundle actions for given rerunType
      *
-     * @param jobId
-     * @param coordScope
-     * @param dateScope
-     * @param refresh
-     * @param noCleanup
-     * @throws BaseEngineException
+     * @param jobId bundle job id
+     * @param coordScope the rerun scope for coordinator job names separated by ","
+     * @param dateScope the rerun scope for coordinator nominal times separated by ","
+     * @param refresh true if user wants to refresh input/outpur dataset urls
+     * @param noCleanup false if user wants to cleanup output events for given rerun actions
+     * @throws BaseEngineException thrown if failed to rerun
      */
     public void reRun(String jobId, String coordScope, String dateScope, boolean refresh, boolean noCleanup)
             throws BaseEngineException {
@@ -311,7 +312,7 @@ public class BundleEngine extends BaseEngine {
      *
      * @param filter the filter string
      * @return filter key and value map
-     * @throws CoordinatorEngineException
+     * @throws CoordinatorEngineException thrown if failed to parse filter string
      */
     private Map<String, List<String>> parseFilter(String filter) throws BundleEngineException {
         Map<String, List<String>> map = new HashMap<String, List<String>>();
@@ -330,7 +331,7 @@ public class BundleEngine extends BaseEngine {
                     }
                     if (pair[0].equals("status")) {
                         try {
-                            CoordinatorJob.Status.valueOf(pair[1]);
+                            Job.Status.valueOf(pair[1]);
                         }
                         catch (IllegalArgumentException ex) {
                             throw new BundleEngineException(ErrorCode.E0420, filter, XLog.format(
