@@ -16,16 +16,25 @@ package org.apache.oozie;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.bundle.BundleJobChangeXCommand;
 import org.apache.oozie.command.bundle.BundleJobResumeXCommand;
 import org.apache.oozie.command.bundle.BundleJobSuspendXCommand;
 import org.apache.oozie.command.bundle.BundleJobXCommand;
+import org.apache.oozie.command.bundle.BundleJobsXCommand;
 import org.apache.oozie.command.bundle.BundleKillXCommand;
 import org.apache.oozie.command.bundle.BundleRerunXCommand;
 import org.apache.oozie.command.bundle.BundleStartXCommand;
@@ -34,6 +43,7 @@ import org.apache.oozie.service.DagXLogInfoService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.service.XLogService;
 import org.apache.oozie.util.ParamChecker;
+import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.XLogStreamer;
 
 public class BundleEngine extends BaseEngine {
@@ -166,7 +176,7 @@ public class BundleEngine extends BaseEngine {
     @Override
     @Deprecated
     public void reRun(String jobId, Configuration conf) throws BundleEngineException {
-    	throw new BundleEngineException(new XException(ErrorCode.E0301));
+        throw new BundleEngineException(new XException(ErrorCode.E0301));
     }
 
     /**
@@ -242,7 +252,7 @@ public class BundleEngine extends BaseEngine {
     public String submitJob(Configuration conf, boolean startJob) throws BundleEngineException {
         try {
             String jobId = new BundleSubmitXCommand(conf, getAuthToken()).call();
-            
+
             if (startJob) {
                 start(jobId);
             }
@@ -266,4 +276,80 @@ public class BundleEngine extends BaseEngine {
             throw new BundleEngineException(ex);
         }
     }
+
+    private static final Set<String> FILTER_NAMES = new HashSet<String>();
+
+    static {
+        FILTER_NAMES.add(OozieClient.FILTER_USER);
+        FILTER_NAMES.add(OozieClient.FILTER_NAME);
+        FILTER_NAMES.add(OozieClient.FILTER_GROUP);
+        FILTER_NAMES.add(OozieClient.FILTER_STATUS);
+    }
+
+    /**
+     * Get bundle jobs
+     *
+     * @param filterStr the filter string
+     * @param start start location for paging
+     * @param len total length to get
+     * @return bundle job info
+     * @throws BundleEngineException thrown if failed to get bundle job info
+     */
+    public BundleJobInfo getBundleJobs(String filterStr, int start, int len) throws BundleEngineException {
+        Map<String, List<String>> filter = parseFilter(filterStr);
+
+        try {
+            return new BundleJobsXCommand(filter, start, len).call();
+        }
+        catch (CommandException ex) {
+            throw new BundleEngineException(ex);
+        }
+    }
+
+    /**
+     * Parse filter string to a map with key = filter name and values = filter values
+     *
+     * @param filter the filter string
+     * @return filter key and value map
+     * @throws CoordinatorEngineException
+     */
+    private Map<String, List<String>> parseFilter(String filter) throws BundleEngineException {
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
+        if (filter != null) {
+            StringTokenizer st = new StringTokenizer(filter, ";");
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken();
+                if (token.contains("=")) {
+                    String[] pair = token.split("=");
+                    if (pair.length != 2) {
+                        throw new BundleEngineException(ErrorCode.E0420, filter, "elements must be name=value pairs");
+                    }
+                    if (!FILTER_NAMES.contains(pair[0])) {
+                        throw new BundleEngineException(ErrorCode.E0420, filter, XLog.format("invalid name [{0}]",
+                                pair[0]));
+                    }
+                    if (pair[0].equals("status")) {
+                        try {
+                            CoordinatorJob.Status.valueOf(pair[1]);
+                        }
+                        catch (IllegalArgumentException ex) {
+                            throw new BundleEngineException(ErrorCode.E0420, filter, XLog.format(
+                                    "invalid status [{0}]", pair[1]));
+                        }
+                    }
+                    List<String> list = map.get(pair[0]);
+                    if (list == null) {
+                        list = new ArrayList<String>();
+                        map.put(pair[0], list);
+                    }
+                    list.add(pair[1]);
+                }
+                else {
+                    throw new BundleEngineException(ErrorCode.E0420, filter, "elements must be name=value pairs");
+                }
+            }
+        }
+        return map;
+    }
+
 }
