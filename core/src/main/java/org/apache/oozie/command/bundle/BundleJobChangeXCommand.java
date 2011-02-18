@@ -49,7 +49,8 @@ public class BundleJobChangeXCommand extends TransitionXCommand<Void> {
     private List<BundleActionBean> bundleActions;
     private BundleJobBean bundleJob;
     private static final XLog LOG = XLog.getLog(BundleJobChangeXCommand.class);
-    private Date newPauseTime;
+    private Date newPauseTime = null;
+    boolean isChangePauseTime = false;
     
     private static final Set<String> ALLOWED_CHANGE_OPTIONS = new HashSet<String>();
     static {
@@ -66,8 +67,6 @@ public class BundleJobChangeXCommand extends TransitionXCommand<Void> {
         super("bundle_change", "bundle_change", 1);
         this.jobId = ParamChecker.notEmpty(id, "id");
         this.changeValue = ParamChecker.notEmpty(changeValue, "changeValue");
-        
-        validateChangeValue(changeValue);
     }
     
     /**
@@ -97,9 +96,16 @@ public class BundleJobChangeXCommand extends TransitionXCommand<Void> {
         if (map.size() > ALLOWED_CHANGE_OPTIONS.size() || !map.containsKey(OozieClient.CHANGE_VALUE_PAUSETIME)) {
             throw new CommandException(ErrorCode.E1317, changeValue, "can only change pausetime");
         }
+        
+        if (map.containsKey(OozieClient.CHANGE_VALUE_PAUSETIME)) {
+            isChangePauseTime = true;
+        }
+        else {
+            throw new CommandException(ErrorCode.E1317, changeValue, "should change pausetime");
+        }
 
         String value = map.get(OozieClient.CHANGE_VALUE_PAUSETIME);
-        if (!value.equals("")) {
+        if (!value.equals(""))   {
             try {
                 newPauseTime = DateUtils.parseDateUTC(value);
             }
@@ -146,20 +152,22 @@ public class BundleJobChangeXCommand extends TransitionXCommand<Void> {
     @Override
     protected Void execute() throws CommandException {
         try {
-            bundleJob.setPending();
-            bundleJob.setPauseTime(newPauseTime);
+            if (isChangePauseTime) {
+                bundleJob.setPending();
+                bundleJob.setPauseTime(newPauseTime);
 
-            for (BundleActionBean action : this.bundleActions) {
-                if (action.getStatus() == Job.Status.RUNNING || action.getStatus() == Job.Status.PREP) {
-                    // queue coord change commands;
-                    if (action.getCoordId() != null) {
-                        queue(new CoordChangeXCommand(action.getCoordId(), changeValue));
-                        action.setPending(action.getPending()+1);
-                        jpaService.execute(new BundleActionUpdateJPAExecutor(action));
+                for (BundleActionBean action : this.bundleActions) {
+                    if (action.getStatus() == Job.Status.RUNNING || action.getStatus() == Job.Status.PREP) {
+                        // queue coord change commands;
+                        if (action.getCoordId() != null) {
+                            queue(new CoordChangeXCommand(action.getCoordId(), changeValue));
+                            action.setPending(action.getPending()+1);
+                            jpaService.execute(new BundleActionUpdateJPAExecutor(action));
+                        }
                     }
                 }
+                jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
             }
-            jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
             return null;
         }
         catch (XException ex) {
@@ -228,7 +236,9 @@ public class BundleJobChangeXCommand extends TransitionXCommand<Void> {
      * @see org.apache.oozie.command.XCommand#eagerVerifyPrecondition()
      */
     @Override
-    protected void eagerVerifyPrecondition() throws CommandException, PreconditionException {
+    protected void eagerVerifyPrecondition() throws CommandException, PreconditionException {        
+        validateChangeValue(changeValue);
+        
         if (bundleJob == null) {
             LOG.info("BundleChangeCommand not succeeded - " + "job " + jobId + " does not exist");
             throw new PreconditionException(ErrorCode.E1314, jobId);
