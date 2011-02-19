@@ -39,11 +39,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.oozie.BuildInfo;
-import org.apache.oozie.client.rest.JsonCoordinatorAction;
-import org.apache.oozie.client.rest.JsonCoordinatorJob;
 import org.apache.oozie.client.rest.JsonTags;
-import org.apache.oozie.client.rest.JsonWorkflowAction;
-import org.apache.oozie.client.rest.JsonWorkflowJob;
+import org.apache.oozie.client.rest.JsonToBean;
 import org.apache.oozie.client.rest.RestConstants;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -587,7 +584,7 @@ public class OozieClient {
             if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
                 Reader reader = new InputStreamReader(conn.getInputStream());
                 JSONObject json = (JSONObject) JSONValue.parse(reader);
-                return new JsonWorkflowJob(json);
+                return JsonToBean.createWorkflowJob(json);
             }
             else {
                 handleError(conn);
@@ -607,7 +604,7 @@ public class OozieClient {
             if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
                 Reader reader = new InputStreamReader(conn.getInputStream());
                 JSONObject json = (JSONObject) JSONValue.parse(reader);
-                return new JsonWorkflowAction(json);
+                return JsonToBean.createWorkflowAction(json);
             }
             else {
                 handleError(conn);
@@ -752,7 +749,7 @@ public class OozieClient {
             if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
                 Reader reader = new InputStreamReader(conn.getInputStream());
                 JSONObject json = (JSONObject) JSONValue.parse(reader);
-                return new JsonCoordinatorJob(json);
+                return JsonToBean.createCoordinatorJob(json);
             }
             else {
                 handleError(conn);
@@ -772,7 +769,7 @@ public class OozieClient {
             if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
                 Reader reader = new InputStreamReader(conn.getInputStream());
                 JSONObject json = (JSONObject) JSONValue.parse(reader);
-                return new JsonCoordinatorAction(json);
+                return JsonToBean.createCoordinatorAction(json);
             }
             else {
                 handleError(conn);
@@ -835,7 +832,7 @@ public class OozieClient {
                 if (workflows == null) {
                     workflows = new JSONArray();
                 }
-                return JsonWorkflowJob.fromJSONArray(workflows);
+                return JsonToBean.createWorkflowJobList(workflows);
             }
             else {
                 handleError(conn);
@@ -863,7 +860,7 @@ public class OozieClient {
                 if (jobs == null) {
                     jobs = new JSONArray();
                 }
-                return JsonCoordinatorJob.fromJSONArray(jobs);
+                return JsonToBean.createCoordinatorJobList(jobs);
             }
             else {
                 handleError(conn);
@@ -872,7 +869,7 @@ public class OozieClient {
         }
     }
 
-    private class CoordRerun extends ClientCallable<List<JsonCoordinatorAction>> {
+    private class CoordRerun extends ClientCallable<List<CoordinatorAction>> {
 
         CoordRerun(String jobId, String rerunType, String scope, boolean refresh, boolean noCleanup) {
             super("PUT", RestConstants.JOB, notEmpty(jobId, "jobId"), prepareParams(RestConstants.ACTION_PARAM,
@@ -883,13 +880,13 @@ public class OozieClient {
         }
 
         @Override
-        protected List<JsonCoordinatorAction> call(HttpURLConnection conn) throws IOException, OozieClientException {
+        protected List<CoordinatorAction> call(HttpURLConnection conn) throws IOException, OozieClientException {
             conn.setRequestProperty("content-type", RestConstants.XML_CONTENT_TYPE);
             if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
                 Reader reader = new InputStreamReader(conn.getInputStream());
                 JSONObject json = (JSONObject) JSONValue.parse(reader);
                 JSONArray coordActions = (JSONArray) json.get(JsonTags.COORDINATOR_ACTIONS);
-                return JsonCoordinatorAction.fromJSONArray(coordActions);
+                return JsonToBean.createCoordinatorActionList(coordActions);
             }
             else {
                 handleError(conn);
@@ -908,7 +905,7 @@ public class OozieClient {
      * @param noCleanup true if -nocleanup is given in command option
      * @throws OozieClientException
      */
-    public List<JsonCoordinatorAction> reRunCoord(String jobId, String rerunType, String scope, boolean refresh,
+    public List<CoordinatorAction> reRunCoord(String jobId, String rerunType, String scope, boolean refresh,
             boolean noCleanup) throws OozieClientException {
         return new CoordRerun(jobId, rerunType, scope, refresh, noCleanup).call();
     }

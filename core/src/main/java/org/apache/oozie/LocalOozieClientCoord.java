@@ -245,13 +245,13 @@ public class LocalOozieClientCoord extends OozieClient {
      * @throws OozieClientException
      */
     @Override
-    public List<JsonCoordinatorAction> reRunCoord(String jobId, String rerunType, String scope, boolean refresh,
+    public List<CoordinatorAction> reRunCoord(String jobId, String rerunType, String scope, boolean refresh,
             boolean noCleanup) throws OozieClientException {
         try {
             CoordinatorActionInfo coordInfo = coordEngine.reRun(jobId, rerunType, scope, Boolean.valueOf(refresh),
                     Boolean.valueOf(noCleanup));
             List<CoordinatorActionBean> actionBeans = coordInfo.getCoordActions();
-            List<JsonCoordinatorAction> actions = new ArrayList<JsonCoordinatorAction>();
+            List<CoordinatorAction> actions = new ArrayList<CoordinatorAction>();
             for (CoordinatorActionBean actionBean : actionBeans) {
                 actions.add(actionBean);
             }

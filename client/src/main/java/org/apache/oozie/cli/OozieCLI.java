@@ -52,7 +52,6 @@ import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.client.XOozieClient;
 import org.apache.oozie.client.OozieClient.SYSTEM_MODE;
-import org.apache.oozie.client.rest.JsonCoordinatorAction;
 import org.apache.oozie.client.rest.RestConstants;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -708,7 +707,7 @@ public class OozieCLI {
         System.out.println(RULER);
     }
 
-    private void printRerunCoordActions(List<JsonCoordinatorAction> actions) {
+    private void printRerunCoordActions(List<CoordinatorAction> actions) {
         if (actions != null && actions.size() > 0) {
             System.out.println("Action ID" + VERBOSE_DELIMITER + "Nominal Time");
             System.out.println(RULER);
