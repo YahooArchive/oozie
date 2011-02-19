@@ -52,9 +52,8 @@ public class WfEndXCommand extends WorkflowXCommand<Void> {
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
             LOG.error("Unable to delete WF temp dir of wf id :" + job.getId(), e);
-            throw new CommandException(ErrorCode.E0610);
+            throw new CommandException(ErrorCode.E0819);
         }
 
     }
@@ -64,7 +63,7 @@ public class WfEndXCommand extends WorkflowXCommand<Void> {
      * 
      * @see org.apache.oozie.action.ActionExecutor.Context#getAppFileSystem()
      */
-    public FileSystem getAppFileSystem(WorkflowJob workflow) throws HadoopAccessorException, IOException,
+    protected FileSystem getAppFileSystem(WorkflowJob workflow) throws HadoopAccessorException, IOException,
             URISyntaxException {
         XConfiguration jobConf = new XConfiguration(new StringReader(workflow.getConf()));
         Configuration fsConf = new Configuration();
