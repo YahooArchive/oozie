@@ -1,3 +1,17 @@
+/**
+ * Copyright (c) 2010 Yahoo! Inc. All rights reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License. See accompanying LICENSE file.
+ */
 package org.apache.oozie.command.wf;
 
 import java.io.IOException;
@@ -18,6 +32,11 @@ import org.apache.oozie.service.Services;
 import org.apache.oozie.util.XConfiguration;
 import org.apache.oozie.util.XLog;
 
+/**
+ * This Command is expected to be called when a Workflow moves to any terminal
+ * state ( such as SUCCEEDED, KILLED, FAILED). This class primarily removes the
+ * temporary directory created for specific workflow id
+ */
 public class WfEndXCommand extends WorkflowXCommand<Void> {
 
     private WorkflowJob job = null;
@@ -26,7 +45,6 @@ public class WfEndXCommand extends WorkflowXCommand<Void> {
     public WfEndXCommand(WorkflowJob job) {
         super("wf_end", "wf_end", 1);
         this.job = job;
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -58,11 +76,6 @@ public class WfEndXCommand extends WorkflowXCommand<Void> {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.apache.oozie.action.ActionExecutor.Context#getAppFileSystem()
-     */
     protected FileSystem getAppFileSystem(WorkflowJob workflow) throws HadoopAccessorException, IOException,
             URISyntaxException {
         XConfiguration jobConf = new XConfiguration(new StringReader(workflow.getConf()));
@@ -79,19 +92,16 @@ public class WfEndXCommand extends WorkflowXCommand<Void> {
 
     @Override
     protected boolean isLockRequired() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     protected void loadState() throws CommandException {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     protected void verifyPrecondition() throws CommandException, PreconditionException {
-        // TODO Auto-generated method stub
 
     }
 
