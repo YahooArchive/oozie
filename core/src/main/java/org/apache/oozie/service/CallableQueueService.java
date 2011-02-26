@@ -189,7 +189,7 @@ public class CallableQueueService implements Service, Instrumentable {
          * @return true if this callable should be queued
          */
         public boolean filterDuplicates() {
-        	XCallable<?> callable = getElement();
+            XCallable<?> callable = getElement();
             if (callable instanceof CompositeCallable) {
                 return ((CompositeCallable) callable).removeDuplicates();
             }
@@ -202,12 +202,12 @@ public class CallableQueueService implements Service, Instrumentable {
          * Add the keys to the set
          */
         public void addToUniqueCallables() {
-        	XCallable<?> callable = getElement();
+            XCallable<?> callable = getElement();
             if (callable instanceof CompositeCallable) {
                 ((CompositeCallable) callable).addToUniqueCallables();
             }
             else {
-                ((ConcurrentHashMap<String, Date>)uniqueCallables).putIfAbsent(callable.getKey(), new Date());
+                ((ConcurrentHashMap<String, Date>) uniqueCallables).putIfAbsent(callable.getKey(), new Date());
             }
         }
 
@@ -215,7 +215,7 @@ public class CallableQueueService implements Service, Instrumentable {
          * Remove the keys from the set
          */
         public void removeFromUniqueCallables() {
-        	XCallable<?> callable = getElement();
+            XCallable<?> callable = getElement();
             if (callable instanceof CompositeCallable) {
                 ((CompositeCallable) callable).removeFromUniqueCallables();
             }
@@ -296,7 +296,7 @@ public class CallableQueueService implements Service, Instrumentable {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see java.lang.Object#toString()
          */
         @Override
@@ -349,7 +349,7 @@ public class CallableQueueService implements Service, Instrumentable {
          */
         public void addToUniqueCallables() {
             for (XCallable<?> callable : callables) {
-                ((ConcurrentHashMap<String, Date>)uniqueCallables).putIfAbsent(callable.getKey(), new Date());
+                ((ConcurrentHashMap<String, Date>) uniqueCallables).putIfAbsent(callable.getKey(), new Date());
             }
         }
 
@@ -392,7 +392,7 @@ public class CallableQueueService implements Service, Instrumentable {
 
     /**
      * Initialize the command queue service.
-     * 
+     *
      * @param services services instance.
      */
     @Override
