@@ -189,9 +189,9 @@ public class CallableQueueService implements Service, Instrumentable {
          * @return true if this callable should be queued
          */
         public boolean filterDuplicates() {
-            XCallable<Void> callable = getElement();
-            if (callable instanceof CompositeCallable<?>) {
-                return ((CompositeCallable<?>) callable).removeDuplicates();
+        	XCallable<?> callable = getElement();
+            if (callable instanceof CompositeCallable) {
+                return ((CompositeCallable) callable).removeDuplicates();
             }
             else {
                 return uniqueCallables.containsKey(callable.getKey()) == false;
@@ -202,9 +202,9 @@ public class CallableQueueService implements Service, Instrumentable {
          * Add the keys to the set
          */
         public void addToUniqueCallables() {
-            XCallable<Void> callable = getElement();
-            if (callable instanceof CompositeCallable<?>) {
-                ((CompositeCallable<?>) callable).addToUniqueCallables();
+        	XCallable<?> callable = getElement();
+            if (callable instanceof CompositeCallable) {
+                ((CompositeCallable) callable).addToUniqueCallables();
             }
             else {
                 ((ConcurrentHashMap<String, Date>)uniqueCallables).putIfAbsent(callable.getKey(), new Date());
@@ -215,9 +215,9 @@ public class CallableQueueService implements Service, Instrumentable {
          * Remove the keys from the set
          */
         public void removeFromUniqueCallables() {
-            XCallable<Void> callable = getElement();
-            if (callable instanceof CompositeCallable<?>) {
-                ((CompositeCallable<?>) callable).removeFromUniqueCallables();
+        	XCallable<?> callable = getElement();
+            if (callable instanceof CompositeCallable) {
+                ((CompositeCallable) callable).removeFromUniqueCallables();
             }
             else {
                 uniqueCallables.remove(callable.getKey());
@@ -327,11 +327,11 @@ public class CallableQueueService implements Service, Instrumentable {
          */
         public boolean removeDuplicates() {
             Set<String> set = new HashSet<String>();
-            List<XCallable<T>> filteredCallables = new ArrayList<XCallable<T>>();
+            List<XCallable<?>> filteredCallables = new ArrayList<XCallable<?>>();
             if (callables.size() == 0) {
                 return false;
             }
-            for (XCallable<T> callable : callables) {
+            for (XCallable<?> callable : callables) {
                 if (!uniqueCallables.containsKey(callable.getKey()) && !set.contains(callable.getKey())) {
                     filteredCallables.add(callable);
                     set.add(callable.getKey());
@@ -348,7 +348,7 @@ public class CallableQueueService implements Service, Instrumentable {
          * Add the keys to the set
          */
         public void addToUniqueCallables() {
-            for (XCallable<T> callable : callables) {
+            for (XCallable<?> callable : callables) {
                 ((ConcurrentHashMap<String, Date>)uniqueCallables).putIfAbsent(callable.getKey(), new Date());
             }
         }
@@ -357,7 +357,7 @@ public class CallableQueueService implements Service, Instrumentable {
          * Remove the keys from the set
          */
         public void removeFromUniqueCallables() {
-            for (XCallable<T> callable : callables) {
+            for (XCallable<?> callable : callables) {
                 uniqueCallables.remove(callable.getKey());
             }
         }
