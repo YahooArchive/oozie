@@ -66,22 +66,6 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
      * The constructor for class {@link CoordMaterializeTransitionXCommand}
      *
      * @param jobId coordinator job id
-     * @param startMatdTime materialization start time
-     * @param endMatdTime materialization end time
-     * @param materializationWindow materialization window to calculate end time
-     */
-    public CoordMaterializeTransitionXCommand(String jobId, Date startTime, Date endTime, int materializationWindow) {
-        super("coord_mater", "coord_mater", 1);
-        this.jobId = ParamChecker.notEmpty(jobId, "jobId");
-        this.startMatdTime = startTime;
-        this.endMatdTime = endTime;
-        this.materializationWindow = materializationWindow;
-    }
-
-    /**
-     * The constructor for class {@link CoordMaterializeTransitionXCommand}
-     *
-     * @param jobId coordinator job id
      * @param materializationWindow materialization window to calculate end time
      */
     public CoordMaterializeTransitionXCommand(String jobId, int materializationWindow) {
@@ -138,6 +122,29 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
         calcMatdTime();
 
         LogUtils.setLogInfo(coordJob, logInfo);
+    }
+
+    protected void calcMatdTime() throws CommandException {
+        Timestamp startTime = coordJob.getNextMaterializedTimestamp();
+        if (startTime == null) {
+            startTime = coordJob.getStartTimestamp();
+        }
+        // calculate end time by adding materializationWindow to start time.
+        // need to convert materializationWindow from secs to milliseconds
+        long startTimeMilli = startTime.getTime();
+        long endTimeMilli = startTimeMilli + (materializationWindow * 1000);
+
+        startMatdTime = DateUtils.toDate(new Timestamp(startTimeMilli));
+        endMatdTime = DateUtils.toDate(new Timestamp(endTimeMilli));
+        // if MaterializationWindow end time is greater than endTime
+        // for job, then set it to endTime of job
+        Date jobEndTime = coordJob.getEndTime();
+        if (endMatdTime.compareTo(jobEndTime) > 0) {
+            endMatdTime = jobEndTime;
+        }
+
+        LOG.debug("Materializing coord job id=" + jobId + ", start=" + startMatdTime + ", end=" + endMatdTime
+                + ", window=" + materializationWindow);
     }
 
     @Override
@@ -219,29 +226,6 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
         }
         cron.stop();
 
-    }
-
-    protected void calcMatdTime() throws CommandException {
-        Timestamp startTime = coordJob.getNextMaterializedTimestamp();
-        if (startTime == null) {
-            startTime = coordJob.getStartTimestamp();
-        }
-        // calculate end time by adding materializationWindow to start time.
-        // need to convert materializationWindow from secs to milliseconds
-        long startTimeMilli = startTime.getTime();
-        long endTimeMilli = startTimeMilli + (materializationWindow * 1000);
-
-        startMatdTime = DateUtils.toDate(new Timestamp(startTimeMilli));
-        endMatdTime = DateUtils.toDate(new Timestamp(endTimeMilli));
-        // if MaterializationWindow end time is greater than endTime
-        // for job, then set it to endTime of job
-        Date jobEndTime = coordJob.getEndTime();
-        if (endMatdTime.compareTo(jobEndTime) > 0) {
-            endMatdTime = jobEndTime;
-        }
-
-        LOG.debug("Materializing coord job id=" + jobId + ", start=" + startMatdTime + ", end=" + endMatdTime
-                + ", window=" + materializationWindow);
     }
 
     /**
@@ -363,8 +347,8 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
         // we dont need to materialize this job anymore
         Date jobEndTime = job.getEndTime();
         if (jobEndTime.compareTo(endMatdTime) <= 0) {
+            LOG.info("[" + job.getId() + "]: Update status from "+ job.getStatus() + " to SUCCEEDED");
             job.setStatus(Job.Status.SUCCEEDED);
-            LOG.info("[" + job.getId() + "]: Update status from RUNNING to SUCCEEDED");
 
             // update bundle action
             if (job.getBundleId() != null) {
@@ -374,8 +358,8 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
             }
         }
         else {
+            LOG.info("[" + job.getId() + "]: Update status from "+ job.getStatus() + " to RUNNING");
             job.setStatus(Job.Status.RUNNING);
-            LOG.info("[" + job.getId() + "]: Update status from RUNNING to RUNNING");
         }
         job.setNextMaterializedTime(endMatdTime);
         try {
@@ -384,6 +368,11 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
         catch (JPAExecutorException ex) {
             throw new CommandException(ex);
         }
+    }
+
+    @Override
+    public String getKey(){
+        return getName() + "_" + jobId;
     }
 
 }

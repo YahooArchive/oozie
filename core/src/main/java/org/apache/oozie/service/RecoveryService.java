@@ -22,15 +22,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.CoordinatorJobBean;
 import org.apache.oozie.WorkflowActionBean;
-import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.command.coord.CoordActionInputCheckCommand;
 import org.apache.oozie.command.coord.CoordActionInputCheckXCommand;
 import org.apache.oozie.command.coord.CoordActionReadyCommand;
 import org.apache.oozie.command.coord.CoordActionReadyXCommand;
 import org.apache.oozie.command.coord.CoordActionStartCommand;
 import org.apache.oozie.command.coord.CoordActionStartXCommand;
-import org.apache.oozie.command.coord.CoordRecoveryCommand;
-import org.apache.oozie.command.coord.CoordRecoveryXCommand;
 import org.apache.oozie.command.wf.ActionEndCommand;
 import org.apache.oozie.command.wf.ActionEndXCommand;
 import org.apache.oozie.command.wf.ActionStartCommand;
@@ -99,7 +96,7 @@ public class RecoveryService implements Service {
             XLog log = XLog.getLog(getClass());
             msg = new StringBuilder();
             runWFRecovery();
-            runCoordJobRecovery();
+            //runCoordJobRecovery();
             runCoordActionRecovery();
             runCoordActionRecoveryForReady();
             log.debug("QUEUING [{0}] for potential recovery", msg.toString());
@@ -128,7 +125,7 @@ public class RecoveryService implements Service {
         /**
          * Recover coordinator jobs that are running and have lastModifiedTimestamp older than the specified interval
          */
-        private void runCoordJobRecovery() {
+/*        private void runCoordJobRecovery() {
             XLog.Info.get().clear();
             XLog log = XLog.getLog(getClass());
 
@@ -187,7 +184,7 @@ public class RecoveryService implements Service {
                     }
                 }
             }
-        }
+        }*/
 
         /**
          * Recover coordinator actions that are staying in WAITING or SUBMITTED too long
