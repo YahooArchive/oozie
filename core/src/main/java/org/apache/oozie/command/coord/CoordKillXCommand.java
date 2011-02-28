@@ -111,6 +111,7 @@ public class CoordKillXCommand extends KillTransitionXCommand {
                         if (action.getExternalId() != null) {
                             queue(new KillXCommand(action.getExternalId()));
                             updateCoordAction(action);
+                            LOG.debug("Killed coord action = [{0}]", action.getId());
                         }
                     }
                 }
