@@ -100,7 +100,7 @@ public class TestBundleChangeXCommand extends XDataTestCase {
 
         new BundleJobChangeXCommand(bundleJob.getId(), "pausetime=" + dateStr).call();
         bundleJob = jpaService.execute(bundleJobGetCmd);
-        assertEquals(bundleJob.getPauseTime(), DateUtils.parseDateUTC(dateStr));
+        assertEquals(DateUtils.parseDateUTC(dateStr), bundleJob.getPauseTime());
         
         final String coordJobId = coordJob.getId();
         waitFor(60000, new Predicate() {
@@ -111,7 +111,7 @@ public class TestBundleChangeXCommand extends XDataTestCase {
         });
         
         coordJob = jpaService.execute(new CoordJobGetJPAExecutor(coordJob.getId()));
-        assertEquals(coordJob.getPauseTime(), DateUtils.parseDateUTC(dateStr));
+        assertEquals(DateUtils.parseDateUTC(dateStr), coordJob.getPauseTime());
     }
 
     /**
