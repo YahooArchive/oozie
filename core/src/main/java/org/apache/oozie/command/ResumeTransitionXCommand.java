@@ -21,7 +21,6 @@ public abstract class ResumeTransitionXCommand extends TransitionXCommand<Void> 
     /**
      * Resume all children of the job
      *
-     * @return String
      * @throws CommandException
      */
     public abstract void resumeChildren() throws CommandException;
@@ -48,7 +47,7 @@ public abstract class ResumeTransitionXCommand extends TransitionXCommand<Void> 
         else if (job.getStatus() == Job.Status.SUSPENDED) {
             job.setStatus(Job.Status.RUNNING);
         }
-        job.resetPending();
+        job.setPending();
     }
 
     /* (non-Javadoc)

@@ -118,7 +118,6 @@ public class CoordSuspendXCommand extends SuspendTransitionXCommand {
                     }
                 }
             }
-            jpaService.execute(new CoordJobUpdateJPAExecutor(coordJob));
         }
         catch (XException ex) {
             exceptionOccured = true;
@@ -127,6 +126,12 @@ public class CoordSuspendXCommand extends SuspendTransitionXCommand {
         finally {
             if (exceptionOccured) {
                 coordJob.setStatus(CoordinatorJob.Status.FAILED);
+                try {
+                    jpaService.execute(new CoordJobUpdateJPAExecutor(coordJob));
+                }
+                catch (JPAExecutorException ex) {
+                    throw new CommandException(ex);
+                }
             }
 
             //update bundle action

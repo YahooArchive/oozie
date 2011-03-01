@@ -21,7 +21,6 @@ public abstract class SuspendTransitionXCommand extends TransitionXCommand<Void>
     /**
      * Suspend all children of the job
      *
-     * @return String
      * @throws CommandException
      */
     public abstract void suspendChildren() throws CommandException;
