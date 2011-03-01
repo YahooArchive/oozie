@@ -94,11 +94,23 @@ public class BundleJobSuspendXCommand extends SuspendTransitionXCommand {
      */
     @Override
     protected void loadState() throws CommandException {
+        jpaService = Services.get().get(JPAService.class);
+        if (jpaService == null) {
+            throw new CommandException(ErrorCode.E0610);
+        }
+
         try {
-            this.bundleActions = jpaService.execute(new BundleActionsGetJPAExecutor(jobId));
+            bundleJob = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
         }
         catch (Exception Ex) {
-            throw new CommandException(ErrorCode.E1311, this.jobId);
+            new CommandException(ErrorCode.E0604, jobId);
+        }
+
+        try {
+            bundleActions = jpaService.execute(new BundleActionsGetJPAExecutor(jobId));
+        }
+        catch (Exception Ex) {
+            throw new CommandException(ErrorCode.E1311, jobId);
         }
     }
 
@@ -107,35 +119,6 @@ public class BundleJobSuspendXCommand extends SuspendTransitionXCommand {
      */
     @Override
     protected void verifyPrecondition() throws CommandException, PreconditionException {
-    }
-
-    /* (non-Javadoc)
-     * @see org.apache.oozie.command.XCommand#eagerLoadState()
-     */
-    @Override
-    protected void eagerLoadState() throws CommandException {
-
-        try {
-            jpaService = Services.get().get(JPAService.class);
-
-            if (jpaService != null) {
-                this.bundleJob = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
-                LogUtils.setLogInfo(bundleJob, logInfo);
-            }
-            else {
-                throw new CommandException(ErrorCode.E0610);
-            }
-        }
-        catch (XException ex) {
-            throw new CommandException(ex);
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.apache.oozie.command.XCommand#eagerVerifyPrecondition()
-     */
-    @Override
-    protected void eagerVerifyPrecondition() throws CommandException, PreconditionException {
         if (bundleJob.getStatus() == Job.Status.SUCCEEDED || bundleJob.getStatus() == Job.Status.FAILED) {
             LOG.info("BundleSuspendCommand not suspended - " + "job finished or does not exist " + jobId);
             throw new PreconditionException(ErrorCode.E1312, jobId, bundleJob.getStatus().toString());
