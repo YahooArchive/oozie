@@ -306,7 +306,7 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
 
     /**
      * Merge default configuration with user-defined configuration.
-     * 
+     *
      * @throws CommandException thrown if failed to read or merge configurations
      */
     protected void mergeDefaultConfig() throws CommandException {
@@ -727,7 +727,7 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
 
     /**
      * Include one dataset file.
-     * 
+     *
      * @param incDSFile : Include data set filename.
      * @param dsList :List of dataset names to verify the duplicate.
      * @param allDataSets : Element that includes all dataset definitions.
@@ -772,7 +772,7 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
 
     /**
      * Remove a dataset from a list of dataset.
-     * 
+     *
      * @param eDatasets : List of dataset
      * @param name : Dataset name to be removed.
      */
@@ -788,7 +788,7 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
 
     /**
      * Read coordinator definition.
-     * 
+     *
      * @param appPath application path.
      * @return coordinator definition.
      * @throws CoordinatorJobException thrown if the definition could not be read.
@@ -828,7 +828,7 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
 
     /**
      * Write a coordinator job into database
-     * 
+     *
      * @param eJob : XML element of job
      * @param coordJob : Coordinator job bean
      * @return Job id
