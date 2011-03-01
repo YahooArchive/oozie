@@ -1,5 +1,6 @@
 -- Oozie 3.0.0 release
 
+GH-0125 Query GET_WORKFLOWS_COLUMNS should order by createdTimestamp instead of starttime
 GH-0078 Option to rerun from failed node.
 GH-0522 Bundle rerun failed.
 GH-0086 Clean up temporary files in the user HDFS directory upon completion.
