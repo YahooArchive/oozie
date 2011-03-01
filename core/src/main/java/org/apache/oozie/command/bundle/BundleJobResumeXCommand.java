@@ -30,6 +30,7 @@ import org.apache.oozie.executor.jpa.BundleActionUpdateJPAExecutor;
 import org.apache.oozie.executor.jpa.BundleActionsGetJPAExecutor;
 import org.apache.oozie.executor.jpa.BundleJobGetJPAExecutor;
 import org.apache.oozie.executor.jpa.BundleJobUpdateJPAExecutor;
+import org.apache.oozie.executor.jpa.JPAExecutorException;
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.InstrumentUtils;
@@ -53,12 +54,11 @@ public class BundleJobResumeXCommand extends ResumeTransitionXCommand {
     }
 
     /* (non-Javadoc)
-     * @see org.apache.oozie.command.ResumeTransitionXCommand#resume()
+     * @see org.apache.oozie.command.ResumeTransitionXCommand#resumeChildren()
      */
     @Override
-    public void resume() throws CommandException {
+    public void resumeChildren() throws CommandException {
         try {
-            InstrumentUtils.incrJobCounter("bundle_resume", 1, null);
             for (BundleActionBean action : bundleActions) {
                 // queue a ResumeCommand
                 if (action.getCoordId() != null) {
@@ -69,8 +69,6 @@ public class BundleJobResumeXCommand extends ResumeTransitionXCommand {
             }
             bundleJob.setSuspendedTime(new Date());
             jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
-
-            return;
         }
         catch (XException ex) {
             throw new CommandException(ex);
@@ -90,6 +88,13 @@ public class BundleJobResumeXCommand extends ResumeTransitionXCommand {
      */
     @Override
     public void updateJob() throws CommandException {
+        InstrumentUtils.incrJobCounter("bundle_resume", 1, null);
+        try {
+            jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
+        }
+        catch (JPAExecutorException e) {
+            throw new CommandException(e);
+        }
     }
 
     /* (non-Javadoc)
