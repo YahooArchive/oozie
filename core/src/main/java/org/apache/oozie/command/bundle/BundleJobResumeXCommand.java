@@ -125,7 +125,7 @@ public class BundleJobResumeXCommand extends ResumeTransitionXCommand {
             bundleJob = jpaService.execute(new BundleJobGetJPAExecutor(bundleId));
         }
         catch (Exception Ex) {
-            new CommandException(ErrorCode.E0604, bundleId);
+            throw new CommandException(ErrorCode.E0604, bundleId);
         }
 
         try {

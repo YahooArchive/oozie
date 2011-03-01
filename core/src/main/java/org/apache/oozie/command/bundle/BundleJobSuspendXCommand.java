@@ -103,7 +103,7 @@ public class BundleJobSuspendXCommand extends SuspendTransitionXCommand {
             bundleJob = jpaService.execute(new BundleJobGetJPAExecutor(jobId));
         }
         catch (Exception Ex) {
-            new CommandException(ErrorCode.E0604, jobId);
+            throw new CommandException(ErrorCode.E0604, jobId);
         }
 
         try {
