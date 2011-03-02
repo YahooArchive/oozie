@@ -73,7 +73,6 @@ public abstract class StartTransitionXCommand extends TransitionXCommand<Void> {
      */
     @Override
     protected Void execute() throws CommandException {
-        loadState();
         transitToNext();
         updateJob();
         StartChildren();

@@ -96,7 +96,6 @@ public class RecoveryService implements Service {
             XLog log = XLog.getLog(getClass());
             msg = new StringBuilder();
             runWFRecovery();
-            //runCoordJobRecovery();
             runCoordActionRecovery();
             runCoordActionRecoveryForReady();
             log.debug("QUEUING [{0}] for potential recovery", msg.toString());
@@ -121,70 +120,6 @@ public class RecoveryService implements Service {
                 this.delay = 0;
             }
         }
-
-        /**
-         * Recover coordinator jobs that are running and have lastModifiedTimestamp older than the specified interval
-         */
-/*        private void runCoordJobRecovery() {
-            XLog.Info.get().clear();
-            XLog log = XLog.getLog(getClass());
-
-            CoordinatorStore store = null;
-            try {
-                store = Services.get().get(StoreService.class).getStore(CoordinatorStore.class);
-                store.beginTrx();
-
-                // get list of all jobs that have lastModifiedTimestamp older
-                // than the specified interval
-                List<CoordinatorJobBean> jobs = store.getCoordinatorJobsOlderThanStatus(coordOlderThan,
-                                                                                        CoordinatorJob.Status.PREMATER.toString(), 50, false);
-                //log.debug("QUEUING[{0}] PREMATER coord jobs for potential recovery", jobs.size());
-                msg.append(", COORD_JOBS : " + jobs.size());
-                for (CoordinatorJobBean coordJob : jobs) {
-                    Services.get().get(InstrumentationService.class).get().incr(INSTRUMENTATION_GROUP,
-                                                                                INSTR_RECOVERED_COORD_JOBS_COUNTER, 1);
-                    if (useXCommand) {
-                        queueCallable(new CoordRecoveryXCommand(coordJob.getId()));
-                    } else {
-                        queueCallable(new CoordRecoveryCommand(coordJob.getId()));
-                    }
-                }
-
-                store.commitTrx();
-            }
-            catch (StoreException ex) {
-                if (store != null) {
-                    store.rollbackTrx();
-                }
-                log.warn("Exception while accessing the store", ex);
-            }
-            catch (Exception ex) {
-                log.error("Exception, {0}", ex.getMessage(), ex);
-                if (store != null && store.isActive()) {
-                    try {
-                        store.rollbackTrx();
-                    }
-                    catch (RuntimeException rex) {
-                        log.warn("openjpa error, {0}", rex.getMessage(), rex);
-                    }
-                }
-            }
-            finally {
-                if (store != null) {
-                    if (!store.isActive()) {
-                        try {
-                            store.closeTrx();
-                        }
-                        catch (RuntimeException rex) {
-                            log.warn("Exception while attempting to close store", rex);
-                        }
-                    }
-                    else {
-                        log.warn("transaction is not committed or rolled back before closing entitymanager.");
-                    }
-                }
-            }
-        }*/
 
         /**
          * Recover coordinator actions that are staying in WAITING or SUBMITTED too long

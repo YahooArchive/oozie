@@ -55,7 +55,7 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
     private static final int LOOKAHEAD_WINDOW = 300; // We look ahead 5 minutes for materialization;
     private final XLog LOG = XLog.getLog(CoordMaterializeTransitionXCommand.class);
     private JPAService jpaService = null;
-    CoordinatorJobBean coordJob = null;
+    private CoordinatorJobBean coordJob = null;
     private String jobId = null;
     private Date startMatdTime = null;
     private Date endMatdTime = null;
@@ -189,7 +189,7 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
         }
 
         if (coordJob.getPauseTime() != null && !startMatdTime.before(coordJob.getPauseTime())) {
-            // pausetime blocks real materialization - we change job's status back to RUNNING;
+            // PAUSE status blocks real materialization
             coordJob.setStatus(Job.Status.PAUSED);
             coordJob.setLastModifiedTime(new Date());
 
@@ -209,7 +209,7 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
     }
 
     @Override
-    public void materialize() throws CommandException {
+    protected void materialize() throws CommandException {
         Instrumentation.Cron cron = new Instrumentation.Cron();
         cron.start();
         try {

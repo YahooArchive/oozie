@@ -51,14 +51,13 @@ public abstract class MaterializeTransitionXCommand extends TransitionXCommand<V
      * Materialize the actions for current job
      * @throws CommandException thrown if failed to materialize
      */
-    public abstract void materialize() throws CommandException;
+    protected abstract void materialize() throws CommandException;
 
     /* (non-Javadoc)
      * @see org.apache.oozie.command.TransitionXCommand#execute()
      */
     @Override
     protected Void execute() throws CommandException {
-        loadState();
         materialize();
         updateJob();
         return null;
