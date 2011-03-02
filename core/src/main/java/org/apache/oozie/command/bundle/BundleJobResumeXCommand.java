@@ -88,6 +88,7 @@ public class BundleJobResumeXCommand extends ResumeTransitionXCommand {
     public void updateJob() throws CommandException {
         InstrumentUtils.incrJobCounter("bundle_resume", 1, null);
         try {
+            bundleJob.setSuspendedTime(null);
             jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
         }
         catch (JPAExecutorException e) {
