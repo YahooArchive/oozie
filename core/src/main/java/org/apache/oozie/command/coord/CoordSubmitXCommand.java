@@ -173,7 +173,7 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
      * @see org.apache.oozie.command.XCommand#execute()
      */
     @Override
-    public String submit() throws CommandException {
+    protected String submit() throws CommandException {
         String jobId = null;
         log.info("STARTED Coordinator Submit");
         InstrumentUtils.incrJobCounter(getName(), 1, getInstrumentation());
@@ -254,7 +254,9 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
         }
         finally {
             if (exceptionOccured) {
-                coordJob.setStatus(CoordinatorJob.Status.FAILED);
+                if(coordJob.getId() == null || coordJob.getId().equalsIgnoreCase("")){
+                    coordJob.setStatus(CoordinatorJob.Status.FAILED);
+                }
             }
             // update bundle action
             if (this.bundleId != null) {
