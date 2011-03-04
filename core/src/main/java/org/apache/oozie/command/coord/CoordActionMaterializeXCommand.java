@@ -30,6 +30,7 @@ import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.PreconditionException;
 import org.apache.oozie.command.bundle.BundleStatusUpdateXCommand;
 import org.apache.oozie.executor.jpa.CoordActionInsertJPAExecutor;
+import org.apache.oozie.executor.jpa.CoordActionsActiveCountJPAExecutor;
 import org.apache.oozie.executor.jpa.CoordJobGetJPAExecutor;
 import org.apache.oozie.executor.jpa.CoordJobUpdateJPAExecutor;
 import org.apache.oozie.executor.jpa.JPAExecutorException;
@@ -63,6 +64,8 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
      */
     public static final String CONF_DEFAULT_TIMEOUT_CATCHUP = Service.CONF_PREFIX + "coord.catchup.default.timeout";
 
+    public static final String CONF_DEFAULT_MAX_TIMEOUT = Service.CONF_PREFIX + "coord.default.max.timeout";
+    
     public CoordActionMaterializeXCommand(String jobId, Date startTime, Date endTime) {
         super("coord_action_mater", "coord_action_mater", 1);
         this.jobId = ParamChecker.notEmpty(jobId, "jobId");
@@ -157,8 +160,12 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
             pause = Calendar.getInstance(appTz);
             pause.setTime(DateUtils.convertDateToTimestamp(jobPauseTime));
         }
-
-        while (effStart.compareTo(end) < 0) {
+         JPAService jpaService = Services.get().get(JPAService.class);
+        int numWaitingActions = jpaService.execute(new CoordActionsActiveCountJPAExecutor(jobBean.getId()));
+        int maxActionToBeCreated = jobBean.getConcurrency() - numWaitingActions;
+        log.debug("maxActionToBeCreated " + +maxActionToBeCreated + " concur :" + jobBean.getConcurrency()
+                + " numWaitingActions :" + numWaitingActions);
+        while (effStart.compareTo(end) < 0 && maxActionToBeCreated-- > 0) {
             if (pause != null && effStart.compareTo(pause) >= 0) {
                 break;
             }
@@ -166,8 +173,12 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
             lastActionNumber++;
 
             int timeout = jobBean.getTimeout();
+            if (timeout < 0 || timeout > Services.get().getConf().getInt(CONF_DEFAULT_MAX_TIMEOUT, 129600)) {
+                // 129600 = 90 days
+                timeout = Services.get().getConf().getInt(CONF_DEFAULT_MAX_TIMEOUT, 129600);
+            }
             log.debug(origStart.getTime() + " Materializing action for time=" + effStart.getTime()
-                    + ", lastactionnumber=" + lastActionNumber);
+                    + ", lastactionnumber=" + lastActionNumber + " timeout " + timeout + " min");
             action = CoordCommandUtils.materializeOneInstance(jobId, dryrun, (Element) eJob.clone(),
                     effStart.getTime(), lastActionNumber, conf, actionBean);
 
