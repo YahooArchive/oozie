@@ -116,7 +116,7 @@ public class CoordMaterializeTriggerService implements Service {
                             INSTR_MAT_JOBS_COUNTER, 1);
                     int numWaitingActions = jpaService
                             .execute(new CoordActionsActiveCountJPAExecutor(coordJob.getId()));
-                    LOG.debug("Job :" + coordJob.getId() + "  numWaitingActions : " + numWaitingActions + " concurr: "
+                    LOG.debug("Job :" + coordJob.getId() + "  numWaitingActions : " + numWaitingActions + " concurrrency : "
                             + coordJob.getConcurrency());
                     if (numWaitingActions >= coordJob.getConcurrency()) {
                         LOG.debug("Materialization skipped for JobID [" + coordJob.getId() + " already waiting "

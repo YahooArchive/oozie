@@ -160,10 +160,10 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
             pause = Calendar.getInstance(appTz);
             pause.setTime(DateUtils.convertDateToTimestamp(jobPauseTime));
         }
-         JPAService jpaService = Services.get().get(JPAService.class);
+        JPAService jpaService = Services.get().get(JPAService.class);
         int numWaitingActions = jpaService.execute(new CoordActionsActiveCountJPAExecutor(jobBean.getId()));
         int maxActionToBeCreated = jobBean.getConcurrency() - numWaitingActions;
-        log.debug("maxActionToBeCreated " + +maxActionToBeCreated + " concur :" + jobBean.getConcurrency()
+        log.debug("maxActionToBeCreated :" + maxActionToBeCreated + " concurrency :" + jobBean.getConcurrency()
                 + " numWaitingActions :" + numWaitingActions);
         while (effStart.compareTo(end) < 0 && maxActionToBeCreated-- > 0) {
             if (pause != null && effStart.compareTo(pause) >= 0) {
@@ -178,7 +178,7 @@ public class CoordActionMaterializeXCommand extends CoordinatorXCommand<Void> {
                 timeout = Services.get().getConf().getInt(CONF_DEFAULT_MAX_TIMEOUT, 129600);
             }
             log.debug(origStart.getTime() + " Materializing action for time=" + effStart.getTime()
-                    + ", lastactionnumber=" + lastActionNumber + " timeout " + timeout + " min");
+                    + ", lastactionnumber=" + lastActionNumber + " timeout=" + timeout + " min");
             action = CoordCommandUtils.materializeOneInstance(jobId, dryrun, (Element) eJob.clone(),
                     effStart.getTime(), lastActionNumber, conf, actionBean);
 
