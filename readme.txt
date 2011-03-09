@@ -19,6 +19,9 @@ PLEASE NOTE:
    contrary to U.S. law is prohibited.
 
 --------------------------------------
+
+NOTE: Oozie 2.3.1 documentation is identical to Oozie 2.3.0
+
 Oozie Documentation:
 
   http://yahoo.github.com/oozie/releases/2.3.0
