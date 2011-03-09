@@ -1,3 +1,7 @@
+-- Oozie 2.3.2 release
+
+GH-0573 bump 2.3.1 version to 2.3.2-SNAPSHOT
+
 -- Oozie 2.3.1 release
 
 GH-0529 Update Tomcat download URL
