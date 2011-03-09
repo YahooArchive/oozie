@@ -1,5 +1,6 @@
 -- Oozie 2.3.2 release
 
+OOZIE-21 modify the POM to enable exclusion of testcases via command line when invoking maven
 OOZIE-20 examples job properties have hardcoded values, and use non-default Hadoop ports
 OOZIE-19 oozie-setup.sh should add all JARs from an extensions directory
 GH-0654 Fix workflow web console for missing columns
