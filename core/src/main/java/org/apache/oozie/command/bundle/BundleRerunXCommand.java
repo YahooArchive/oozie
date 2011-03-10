@@ -41,6 +41,7 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
     private final boolean noCleanup;
     private BundleJobBean bundleJob;
     private List<BundleActionBean> bundleActions;
+    protected boolean prevPending;
 
     private JPAService jpaService = null;
 
@@ -75,6 +76,7 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
                 this.bundleActions = jpaService.execute(new BundleActionsGetJPAExecutor(jobId));
                 LogUtils.setLogInfo(bundleJob, logInfo);
                 super.setJob(bundleJob);
+                prevPending = bundleJob.isPending();
             }
             else {
                 throw new CommandException(ErrorCode.E0610);
@@ -142,9 +144,14 @@ public class BundleRerunXCommand extends RerunTransitionXCommand<Void> {
         LOG.info("Rerun coord jobs for the bundle=[{0}]", jobId);
     }
 
-    public final void transitToPrevious() throws CommandException {
-        bundleJob.setStatus(prevStatus);
-        bundleJob.resetPending();
+    private final void transitToPrevious() throws CommandException {
+        bundleJob.setStatus(getPrevStatus());
+        if(!prevPending){
+            bundleJob.resetPending();
+        }
+        else{
+            bundleJob.setPending();
+        }
         updateJob();
     }
 

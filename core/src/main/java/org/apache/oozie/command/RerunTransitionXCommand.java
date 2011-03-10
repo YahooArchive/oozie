@@ -113,4 +113,17 @@ public abstract class RerunTransitionXCommand<T> extends TransitionXCommand<T> {
     public XLog getLog() {
         return null;
     }
+
+    /**
+     * This method will return the previous status.
+     *
+     * @return JOB Status
+     */
+    public Job.Status getPrevStatus() {
+        if(prevStatus != null){
+            return prevStatus;
+        }else{
+            return job.getStatus();
+        }
+    }
 }
