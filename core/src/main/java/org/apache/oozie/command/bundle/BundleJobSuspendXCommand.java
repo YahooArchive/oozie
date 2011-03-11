@@ -110,6 +110,8 @@ public class BundleJobSuspendXCommand extends SuspendTransitionXCommand {
         catch (Exception Ex) {
             throw new CommandException(ErrorCode.E1311, jobId);
         }
+        
+        LogUtils.setLogInfo(bundleJob, logInfo);
     }
 
     /* (non-Javadoc)
