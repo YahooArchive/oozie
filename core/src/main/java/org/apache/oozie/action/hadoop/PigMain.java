@@ -15,6 +15,8 @@
 package org.apache.oozie.action.hadoop;
 
 import org.apache.pig.Main;
+import org.apache.pig.PigRunner;
+import org.apache.pig.tools.pigstats.PigStats;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobClient;
@@ -211,26 +213,15 @@ public class PigMain extends LauncherMain {
         System.out.println();
         System.out.flush();
         try {
-            runPigJob(arguments.toArray(new String[arguments.size()]));
+            int code = runPigJob(arguments.toArray(new String[arguments.size()]));
+            if (code != 0) {
+                handleError(pigLog);
+            }
         }
         catch (SecurityException ex) {
             if (LauncherSecurityManager.getExitInvoked()) {
                 if (LauncherSecurityManager.getExitCode() != 0) {
-                    System.err.println();
-                    System.err.println("Pig logfile dump:");
-                    System.err.println();
-                    try {
-                        BufferedReader reader = new BufferedReader(new FileReader(pigLog));
-                        line = reader.readLine();
-                        while (line != null) {
-                            System.err.println(line);
-                            line = reader.readLine();
-                        }
-                        reader.close();
-                    }
-                    catch (FileNotFoundException e) {
-                        System.err.println("pig log file: " + pigLog + "  not found.");
-                    }
+                    handleError(pigLog);
                     throw ex;
                 }
             }
@@ -250,9 +241,45 @@ public class PigMain extends LauncherMain {
         System.out.println();
     }
 
-    protected void runPigJob(String[] args) throws Exception {
+    private void handleError(String pigLog) throws Exception {
+        System.err.println();
+        System.err.println("Pig logfile dump:");
+        System.err.println();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(pigLog));
+            String line = reader.readLine();
+            while (line != null) {
+                System.err.println(line);
+                line = reader.readLine();
+            }
+            reader.close();
+        }
+        catch (FileNotFoundException e) {
+            System.err.println("pig log file: " + pigLog + "  not found.");
+        }
+    }
+
+    protected int runPigJob(String[] args) throws Exception {
         // running as from the command line
-        Main.main(args);
+        boolean pigRunnerExists = true;
+        Class klass;
+        try {
+            klass = Class.forName("org.apache.pig.PigRunner");
+        }
+        catch (ClassNotFoundException ex) {
+            pigRunnerExists = false;
+        }
+
+        if (pigRunnerExists) {
+            System.out.println("Run pig script using PigRunner.run() for Pig version 0.8+");
+            PigStats stats = PigRunner.run(args, null);
+            return stats.getReturnCode();
+        }
+        else {
+            System.out.println("Run pig script using Main.main() for Pig version before 0.8");
+            Main.main(args);
+            return 0;
+        }
     }
 
     public static void setPigScript(Configuration conf, String script, String[] params, String[] args) {
