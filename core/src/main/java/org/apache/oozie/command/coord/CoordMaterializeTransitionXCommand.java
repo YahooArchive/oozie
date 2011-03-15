@@ -189,12 +189,6 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
                     + " job is already materialized");
         }
 
-        if (coordJob.getNextMaterializedTimestamp() != null
-                && coordJob.getNextMaterializedTimestamp().compareTo(new Timestamp(System.currentTimeMillis())) >= 0) {
-            throw new PreconditionException(ErrorCode.E1100, "CoordMaterializeTransitionXCommand for jobId=" + jobId
-                    + " job is already materialized");
-        }
-
         Timestamp startTime = coordJob.getNextMaterializedTimestamp();
         if (startTime == null) {
             startTime = coordJob.getStartTimestamp();
@@ -320,9 +314,9 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
         String action = null;
         JPAService jpaService = Services.get().get(JPAService.class);
         int numWaitingActions = jpaService.execute(new CoordActionsActiveCountJPAExecutor(coordJob.getId()));
-        int maxActionToBeCreated = coordJob.getConcurrency() - numWaitingActions;
+        int maxActionToBeCreated = coordJob.getMatThrottling() - numWaitingActions;
         LOG.debug("Coordinator job :" + coordJob.getId() + ", maxActionToBeCreated :" + maxActionToBeCreated
-                + ", concurrency :" + coordJob.getConcurrency() + ", numWaitingActions :" + numWaitingActions);
+                + ", Mat_Throttle :" + coordJob.getMatThrottling() + ", numWaitingActions :" + numWaitingActions);
         while (effStart.compareTo(end) < 0 && maxActionToBeCreated-- > 0) {
             if (pause != null && effStart.compareTo(pause) >= 0) {
                 break;
