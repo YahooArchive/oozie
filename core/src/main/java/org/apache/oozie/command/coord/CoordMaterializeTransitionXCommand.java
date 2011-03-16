@@ -67,11 +67,6 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
     private CoordinatorJob.Status prevStatus = null;
 
     /**
-     * Default timeout for catchup jobs, in minutes, after which coordinator input check will timeout
-     */
-    public static final String CONF_DEFAULT_TIMEOUT_CATCHUP = Service.CONF_PREFIX + "coord.catchup.default.timeout";
-
-    /**
      * Default MAX timeout in minutes, after which coordinator input check will timeout
      */
     public static final String CONF_DEFAULT_MAX_TIMEOUT = Service.CONF_PREFIX + "coord.default.max.timeout";
