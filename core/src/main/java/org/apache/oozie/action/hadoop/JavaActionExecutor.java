@@ -544,6 +544,9 @@ public class JavaActionExecutor extends ActionExecutor {
                         launcherJobConf.getCredentials().addToken(tk.getKind(), tk);
                     }
                 }
+                else {
+                    log.info("No need to inject credentials.");
+                }
                 runningJob = jobClient.submitJob(launcherJobConf);
                 if (runningJob == null) {
                     throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "JA017",
@@ -578,12 +581,17 @@ public class JavaActionExecutor extends ActionExecutor {
         }
     }
 
-    private boolean needInjectCredentials() throws ClassNotFoundException {
-        Class klass = Class.forName("org.apache.hadoop.mapred.JobConf");
+    private boolean needInjectCredentials() {
         boolean methodExists = true;
+
+        Class klass;
         try {
+            klass = Class.forName("org.apache.hadoop.mapred.JobConf");
             klass.getMethod("getCredentials");
         }
+        catch (ClassNotFoundException ex) {
+            methodExists = false;
+        }        
         catch (NoSuchMethodException ex) {
             methodExists = false;
         }
