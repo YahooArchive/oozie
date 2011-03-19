@@ -40,6 +40,7 @@ public class PigActionExecutor extends JavaActionExecutor {
     protected List<Class> getLauncherClasses() {
         List<Class> classes = super.getLauncherClasses();
         classes.add(LauncherMain.class);
+        classes.add(LauncherMainException.class);
         classes.add(MapReduceMain.class);
         classes.add(PigMain.class);
         return classes;

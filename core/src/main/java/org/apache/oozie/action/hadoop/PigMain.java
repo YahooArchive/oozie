@@ -267,6 +267,7 @@ public class PigMain extends LauncherMain {
                 if (pigLog != null) {
                     handleError(pigLog);
                 }
+                throw new LauncherMainException(code);
             }
         }
         else {

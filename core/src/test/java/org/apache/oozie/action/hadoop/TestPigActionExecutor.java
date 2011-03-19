@@ -74,6 +74,7 @@ public class TestPigActionExecutor extends ActionExecutorTestCase {
         classes.add(LauncherSecurityManager.class);
         classes.add(LauncherException.class);
         classes.add(LauncherMain.class);
+        classes.add(LauncherMainException.class);
         classes.add(MapReduceMain.class);
         classes.add(PigMain.class);
         assertEquals(classes, ae.getLauncherClasses());
