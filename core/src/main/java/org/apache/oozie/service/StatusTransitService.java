@@ -16,6 +16,7 @@ package org.apache.oozie.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,11 +30,8 @@ import org.apache.oozie.client.Job;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.bundle.BundleKillXCommand;
 import org.apache.oozie.command.bundle.BundleStatusUpdateXCommand;
-import org.apache.oozie.executor.jpa.BundleActionsFailedAndNullCoordCountGetJPAExecutor;
 import org.apache.oozie.executor.jpa.BundleActionsGetByLastModifiedTimeJPAExecutor;
-import org.apache.oozie.executor.jpa.BundleActionsNotEqualStatusCountGetJPAExecutor;
-import org.apache.oozie.executor.jpa.BundleActionsNotTerminateStatusCountGetJPAExecutor;
-import org.apache.oozie.executor.jpa.BundleActionsPendingTrueCountGetJPAExecutor;
+import org.apache.oozie.executor.jpa.BundleActionsGetJPAExecutor;
 import org.apache.oozie.executor.jpa.BundleJobGetJPAExecutor;
 import org.apache.oozie.executor.jpa.BundleJobUpdateJPAExecutor;
 import org.apache.oozie.executor.jpa.BundleJobsGetPendingJPAExecutor;
@@ -125,11 +123,14 @@ public class StatusTransitService implements Service {
         private void bundleTransit() throws JPAExecutorException, CommandException {
             List<BundleJobBean> pendingJobCheckList = null;
             List<BundleJobBean> runningJobCheckList = null;
+            List<List<BundleJobBean>> bundleLists = new ArrayList<List<BundleJobBean>>();;
             if (lastInstanceStartTime == null) {
                 LOG.info("Running bundle status service first instance");
                 // this is the first instance, we need to check for all pending jobs;
                 pendingJobCheckList = jpaService.execute(new BundleJobsGetPendingJPAExecutor(limit));
                 runningJobCheckList = jpaService.execute(new BundleJobsGetRunningJPAExecutor(limit));
+                bundleLists.add(pendingJobCheckList);
+                bundleLists.add(runningJobCheckList);
             }
             else {
                 LOG.info("Running bundle status service from last instance time =  " + DateUtils.convertDateToString(lastInstanceStartTime));
@@ -149,64 +150,160 @@ public class StatusTransitService implements Service {
                         pendingJobCheckList.add(bundle);
                     }
                 }
-
                 runningJobCheckList = pendingJobCheckList;
+                bundleLists.add(pendingJobCheckList);
             }
+            updateBundleJobStatus(bundleLists);
+        }
 
-            for (BundleJobBean bundleJob : pendingJobCheckList) {
-                String jobId = bundleJob.getId();
-                // Check if if all bundle actions have pending = false.
-                BundleActionsPendingTrueCountGetJPAExecutor actionsPendingTrueCmd = new BundleActionsPendingTrueCountGetJPAExecutor(
-                        jobId);
-                int totalPendingTrue = jpaService.execute(actionsPendingTrueCmd);
-                if (totalPendingTrue == 0) {
-                    bundleJob.resetPending();
-                    jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
-                    LOG.debug("All bundle actions are pending=false so update bundle job [" + jobId
-                            + "] pending=false.");
-                }
-            }
+        private void updateBundleJobStatus(List<List<BundleJobBean>> bundleLists) throws JPAExecutorException, CommandException {
+            if (bundleLists != null) {
+                for (List<BundleJobBean> listBundleBean : bundleLists) {
+                    for (BundleJobBean bundleJob : listBundleBean) {
+                        String jobId = bundleJob.getId();
+                        Job.Status bundleStatus = bundleJob.getStatus();
+                        boolean pendingBundleJob = bundleJob.isPending();
+                        List<BundleActionBean> bundleActions = jpaService
+                                .execute(new BundleActionsGetJPAExecutor(jobId));
+                        HashMap<Job.Status, Integer> bundleActionStatus = new HashMap<Job.Status, Integer>();
+                        for (BundleActionBean bAction : bundleActions) {
+                            if (!bAction.isPending()) {
+                                int counter = 0;
+                                if (bundleActionStatus.containsKey(bAction.getStatus())) {
+                                    counter = bundleActionStatus.get(bAction.getStatus()) + 1;
+                                }
+                                else {
+                                    ++counter;
+                                }
+                                bundleActionStatus.put(bAction.getStatus(), counter);
+                                if(bAction.getCoordId() == null && (bAction.getStatus() == Job.Status.FAILED ||  bAction.getStatus() == Job.Status.KILLED)){
+                                    (new BundleKillXCommand(jobId)).call();
+                                    LOG.info("Bundle job [" + jobId
+                                            + "] has been killed since one of its coordinator job failed submission.");
+                                }
+                            }
+                            else {
+                                break;
+                            }
+                        }
+                        // Aggregate the status of all the bundle actions.
+                        if (bundleActionStatus.containsKey(Job.Status.SUCCEEDED)) {
+                            // If all the bundle actions are succeeded then bundle job should be succeeded.
+                            if (bundleActions.size() == bundleActionStatus.get(Job.Status.SUCCEEDED)) {
+                                bundleStatus = Job.Status.SUCCEEDED;
+                                LOG.info("Bundle job [" + jobId + "] Status set to SUCCEEDED");
+                            }
+                            else if (bundleActionStatus.get(Job.Status.SUCCEEDED) > 0) {
+                                int totalvalues = bundleActionStatus.get(Job.Status.SUCCEEDED);
 
-            for (BundleJobBean bundleJob : runningJobCheckList) {
-                String jobId = bundleJob.getId();
-                // If all actions succeed, bundle succeeds;
-                BundleActionsNotEqualStatusCountGetJPAExecutor actionsNotSucceedCmd = new BundleActionsNotEqualStatusCountGetJPAExecutor(
-                        jobId, Job.Status.SUCCEEDED.toString());
-                int totalNotSucceed = jpaService.execute(actionsNotSucceedCmd);
-                if (totalNotSucceed == 0) {
-                    bundleJob.setStatus(Job.Status.SUCCEEDED);
-                    jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
-                    LOG.info("Update bundle job [" + jobId + "] to SUCCEEDED.");
-                    continue;
-                }
-                BundleActionsNotTerminateStatusCountGetJPAExecutor actionsNotTerminateCmd = new BundleActionsNotTerminateStatusCountGetJPAExecutor(
-                        jobId);
-                int totalNotTerminate = jpaService.execute(actionsNotTerminateCmd);
-                if (totalNotSucceed > 0 && totalNotTerminate == 0) {
-                    //check if all actions terminated
-                    bundleJob.setStatus(Job.Status.DONEWITHERROR);
-                    jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
-                    LOG.info("Update bundle job [" + jobId + "] to DONEWITHERROR.");
-                    continue;
-                }
+                                if (bundleActionStatus.containsKey(Job.Status.KILLED)) {
+                                    totalvalues += bundleActionStatus.get(Job.Status.KILLED);
+                                }
 
-                BundleActionsPendingTrueCountGetJPAExecutor actionsPendingTrueCmd = new BundleActionsPendingTrueCountGetJPAExecutor(
-                        jobId);
-                int totalPendingTrue = jpaService.execute(actionsPendingTrueCmd);
+                                if (bundleActionStatus.containsKey(Job.Status.FAILED)) {
+                                    totalvalues += bundleActionStatus.get(Job.Status.FAILED);
+                                }
 
-                if (totalPendingTrue == 0) {
-                    // If all actions finish submission and some submission failed, kill the whole bundle;
-                    BundleActionsFailedAndNullCoordCountGetJPAExecutor actionsFailedAndNullCoordCmd = new BundleActionsFailedAndNullCoordCountGetJPAExecutor(
-                            jobId);
-                    int totalFailedAndNullCoord = jpaService.execute(actionsFailedAndNullCoordCmd);
-                    if (totalFailedAndNullCoord > 0) {
-                        (new BundleKillXCommand(jobId)).call();
-                        LOG.info("Bundle job [" + jobId
-                                + "] has been killed since one of its coordinator job failed submission.");
+                                if (bundleActions.size() == totalvalues) {
+                                    bundleStatus = Job.Status.DONEWITHERROR;
+                                    LOG.info("Bundle job [" + jobId + "] Status set to DONEWITHERROR");
+                                }
+                            }
+                        }
+
+                        if (bundleActionStatus.containsKey(Job.Status.PREP)) {
+                         // If all the bundle actions are succeeded then bundle job should be succeeded.
+                            if (bundleActions.size() > bundleActionStatus.get(Job.Status.PREP)) {
+                                bundleStatus = Job.Status.RUNNING;
+                                LOG.info("Bundle job [" + jobId + "] Status set to RUNNING");
+                            }
+                        }
+
+                        if (bundleActionStatus.containsKey(Job.Status.RUNNING)) {
+                            // If all the bundle actions are succeeded then bundle job should be succeeded.
+                            if (bundleActions.size() == bundleActionStatus.get(Job.Status.RUNNING)) {
+                                bundleStatus = Job.Status.RUNNING;
+                                LOG.info("Bundle job [" + jobId + "] Status set to RUNNING");
+                            }
+                            else if (bundleActionStatus.get(Job.Status.RUNNING) > 0) {
+                                if ((bundleActionStatus.containsKey(Job.Status.FAILED) && bundleActionStatus
+                                        .get(Job.Status.FAILED) > 0)
+                                        || (bundleActionStatus.containsKey(Job.Status.KILLED) && bundleActionStatus
+                                                .get(Job.Status.KILLED) > 0)
+                                        || (bundleActionStatus.containsKey(Job.Status.DONEWITHERROR) && bundleActionStatus
+                                                .get(Job.Status.DONEWITHERROR) > 0)
+                                        || (bundleActionStatus.containsKey(Job.Status.RUNNINGWITHERROR) && bundleActionStatus
+                                                .get(Job.Status.RUNNINGWITHERROR) > 0)) {
+                                    //bundleStatus = Job.Status.RUNNINGWITHERROR;
+                                    // We need to change this to RUNNINGWIHERROR in future when we add this to coordinator
+                                    bundleStatus = Job.Status.RUNNING;
+                                    LOG.info("Bundle job [" + jobId + "] Status set to RUNNING");
+                                }
+                            }
+                        }
+
+                        // Now we need to check for terminal stages and update accordingly.
+                        if (bundleActionStatus.containsKey(Job.Status.PAUSED)) {
+                            if (bundleActions.size() == bundleActionStatus.get(Job.Status.PAUSED)) {
+                                bundleStatus = Job.Status.PAUSED;
+                                LOG.info("Bundle job [" + jobId + "] Status set to PAUSED");
+                            }
+                            else if (bundleActionStatus.containsKey(Job.Status.PAUSEDWITHERROR)
+                                    && (bundleActions.size() == bundleActionStatus.get(Job.Status.PAUSED)
+                                            + bundleActionStatus.get(Job.Status.PAUSEDWITHERROR))) {
+                                //bundleStatus = Job.Status.PAUSEDWITHERROR;
+                             // We need to change this to PAUSEDWITHERROR in future when we add this to coordinator
+                                bundleStatus = Job.Status.PAUSED;
+                                LOG.info("Bundle job [" + jobId + "] Status set to PAUSED");
+                            }
+                        }
+
+                        if (bundleActionStatus.containsKey(Job.Status.SUSPENDED)) {
+                            if (bundleActions.size() == bundleActionStatus.get(Job.Status.SUSPENDED)) {
+                                bundleStatus = Job.Status.SUSPENDED;
+                                LOG.info("Bundle job [" + jobId + "] Status set to SUSPENDED");
+                            }
+                            else if (bundleActionStatus.containsKey(Job.Status.SUSPENDEDWITHERROR)
+                                    && (bundleActions.size() == bundleActionStatus.get(Job.Status.SUSPENDED)
+                                            + bundleActionStatus.get(Job.Status.SUSPENDEDWITHERROR))) {
+                                //bundleStatus = Job.Status.SUSPENDEDWITHERROR;
+                             // We need to change this to SUSPENDEDWITHERROR in future when we add this to coordinator
+                                bundleStatus = Job.Status.SUSPENDED;
+                                LOG.info("Bundle job [" + jobId + "] Status set to SUSPENDED");
+                            }
+                        }
+
+                        if (bundleActionStatus.containsKey(Job.Status.KILLED)) {
+                            if (bundleActions.size() == bundleActionStatus.get(Job.Status.KILLED)) {
+                                bundleStatus = Job.Status.KILLED;
+                                LOG.info("Bundle job [" + jobId + "] Status set to KILLED");
+                            }
+                        }
+
+                        // Checking the bundle pending should be updated or not
+                        int totalnonpendingactions = 0;
+                        for (Job.Status js : bundleActionStatus.keySet()) {
+                            totalnonpendingactions += bundleActionStatus.get(js);
+                        }
+
+                        if (totalnonpendingactions == bundleActions.size()) {
+                            pendingBundleJob = false;
+                        }
+
+                        // Update the Bundle Job
+                        bundleJob.setStatus(bundleStatus);
+                        if (pendingBundleJob) {
+                            bundleJob.setPending();
+                            LOG.info("Bundle job [" + jobId + "] Pending set to TRUE");
+                        }
+                        else {
+                            bundleJob.resetPending();
+                            LOG.info("Bundle job [" + jobId + "] Pending set to FALSE");
+                        }
+                        jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));
                     }
                 }
             }
-
         }
 
         /**
