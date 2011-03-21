@@ -164,7 +164,8 @@ public class StatusTransitService implements Service {
                 for (List<BundleJobBean> listBundleBean : bundleLists) {
                     for (BundleJobBean bundleJob : listBundleBean) {
                         String jobId = bundleJob.getId();
-                        Job.Status bundleStatus = bundleJob.getStatus();
+                        Job.Status[] bundleStatus = new Job.Status[1];
+                        bundleStatus[0] = bundleJob.getStatus();
                         bundleJob.isPending();
                         List<BundleActionBean> bundleActions = jpaService
                                 .execute(new BundleActionsGetJPAExecutor(jobId));
@@ -192,28 +193,28 @@ public class StatusTransitService implements Service {
                         }
 
                         if (CheckTerminalStatus(bundleActionStatus, bundleActions, bundleStatus)) {
-                            LOG.info("Bundle job [" + jobId + "] Status set to" + bundleStatus.toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus);
+                            LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
+                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
                         else if (CheckPrepStatus(bundleActionStatus, bundleActions, bundleStatus)) {
-                            LOG.info("Bundle job [" + jobId + "] Status set to" + bundleStatus.toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus);
+                            LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
+                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
                         else if (CheckPausedStatus(bundleActionStatus, bundleActions, bundleStatus)) {
-                            LOG.info("Bundle job [" + jobId + "] Status set to" + bundleStatus.toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus);
+                            LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
+                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
                         else if (CheckSuspendStatus(bundleActionStatus, bundleActions, bundleStatus)) {
-                            LOG.info("Bundle job [" + jobId + "] Status set to" + bundleStatus.toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus);
+                            LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
+                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
                         else if (CheckRunningStatus(bundleActionStatus, bundleActions, bundleStatus)) {
-                            LOG.info("Bundle job [" + jobId + "] Status set to" + bundleStatus.toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus);
+                            LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
+                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
                     }
@@ -222,7 +223,7 @@ public class StatusTransitService implements Service {
         }
 
         private boolean CheckTerminalStatus(HashMap<Job.Status, Integer> bundleActionStatus,
-                List<BundleActionBean> bundleActions, Job.Status bundleStatus) {
+                List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             int totalValuesSucceed = 0;
             if (bundleActionStatus.containsKey(Job.Status.SUCCEEDED)) {
@@ -240,21 +241,21 @@ public class StatusTransitService implements Service {
             if (bundleActions.size() == (totalValuesSucceed + totalValuesFailed + totalValuesKilled)) {
                 // If all the bundle actions are succeeded then bundle job should be succeeded.
                 if (bundleActions.size() == totalValuesSucceed) {
-                    bundleStatus = Job.Status.SUCCEEDED;
+                    bundleStatus[0] = Job.Status.SUCCEEDED;
                     ret = true;
                 }
                 else if (bundleActions.size() == totalValuesKilled) {
                     // If all the bundle actions are KILLED then bundle job should be KILLED.
-                    bundleStatus = Job.Status.KILLED;
+                    bundleStatus[0] = Job.Status.KILLED;
                     ret = true;
                 }
                 else if (bundleActions.size() == totalValuesFailed) {
                     // If all the bundle actions are FAILED then bundle job should be FAILED.
-                    bundleStatus = Job.Status.FAILED;
+                    bundleStatus[0] = Job.Status.FAILED;
                     ret = true;
                 }
                 else {
-                    bundleStatus = Job.Status.DONEWITHERROR;
+                    bundleStatus[0] = Job.Status.DONEWITHERROR;
                     ret = true;
                 }
             }
@@ -262,12 +263,12 @@ public class StatusTransitService implements Service {
         }
 
         private boolean CheckPrepStatus(HashMap<Job.Status, Integer> bundleActionStatus,
-                List<BundleActionBean> bundleActions, Job.Status bundleStatus) {
+                List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             if (bundleActionStatus.containsKey(Job.Status.PREP)) {
                 // If all the bundle actions are PREP then bundle job should be RUNNING.
                 if (bundleActions.size() > bundleActionStatus.get(Job.Status.PREP)) {
-                    bundleStatus = Job.Status.RUNNING;
+                    bundleStatus[0] = Job.Status.RUNNING;
                     ret = true;
                 }
             }
@@ -275,11 +276,11 @@ public class StatusTransitService implements Service {
         }
 
         private boolean CheckPausedStatus(HashMap<Job.Status, Integer> bundleActionStatus,
-                List<BundleActionBean> bundleActions, Job.Status bundleStatus) {
+                List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             if (bundleActionStatus.containsKey(Job.Status.PAUSED)) {
                 if (bundleActions.size() == bundleActionStatus.get(Job.Status.PAUSED)) {
-                    bundleStatus = Job.Status.PAUSED;
+                    bundleStatus[0] = Job.Status.PAUSED;
                     ret = true;
                 }
                 else if (bundleActionStatus.containsKey(Job.Status.PAUSEDWITHERROR)
@@ -287,7 +288,7 @@ public class StatusTransitService implements Service {
                                 + bundleActionStatus.get(Job.Status.PAUSEDWITHERROR))) {
                     // bundleStatus = Job.Status.PAUSEDWITHERROR;
                     // We need to change this to PAUSEDWITHERROR in future when we add this to coordinator
-                    bundleStatus = Job.Status.PAUSED;
+                    bundleStatus[0] = Job.Status.PAUSED;
                     ret = true;
                 }
             }
@@ -295,11 +296,11 @@ public class StatusTransitService implements Service {
         }
 
         private boolean CheckSuspendStatus(HashMap<Job.Status, Integer> bundleActionStatus,
-                List<BundleActionBean> bundleActions, Job.Status bundleStatus) {
+                List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             if (bundleActionStatus.containsKey(Job.Status.SUSPENDED)) {
                 if (bundleActions.size() == bundleActionStatus.get(Job.Status.SUSPENDED)) {
-                    bundleStatus = Job.Status.SUSPENDED;
+                    bundleStatus[0] = Job.Status.SUSPENDED;
                     ret = true;
                 }
                 else if (bundleActionStatus.containsKey(Job.Status.SUSPENDEDWITHERROR)
@@ -307,7 +308,7 @@ public class StatusTransitService implements Service {
                                 + bundleActionStatus.get(Job.Status.SUSPENDEDWITHERROR))) {
                     // bundleStatus = Job.Status.SUSPENDEDWITHERROR;
                     // We need to change this to SUSPENDEDWITHERROR in future when we add this to coordinator
-                    bundleStatus = Job.Status.SUSPENDED;
+                    bundleStatus[0] = Job.Status.SUSPENDED;
                     ret = true;
                 }
             }
@@ -315,12 +316,12 @@ public class StatusTransitService implements Service {
         }
 
         private boolean CheckRunningStatus(HashMap<Job.Status, Integer> bundleActionStatus,
-                List<BundleActionBean> bundleActions, Job.Status bundleStatus) {
+                List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             if (bundleActionStatus.containsKey(Job.Status.RUNNING)) {
                 // If all the bundle actions are succeeded then bundle job should be succeeded.
                 if (bundleActions.size() == bundleActionStatus.get(Job.Status.RUNNING)) {
-                    bundleStatus = Job.Status.RUNNING;
+                    bundleStatus[0] = Job.Status.RUNNING;
                     ret = true;
                 }
                 else if (bundleActionStatus.get(Job.Status.RUNNING) > 0) {
@@ -333,7 +334,7 @@ public class StatusTransitService implements Service {
                                     .get(Job.Status.RUNNINGWITHERROR) > 0)) {
                         // bundleStatus = Job.Status.RUNNINGWITHERROR;
                         // We need to change this to RUNNINGWIHERROR in future when we add this to coordinator
-                        bundleStatus = Job.Status.RUNNING;
+                        bundleStatus[0] = Job.Status.RUNNING;
                         ret = true;
                     }
                 }
