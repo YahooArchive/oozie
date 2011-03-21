@@ -212,7 +212,7 @@ public class StatusTransitService implements Service {
                         }
 
                         if (bundleActionStatus.containsKey(Job.Status.PREP)) {
-                         // If all the bundle actions are succeeded then bundle job should be succeeded.
+                         // If all the bundle actions are PREP then bundle job should be RUNNING.
                             if (bundleActions.size() > bundleActionStatus.get(Job.Status.PREP)) {
                                 bundleStatus = Job.Status.RUNNING;
                                 LOG.info("Bundle job [" + jobId + "] Status set to RUNNING");
@@ -281,12 +281,12 @@ public class StatusTransitService implements Service {
                         }
 
                         // Checking the bundle pending should be updated or not
-                        int totalnonpendingactions = 0;
+                        int totalNonPendingActions = 0;
                         for (Job.Status js : bundleActionStatus.keySet()) {
-                            totalnonpendingactions += bundleActionStatus.get(js);
+                            totalNonPendingActions += bundleActionStatus.get(js);
                         }
 
-                        if (totalnonpendingactions == bundleActions.size()) {
+                        if (totalNonPendingActions == bundleActions.size()) {
                             pendingBundleJob = false;
                         }
 
