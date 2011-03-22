@@ -106,6 +106,9 @@ public class JsonCoordinatorAction implements CoordinatorAction, JsonBean {
     @Column(name = "error_message")
     private String errorMessage;
 
+    @Transient
+    private String toString;
+
     public JsonCoordinatorAction() {
 
     }
@@ -139,6 +142,7 @@ public class JsonCoordinatorAction implements CoordinatorAction, JsonBean {
         json.put(JsonTags.COORDINATOR_ACTION_CONSOLE_URL, consoleUrl);
         json.put(JsonTags.COORDINATOR_ACTION_ERROR_CODE, errorCode);
         json.put(JsonTags.COORDINATOR_ACTION_ERROR_MESSAGE, errorMessage);
+        json.put(JsonTags.TO_STRING,getToString().toString());
         return json;
     }
 
@@ -278,9 +282,14 @@ public class JsonCoordinatorAction implements CoordinatorAction, JsonBean {
 
     @Override
     public String toString() {
-        return MessageFormat.format("WorkflowAction name[{0}] status[{1}]",
-                                    getId(), getStatus());
+        return getToString();
     }
+
+    private String getToString() {
+        toString =  MessageFormat.format("WorkflowAction name[{0}] status[{1}]", getId(), getStatus());
+        return toString;
+    }
+
 
     public Date getNominalTime() {
         return nominalTime;

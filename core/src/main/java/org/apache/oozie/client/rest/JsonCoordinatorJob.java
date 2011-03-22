@@ -84,7 +84,7 @@ public class JsonCoordinatorJob implements CoordinatorJob, JsonBean {
     @Basic
     @Column(name = "concurrency")
     private int concurrency = 0;
-    
+
     @Basic
     @Column(name = "mat_throttling")
     private int matThrottling = 0;
@@ -125,8 +125,7 @@ public class JsonCoordinatorJob implements CoordinatorJob, JsonBean {
     private List<? extends JsonCoordinatorAction> actions;
 
     @Transient
-    private int pending = 0;
-
+    private String toString;
 
     public JsonCoordinatorJob() {
         actions = new ArrayList<JsonCoordinatorAction>();
@@ -157,6 +156,7 @@ public class JsonCoordinatorJob implements CoordinatorJob, JsonBean {
         json.put(JsonTags.COORDINATOR_JOB_CONSOLE_URL, getConsoleUrl());
         json.put(JsonTags.COORDINATOR_JOB_MAT_THROTTLING, getMatThrottling());
         json.put(JsonTags.COORDINATOR_ACTIONS, JsonCoordinatorAction.toJSONArray(actions));
+        json.put(JsonTags.TO_STRING,getToString().toString());
 
         return json;
     }
@@ -349,7 +349,12 @@ public class JsonCoordinatorJob implements CoordinatorJob, JsonBean {
 
     @Override
     public String toString() {
-        return MessageFormat.format("Coornidator application id[{0}] status[{1}]", getId(), getStatus());
+        return getToString();
+    }
+
+    private String getToString() {
+        toString =  MessageFormat.format("Coornidator application id[{0}] status[{1}]", getId(), getStatus());
+        return toString;
     }
 
     public void setActions(List<? extends JsonCoordinatorAction> nodes) {
@@ -392,7 +397,6 @@ public class JsonCoordinatorJob implements CoordinatorJob, JsonBean {
      * @param pending set pending to true
      */
     public void setPending() {
-        this.pending = 1;
     }
 
     /**
@@ -401,7 +405,6 @@ public class JsonCoordinatorJob implements CoordinatorJob, JsonBean {
      * @param pending set pending to false
      */
     public void resetPending() {
-        this.pending = 0;
     }
 
 }
