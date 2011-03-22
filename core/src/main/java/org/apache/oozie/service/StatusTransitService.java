@@ -192,29 +192,29 @@ public class StatusTransitService implements Service {
                             }
                         }
 
-                        if (CheckTerminalStatus(bundleActionStatus, bundleActions, bundleStatus)) {
+                        if (checkTerminalStatus(bundleActionStatus, bundleActions, bundleStatus)) {
                             LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
+                            updateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
-                        else if (CheckPrepStatus(bundleActionStatus, bundleActions, bundleStatus)) {
+                        else if (checkPrepStatus(bundleActionStatus, bundleActions, bundleStatus)) {
                             LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
+                            updateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
-                        else if (CheckPausedStatus(bundleActionStatus, bundleActions, bundleStatus)) {
+                        else if (checkPausedStatus(bundleActionStatus, bundleActions, bundleStatus)) {
                             LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
+                            updateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
-                        else if (CheckSuspendStatus(bundleActionStatus, bundleActions, bundleStatus)) {
+                        else if (checkSuspendStatus(bundleActionStatus, bundleActions, bundleStatus)) {
                             LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
+                            updateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
-                        else if (CheckRunningStatus(bundleActionStatus, bundleActions, bundleStatus)) {
+                        else if (checkRunningStatus(bundleActionStatus, bundleActions, bundleStatus)) {
                             LOG.info("Bundle job [" + jobId + "] Status set to " + bundleStatus[0].toString());
-                            UpdateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
+                            updateBundleJob(bundleActionStatus, bundleActions, bundleJob, bundleStatus[0]);
                             continue;
                         }
                     }
@@ -222,7 +222,7 @@ public class StatusTransitService implements Service {
             }
         }
 
-        private boolean CheckTerminalStatus(HashMap<Job.Status, Integer> bundleActionStatus,
+        private boolean checkTerminalStatus(HashMap<Job.Status, Integer> bundleActionStatus,
                 List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             int totalValuesSucceed = 0;
@@ -262,7 +262,7 @@ public class StatusTransitService implements Service {
             return ret;
         }
 
-        private boolean CheckPrepStatus(HashMap<Job.Status, Integer> bundleActionStatus,
+        private boolean checkPrepStatus(HashMap<Job.Status, Integer> bundleActionStatus,
                 List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             if (bundleActionStatus.containsKey(Job.Status.PREP)) {
@@ -275,7 +275,7 @@ public class StatusTransitService implements Service {
             return ret;
         }
 
-        private boolean CheckPausedStatus(HashMap<Job.Status, Integer> bundleActionStatus,
+        private boolean checkPausedStatus(HashMap<Job.Status, Integer> bundleActionStatus,
                 List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             if (bundleActionStatus.containsKey(Job.Status.PAUSED)) {
@@ -295,7 +295,7 @@ public class StatusTransitService implements Service {
             return ret;
         }
 
-        private boolean CheckSuspendStatus(HashMap<Job.Status, Integer> bundleActionStatus,
+        private boolean checkSuspendStatus(HashMap<Job.Status, Integer> bundleActionStatus,
                 List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             if (bundleActionStatus.containsKey(Job.Status.SUSPENDED)) {
@@ -315,7 +315,7 @@ public class StatusTransitService implements Service {
             return ret;
         }
 
-        private boolean CheckRunningStatus(HashMap<Job.Status, Integer> bundleActionStatus,
+        private boolean checkRunningStatus(HashMap<Job.Status, Integer> bundleActionStatus,
                 List<BundleActionBean> bundleActions, Job.Status[] bundleStatus) {
             boolean ret = false;
             if (bundleActionStatus.containsKey(Job.Status.RUNNING)) {
@@ -342,7 +342,7 @@ public class StatusTransitService implements Service {
             return ret;
         }
 
-        private void UpdateBundleJob(HashMap<Job.Status, Integer> bundleActionStatus,
+        private void updateBundleJob(HashMap<Job.Status, Integer> bundleActionStatus,
                 List<BundleActionBean> bundleActions, BundleJobBean bundleJob, Job.Status bundleStatus)
                 throws JPAExecutorException {
             String jobId = bundleJob.getId();
