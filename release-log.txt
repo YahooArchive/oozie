@@ -1,5 +1,6 @@
 -- Oozie 2.3.2 release
 
+GH-0614 Fixing CLient Proxy to work for toString calls 
 GH-0480 Support new Pig API to submit pig job
 GH-0529 Update Tomcat download URL
 GH-0125 Query GET_WORKFLOWS_COLUMNS should order by createdTimestamp instead of starttime

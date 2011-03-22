@@ -110,6 +110,8 @@ public interface JsonTags {
     public static final String COORDINATOR_ACTION_DATA = "data";
     public static final String COORDINATOR_JOB_DATA = "data";
 
+    public static final String TO_STRING = "toString";
+
     public static final String ERROR = "error";
     public static final String ERROR_CODE = "code";
     public static final String ERROR_MESSAGE = "message";

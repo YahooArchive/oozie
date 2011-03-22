@@ -77,6 +77,7 @@ public class JsonCoordinatorJob implements CoordinatorJob, JsonBean {
     @Column(name = "concurrency")
     private int concurrency = 0;
 
+
     @Transient
     private Timeunit timeUnit = CoordinatorJob.Timeunit.MINUTE;
 
@@ -140,6 +141,7 @@ public class JsonCoordinatorJob implements CoordinatorJob, JsonBean {
         json.put(JsonTags.COORDINATOR_JOB_GROUP, group);
         json.put(JsonTags.COORDINATOR_JOB_CONSOLE_URL, consoleUrl);
         json.put(JsonTags.COORDINATOR_ACTIONS, JsonCoordinatorAction.toJSONArray(actions));
+        json.put(JsonTags.TO_STRING,toString());
 
         return json;
     }

@@ -109,6 +109,7 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
         json.put(JsonTags.WORKFLOW_RUN, (long) run);
         json.put(JsonTags.WORKFLOW_CONSOLE_URL, consoleUrl);
         json.put(JsonTags.WORKFLOW_ACTIONS, JsonWorkflowAction.toJSONArray(actions));
+        json.put(JsonTags.TO_STRING,toString());
         return json;
     }
 
@@ -243,6 +244,7 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
         this.actions = (nodes != null) ? nodes : new ArrayList<JsonWorkflowAction>();
     }
 
+    @Override
     public String toString() {
         return MessageFormat.format("Workflow id[{0}] status[{1}]", getId(), getStatus());
     }

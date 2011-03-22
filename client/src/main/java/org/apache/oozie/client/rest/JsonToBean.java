@@ -76,6 +76,7 @@ public class JsonToBean {
         WF_ACTION.put("getConsoleUrl", new Property(JsonTags.WORKFLOW_ACTION_CONSOLE_URL, String.class));
         WF_ACTION.put("getErrorCode", new Property(JsonTags.WORKFLOW_ACTION_ERROR_CODE, String.class));
         WF_ACTION.put("getErrorMessage", new Property(JsonTags.WORKFLOW_ACTION_ERROR_MESSAGE, String.class));
+        WF_ACTION.put("toString", new Property(JsonTags.TO_STRING, String.class));
 
         WF_JOB.put("getAppPath", new Property(JsonTags.WORKFLOW_APP_PATH, String.class));
         WF_JOB.put("getAppName", new Property(JsonTags.WORKFLOW_APP_NAME, String.class));
@@ -91,7 +92,7 @@ public class JsonToBean {
         WF_JOB.put("getRun", new Property(JsonTags.WORKFLOW_RUN, Integer.TYPE));
         WF_JOB.put("getConsoleUrl", new Property(JsonTags.WORKFLOW_CONSOLE_URL, String.class));
         WF_JOB.put("getActions", new Property(JsonTags.WORKFLOW_ACTIONS, WorkflowAction.class, true));
-
+        WF_JOB.put("toString", new Property(JsonTags.TO_STRING, String.class));
 
         COORD_ACTION.put("getId", new Property(JsonTags.COORDINATOR_ACTION_ID, String.class));
         COORD_ACTION.put("getJobId", new Property(JsonTags.COORDINATOR_JOB_ID, String.class));
@@ -111,6 +112,7 @@ public class JsonToBean {
         COORD_ACTION.put("getConsoleUrl", new Property(JsonTags.COORDINATOR_ACTION_CONSOLE_URL, String.class));
         COORD_ACTION.put("getErrorCode", new Property(JsonTags.COORDINATOR_ACTION_ERROR_CODE, String.class));
         COORD_ACTION.put("getErrorMessage", new Property(JsonTags.COORDINATOR_ACTION_ERROR_MESSAGE, String.class));
+        COORD_ACTION.put("toString", new Property(JsonTags.TO_STRING, String.class));
 
         COORD_JOB.put("getAppPath", new Property(JsonTags.COORDINATOR_JOB_PATH, String.class));
         COORD_JOB.put("getAppName", new Property(JsonTags.COORDINATOR_JOB_NAME, String.class));
@@ -133,14 +135,16 @@ public class JsonToBean {
         COORD_JOB.put("getGroup", new Property(JsonTags.COORDINATOR_JOB_GROUP, String.class));
         COORD_JOB.put("getConsoleUrl", new Property(JsonTags.COORDINATOR_JOB_CONSOLE_URL, String.class));
         COORD_JOB.put("getActions", new Property(JsonTags.COORDINATOR_ACTIONS, CoordinatorAction.class, true));
+        COORD_JOB.put("toString", new Property(JsonTags.TO_STRING, String.class));
+
     }
 
     /**
      * The dynamic proxy invocation handler used to convert JSON values to bean properties using a mapping.
      */
     private static class JsonInvocationHandler implements InvocationHandler {
-        private Map<String, Property> mapping;
-        private JSONObject json;
+        private final Map<String, Property> mapping;
+        private final JSONObject json;
 
         /**
          * Invocation handler constructor.
@@ -203,7 +207,7 @@ public class JsonToBean {
 
     /**
      * Creates a workflow action bean from a JSON object.
-     * 
+     *
      * @param json json object.
      * @return a workflow action bean populated with the JSON object values.
      */
@@ -215,7 +219,7 @@ public class JsonToBean {
 
     /**
      * Creates a list of workflow action beans from a JSON array.
-     * 
+     *
      * @param json json array.
      * @return a list of workflow action beans from a JSON array.
      */
@@ -229,7 +233,7 @@ public class JsonToBean {
 
     /**
      * Creates a workflow job bean from a JSON object.
-     * 
+     *
      * @param json json object.
      * @return a workflow job bean populated with the JSON object values.
      */
@@ -241,7 +245,7 @@ public class JsonToBean {
 
     /**
      * Creates a list of workflow job beans from a JSON array.
-     * 
+     *
      * @param json json array.
      * @return a list of workflow job beans from a JSON array.
      */
@@ -255,7 +259,7 @@ public class JsonToBean {
 
     /**
      * Creates a coordinator action bean from a JSON object.
-     * 
+     *
      * @param json json object.
      * @return a coordinator action bean populated with the JSON object values.
      */
@@ -267,7 +271,7 @@ public class JsonToBean {
 
     /**
      * Creates a list of coordinator action beans from a JSON array.
-     * 
+     *
      * @param json json array.
      * @return a list of coordinator action beans from a JSON array.
      */
@@ -281,7 +285,7 @@ public class JsonToBean {
 
     /**
      * Creates a coordinator job bean from a JSON object.
-     * 
+     *
      * @param json json object.
      * @return a coordinator job bean populated with the JSON object values.
      */
@@ -293,7 +297,7 @@ public class JsonToBean {
 
     /**
      * Creates a list of coordinator job beans from a JSON array.
-     * 
+     *
      * @param json json array.
      * @return a list of coordinator job beans from a JSON array.
      */
