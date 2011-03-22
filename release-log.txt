@@ -1,5 +1,6 @@
 -- Oozie 3.0.0 release
 
+GH-0619 Allow oozie client to print the exact URL point in debug mode.
 GH-0614 Fixing CLient Proxy to work for toString calls 
 GH-0610 Fixing Bundle status service and Coordinator Action resume
 GH-0480 Support new Pig API to submit pig job
