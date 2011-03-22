@@ -1,5 +1,6 @@
 -- Oozie 3.0.0 release
 
+GH-0619 does oozie allow bundle rerun on a PREP bundle?
 GH-0614 Fixing CLient Proxy to work for toString calls 
 GH-0610 Fixing Bundle status service and Coordinator Action resume
 GH-0480 Support new Pig API to submit pig job
