@@ -119,6 +119,11 @@ public class OozieClient {
     public static enum SYSTEM_MODE {
         NORMAL, NOWEBSERVICE, SAFEMODE
     };
+    
+    /**
+     * debugMode =0 means no debugging. > 0 means debugging on.
+     */
+    public int debugMode = 0;
 
     private String baseUrl;
     private String protocolUrl;
@@ -164,6 +169,22 @@ public class OozieClient {
     public String getProtocolUrl() throws OozieClientException {
         validateWSVersion();
         return protocolUrl;
+    }
+
+    /**
+     * @return current debug Mode
+     */
+    public int getDebugMode() {
+        return debugMode;
+    }
+
+    /**
+     * Set debug mode.
+     *
+     * @param debugMode : 0 means no debugging. > 0 means debugging
+     */
+    public void setDebugMode(int debugMode) {
+        this.debugMode = debugMode;
     }
 
     /**
@@ -340,6 +361,9 @@ public class OozieClient {
             try {
                 URL url = createURL(collection, resource, params);
                 if (validateCommand(url.toString())) {
+                    if (getDebugMode() > 0) {
+                        System.out.println("Connection URL:[" + url + "]");
+                    }
                     HttpURLConnection conn = createConnection(url, method);
                     return call(conn);
                 }
