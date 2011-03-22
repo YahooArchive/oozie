@@ -91,9 +91,6 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
     @Transient
     private List<? extends JsonWorkflowAction> actions;
 
-    @Transient
-    private String toString;
-
     public JsonWorkflowJob() {
         actions = new ArrayList<JsonWorkflowAction>();
     }
@@ -117,7 +114,7 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
         json.put(JsonTags.WORKFLOW_RUN, (long) run);
         json.put(JsonTags.WORKFLOW_CONSOLE_URL, consoleUrl);
         json.put(JsonTags.WORKFLOW_ACTIONS, JsonWorkflowAction.toJSONArray(actions));
-        json.put(JsonTags.TO_STRING,getToString().toString());
+        json.put(JsonTags.TO_STRING,toString());
         return json;
     }
 
@@ -272,12 +269,7 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
 
     @Override
     public String toString() {
-        return getToString();
-    }
-
-    private String getToString() {
-        toString =  MessageFormat.format("Workflow id[{0}] status[{1}]", getId(), getStatus());
-        return toString;
+        return MessageFormat.format("Workflow id[{0}] status[{1}]", getId(), getStatus());
     }
 
     /**

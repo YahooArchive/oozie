@@ -96,10 +96,10 @@ public class JsonBundleJob implements BundleJob, JsonBean {
     private String consoleUrl;
 
     @Transient
-    private List<? extends JsonCoordinatorJob> coordJobs;
+    private int pending = 0;
 
     @Transient
-    private String toString;
+    private List<? extends JsonCoordinatorJob> coordJobs;
 
     public JsonBundleJob() {
         coordJobs = new ArrayList<JsonCoordinatorJob>();
@@ -154,7 +154,7 @@ public class JsonBundleJob implements BundleJob, JsonBean {
         json.put(JsonTags.BUNDLE_JOB_GROUP, getGroup());
         json.put(JsonTags.BUNDLE_JOB_CONSOLE_URL, getConsoleUrl());
         json.put(JsonTags.BUNDLE_COORDINATOR_JOBS, JsonCoordinatorJob.toJSONArray(coordJobs));
-        json.put(JsonTags.TO_STRING,getToString().toString());
+        json.put(JsonTags.TO_STRING, toString());
 
         return json;
     }
@@ -476,6 +476,7 @@ public class JsonBundleJob implements BundleJob, JsonBean {
      * @param pending set pending to true
      */
     public void setPending() {
+        this.pending = 1;
     }
 
     /**
@@ -484,17 +485,11 @@ public class JsonBundleJob implements BundleJob, JsonBean {
      * @param pending set pending to false
      */
     public void resetPending() {
+        this.pending = 0;
     }
 
     @Override
     public String toString() {
-        return getToString();
+        return MessageFormat.format("Bundle id[{0}] status[{1}]", getId(), getStatus());
     }
-
-    private String getToString() {
-        toString =  MessageFormat.format("Bundle Job id[{0}] status[{1}]", getId(), getStatus());
-        return toString;
-    }
-
-
 }

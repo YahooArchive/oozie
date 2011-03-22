@@ -97,9 +97,6 @@ public class JsonWorkflowAction implements WorkflowAction, JsonBean {
     @Lob
     private String errorMessage = null;
 
-    @Transient
-    private String toString;
-
     public JsonWorkflowAction() {
     }
 
@@ -123,7 +120,7 @@ public class JsonWorkflowAction implements WorkflowAction, JsonBean {
         json.put(JsonTags.WORKFLOW_ACTION_CONSOLE_URL, consoleUrl);
         json.put(JsonTags.WORKFLOW_ACTION_ERROR_CODE, errorCode);
         json.put(JsonTags.WORKFLOW_ACTION_ERROR_MESSAGE, errorMessage);
-        json.put(JsonTags.TO_STRING,getToString().toString());
+        json.put(JsonTags.TO_STRING, toString());
         return json;
     }
 
@@ -262,12 +259,7 @@ public class JsonWorkflowAction implements WorkflowAction, JsonBean {
 
     @Override
     public String toString() {
-        return getToString();
-    }
-
-    private String getToString() {
-        toString =  MessageFormat.format("Action name[{0}] status[{1}]", getName(), getStatus());
-        return toString;
+        return MessageFormat.format("Action name[{0}] status[{1}]", getName(), getStatus());
     }
 
     /**
