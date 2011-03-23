@@ -1,5 +1,6 @@
 -- Oozie 3.0.0 release
 
+GH-0632 remove extra fields in oozie jobs -jobtype bundle -verbose.
 GH-0626 Fixing Bundle Rerun for invalid timestamps of coordinator actions
 GH-0620 Adding Precondition for Coordinator Kill Command. 
 GH-0614 Fixing CLient Proxy to work for toString calls 
