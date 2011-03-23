@@ -1,5 +1,6 @@
 -- Oozie 3.0.0 release
 
+GH-0633 no FAILED sla event when coord job failed to create wf job.
 GH-0626 Fixing Bundle Rerun for invalid timestamps of coordinator actions
 GH-0620 Adding Precondition for Coordinator Kill Command. 
 GH-0619 Allow oozie client to print the exact URL point in debug mode.
