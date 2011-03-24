@@ -171,7 +171,7 @@ public class BundleSubmitXCommand extends SubmitTransitionXCommand {
                 if (bundleBean.getKickoffTime() == null) {
                     // If there is no KickOffTime, default kickoff is NOW.
                     LOG.debug("Since kickoff time is not defined for job id " + jobId
-                            + ". Queuing and BundleStartXCommand immediately afte submission");
+                            + ". Queuing and BundleStartXCommand immediately after submission");
                     queue(new BundleStartXCommand(jobId));
                 }
             }
