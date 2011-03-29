@@ -49,25 +49,27 @@ At any time, a bundle job is in one of the following status: *PREP, RUNNING, SUS
 
 ---+++ 4.2. Transitions of Bundle Job Status 
 
-Valid Bundle job status transitions are:
+At any time, a bundle job is in one of the following status: PREP, RUNNING, PREPSUSPENDED, SUSPENDED, PREPPAUSED, PAUSED, SUCCEEDED, DONWITHERROR, KILLED, FAILED.
 
-   * *PREP --> PREPSUSPENDED | PREPPAUSED | KILLED | RUNNING*
-   * *PREPSUSPENDED --> PREP | KILLED *
-   * *PREPPAUSED --> PREP | KILLED *
-   * *RUNNING --> SUSPENDED | PAUSED| KILLED | FAILED | SUCCEEDED |DONEWITHERROR*
-   * *SUSPENDED --> RUNNING | KILLED*
-   * *PAUSED --> SUSPENDED |RUNNING | KILLED*
+Valid bundle job status transitions are:
+
+   * PREP --> PREPSUSPENDED | PREPPAUSED | RUNNING | KILLED
+   * RUNNING --> SUSPENDED | PAUSED | SUCCEEDED | DONWITHERROR | KILLED | FAILED
+   * PREPSUSPENDED --> PREP | KILLED
+   * SUSPENDED --> RUNNING | KILLED
+   * PREPPAUSED --> PREP | KILLED
+   * PAUSED --> SUSPENDED | RUNNING | KILLED
 
 ---+++ 4.3. Details of Status Transitions
 When a bundle job is submitted, oozie parses the bundle job XML. Oozie then creates a record for the bundle with status *PREP* and returns a unique ID.
 
 When a user requests to suspend a bundle job that is in *PREP* state, oozie puts the job in status *PREPSUSPEND*. Similarly, when pause time reaches for a bundle job with *PREP* status, oozie puts the job in status *PREPPAUSED*.
 
-Conversely, when a user requests to resume a suspended bundle job, oozie puts the job in status *PREP*. And when pause time is reset for a bundle job, oozie puts the job in status *PREP*.
+Conversely, when a user requests to resume a PREPSUSPENDED bundle job, oozie puts the job in status *PREP*. And when pause time is reset for a bundle job that is in PREPPAUSED state, oozie puts the job in status *PREP*.
 
 There are two ways a bundle job could be started.
-     * If =kick-off-time= (defined in the bundle xml) reaches. The default value is NOW (i.e. start coordinators immediately)
-    * If user sends request to START the bundle.
+     * If =kick-off-time= (defined in the bundle xml) reaches. The default value is null which means starts coordinators NOW.
+    * If user sends a start request to START the bundle.
 
 When a bundle job starts, oozie puts the job in status *RUNNING* and it submits the all coordinator jobs.
 
@@ -87,7 +89,7 @@ A bundle definition is defined in XML by a name, controls and one or more coordi
     * *%BLUE% controls: %ENDCOLOR%* The control specification for the bundle. 
       * *%BLUE% kick-off-time: %ENDCOLOR%* It defines when the bundle job should start and submit the coordinator applications. This field is optional and the default is *NOW* that means the job should start right-a-way. 
    * *%BLUE% coordinator: %ENDCOLOR%* Coordinator application specification. There should be at least one coordinator application in any bundle. 
-      * *%BLUE% name: %ENDCOLOR%* Name of the coordinator application. It can be used for referring this application through bundleto control such as kill, suspend, rerun. 
+      * *%BLUE% name: %ENDCOLOR%* Name of the coordinator application. It can be used for referring this application through bundle to control such as kill, suspend, rerun. 
       * *%BLUE% app-path: %ENDCOLOR%* Path of the coordinator application definition in hdfs. This is a mandatory element. 
       * *%BLUE% configuration: %ENDCOLOR%* A hadoop like configuration to parameterize corresponding coordinator application. This is optional.
 
@@ -153,12 +155,7 @@ A bundle definition is defined in XML by a name, controls and one or more coordi
 </verbatim>
 
 
----++ 5. Operational Considerations
-
----+++ 5.1. Reprocessing
-   * TBD
-
----++ 6. User Propagation
+---++ 5. User Propagation
 
 When submitting a bundle job, the configuration must contain a =user.name= property. If security is enabled, Oozie must ensure that the value of the =user.name= property in the configuration match the user credentials present in the protocol (web services) request.
 
@@ -168,15 +165,15 @@ The specified user and group names are assigned to the created bundle job.
 
 Oozie must propagate the specified user and group to the system executing its children (coordinator jobs).
 
----++ 7. Bundle Application Deployment
+---++ 6. Bundle Application Deployment
 
 A bundle application consist exclusively of bundle application definition and associated coordinator application specifications. They must be installed in an HDFS directory. To submit a job for a bundle application, the full HDFS path to bundle application definition must be specified.
 
----+++ 7.1. Organizing Bundle Applications
+---+++ 6.1. Organizing Bundle Applications
 
 TBD.
 
----++ 8. Bundle Job Submission
+---++ 7. Bundle Job Submission
 
 When a bundle job is submitted to Oozie, the submitter must specified all the required job properties plus the HDFS path to the bundle application definition for the job.
 
@@ -201,7 +198,7 @@ All the bundle job properties, the HDFS path for the bundle application, the 'us
 </configuration>
 </verbatim>
 
----++ 9. Bundle Rerun
+---++ 8. Bundle Rerun
 ---+++ Rerunning a Bundle Job
 Oozie provides a way of rerunning a bundle job. The user could request to rerun a subset of coordinators within a bundle by defining a list of coordinator's names. In addition, a user could define a list of dates or ranges of dates (in UTC format) to rerun for those time windows.
 There is a way of asking whether to cleanup all output directories before rerun. By default, oozie will remove all output directories. Moreover, there is an option by which a user could ask to re-calculate the dynamic input directories defined by latest function in coordinators.       
