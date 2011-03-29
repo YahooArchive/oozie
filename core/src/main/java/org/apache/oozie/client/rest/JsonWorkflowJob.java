@@ -109,7 +109,7 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
         json.put(JsonTags.WORKFLOW_RUN, (long) run);
         json.put(JsonTags.WORKFLOW_CONSOLE_URL, consoleUrl);
         json.put(JsonTags.WORKFLOW_ACTIONS, JsonWorkflowAction.toJSONArray(actions));
-        json.put(JsonTags.TO_STRING,toString());
+        json.put(JsonTags.TO_STRING, toString());
         return json;
     }
 

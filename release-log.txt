@@ -1,5 +1,6 @@
 -- Oozie 2.3.2 release
 
+GH-0654 Fix workflow web console for missing columns
 GH-0619 Allow oozie client to print the exact URL point in debug mode.
 GH-0614 Fixing CLient Proxy to work for toString calls 
 GH-0480 Support new Pig API to submit pig job
