@@ -66,8 +66,8 @@ public class BundlePauseStartService implements Service {
                 lock = Services.get().get(MemoryLocksService.class).getWriteLock(
                         BundlePauseStartService.class.getName(), lockTimeout);
                 if (lock == null) {
-                    LOG
-                            .info("This BundlePauseStartService instance will not run since there is already an instance running");
+                    LOG.info("This BundlePauseStartService instance will"
+                            + "not run since there is already an instance running");
                 }
                 else {
                     LOG.info("Acquired lock for [{0}]", BundlePauseStartService.class.getName());
