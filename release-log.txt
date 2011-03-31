@@ -1,5 +1,6 @@
 -- Oozie 3.0.0 release
 
+OOZIE-20 examples job properties have hardcoded values, and use non-default Hadoop ports
 GH-0568 DOC: Add Bundle specifications
 GH-0482 coordinator default config is looked up in the wrong place (regression)
 GH-0653 Adding Pause status update in service. 
