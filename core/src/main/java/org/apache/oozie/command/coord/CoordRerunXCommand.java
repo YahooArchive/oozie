@@ -72,14 +72,13 @@ import org.jdom.JDOMException;
  */
 public class CoordRerunXCommand extends RerunTransitionXCommand<CoordinatorActionInfo> {
 
-    private final String jobId;
-    private final String rerunType;
-    private final String scope;
-    private final boolean refresh;
-    private final boolean noCleanup;
+    private String jobId;
+    private String rerunType;
+    private String scope;
+    private boolean refresh;
+    private boolean noCleanup;
     private CoordinatorJobBean coordJob = null;
     private JPAService jpaService = null;
-    private CoordinatorJob.Status prevStatus = null;
     protected boolean prevPending;
 
     /**
@@ -391,7 +390,6 @@ public class CoordRerunXCommand extends RerunTransitionXCommand<CoordinatorActio
         }
         try {
             coordJob = jpaService.execute(new CoordJobGetJPAExecutor(jobId));
-            prevStatus = coordJob.getStatus();
             prevPending = coordJob.isPending();
         }
         catch (JPAExecutorException je) {
