@@ -1,5 +1,6 @@
 -- Oozie 2.3.2 release
 
+OOZIE-34 LauncherMapper security manager fails when a permission with context is check
 OOZIE-15 when writing action configurations to logs, properties names containing 'password' should be masked
 OOZIE-21 modify the POM to enable exclusion of testcases via command line when invoking maven
 OOZIE-20 examples job properties have hardcoded values, and use non-default Hadoop ports
