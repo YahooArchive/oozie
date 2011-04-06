@@ -1055,7 +1055,6 @@
             org.apache.oozie.action.hadoop.FsActionExecutor,
             org.apache.oozie.action.hadoop.MapReduceActionExecutor,
             org.apache.oozie.action.hadoop.PigActionExecutor,
-            org.apache.oozie.action.ssh.SshActionExecutor,
             org.apache.oozie.action.oozie.SubWorkflowActionExecutor
         </value>
         <description>
