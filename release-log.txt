@@ -1,5 +1,6 @@
 -- Oozie 3.0.0 release
 
+OOZIE-15 when writing action configurations to logs, properties names containing 'password' should be masked
 OOZIE-36 rerun a paused coordinator job should not reset status and pause time and pending flag
 OOZIE-33 Fixing coord job status when all actions in SUSPENDED  
 OOZIE-31 reset pending for coordjob with running pending true when change end time
