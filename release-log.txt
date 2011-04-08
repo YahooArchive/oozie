@@ -1,3 +1,7 @@
+-- Oozie 3.0.1 release
+
+OOZIE-43 should reset pending when pausetime changes and materialized actions are removed
+
 -- Oozie 3.0.0 release
 
 GH-0069 Create a coordinator bundle.
