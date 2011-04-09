@@ -1,0 +1,400 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright (c) 2010 Yahoo! Inc. All rights reserved.<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Licensed under the Apache License, Version 2.0 (the "License");<a name="line.3"></a>
+<FONT color="green">004</FONT>     * you may not use this file except in compliance with the License.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * You may obtain a copy of the License at<a name="line.5"></a>
+<FONT color="green">006</FONT>     *<a name="line.6"></a>
+<FONT color="green">007</FONT>     *   http://www.apache.org/licenses/LICENSE-2.0<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *  Unless required by applicable law or agreed to in writing, software<a name="line.9"></a>
+<FONT color="green">010</FONT>     *  distributed under the License is distributed on an "AS IS" BASIS,<a name="line.10"></a>
+<FONT color="green">011</FONT>     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.11"></a>
+<FONT color="green">012</FONT>     *  See the License for the specific language governing permissions and<a name="line.12"></a>
+<FONT color="green">013</FONT>     *  limitations under the License. See accompanying LICENSE file.<a name="line.13"></a>
+<FONT color="green">014</FONT>     */<a name="line.14"></a>
+<FONT color="green">015</FONT>    package org.apache.oozie.command.coord;<a name="line.15"></a>
+<FONT color="green">016</FONT>    <a name="line.16"></a>
+<FONT color="green">017</FONT>    import java.io.IOException;<a name="line.17"></a>
+<FONT color="green">018</FONT>    import java.io.StringReader;<a name="line.18"></a>
+<FONT color="green">019</FONT>    import java.util.Calendar;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.util.Date;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.util.TimeZone;<a name="line.21"></a>
+<FONT color="green">022</FONT>    <a name="line.22"></a>
+<FONT color="green">023</FONT>    import org.apache.hadoop.conf.Configuration;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import org.apache.oozie.CoordinatorActionBean;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import org.apache.oozie.CoordinatorJobBean;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import org.apache.oozie.ErrorCode;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import org.apache.oozie.client.CoordinatorJob;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import org.apache.oozie.client.SLAEvent.SlaAppType;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import org.apache.oozie.command.CommandException;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import org.apache.oozie.coord.TimeUnit;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import org.apache.oozie.service.Service;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import org.apache.oozie.service.Services;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import org.apache.oozie.store.CoordinatorStore;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import org.apache.oozie.store.StoreException;<a name="line.34"></a>
+<FONT color="green">035</FONT>    import org.apache.oozie.util.DateUtils;<a name="line.35"></a>
+<FONT color="green">036</FONT>    import org.apache.oozie.util.Instrumentation;<a name="line.36"></a>
+<FONT color="green">037</FONT>    import org.apache.oozie.util.XConfiguration;<a name="line.37"></a>
+<FONT color="green">038</FONT>    import org.apache.oozie.util.XLog;<a name="line.38"></a>
+<FONT color="green">039</FONT>    import org.apache.oozie.util.XmlUtils;<a name="line.39"></a>
+<FONT color="green">040</FONT>    import org.apache.oozie.util.db.SLADbOperations;<a name="line.40"></a>
+<FONT color="green">041</FONT>    import org.jdom.Element;<a name="line.41"></a>
+<FONT color="green">042</FONT>    import org.jdom.JDOMException;<a name="line.42"></a>
+<FONT color="green">043</FONT>    <a name="line.43"></a>
+<FONT color="green">044</FONT>    public class CoordActionMaterializeCommand extends CoordinatorCommand&lt;Void&gt; {<a name="line.44"></a>
+<FONT color="green">045</FONT>        private String jobId;<a name="line.45"></a>
+<FONT color="green">046</FONT>        private Date startTime;<a name="line.46"></a>
+<FONT color="green">047</FONT>        private Date endTime;<a name="line.47"></a>
+<FONT color="green">048</FONT>        private int lastActionNumber = 1; // over-ride by DB value<a name="line.48"></a>
+<FONT color="green">049</FONT>        private final XLog log = XLog.getLog(getClass());<a name="line.49"></a>
+<FONT color="green">050</FONT>        private String user;<a name="line.50"></a>
+<FONT color="green">051</FONT>        private String group;<a name="line.51"></a>
+<FONT color="green">052</FONT>        /**<a name="line.52"></a>
+<FONT color="green">053</FONT>         * Default timeout for catchup jobs, in minutes, after which coordinator input check will timeout<a name="line.53"></a>
+<FONT color="green">054</FONT>         */<a name="line.54"></a>
+<FONT color="green">055</FONT>        public static final String CONF_DEFAULT_TIMEOUT_CATCHUP = Service.CONF_PREFIX + "coord.catchup.default.timeout";<a name="line.55"></a>
+<FONT color="green">056</FONT>    <a name="line.56"></a>
+<FONT color="green">057</FONT>        public CoordActionMaterializeCommand(String jobId, Date startTime, Date endTime) {<a name="line.57"></a>
+<FONT color="green">058</FONT>            super("coord_action_mater", "coord_action_mater", 1, XLog.STD);<a name="line.58"></a>
+<FONT color="green">059</FONT>            this.jobId = jobId;<a name="line.59"></a>
+<FONT color="green">060</FONT>            this.startTime = startTime;<a name="line.60"></a>
+<FONT color="green">061</FONT>            this.endTime = endTime;<a name="line.61"></a>
+<FONT color="green">062</FONT>        }<a name="line.62"></a>
+<FONT color="green">063</FONT>    <a name="line.63"></a>
+<FONT color="green">064</FONT>        @Override<a name="line.64"></a>
+<FONT color="green">065</FONT>        protected Void call(CoordinatorStore store) throws StoreException, CommandException {<a name="line.65"></a>
+<FONT color="green">066</FONT>            // CoordinatorJobBean job = store.getCoordinatorJob(jobId, true);<a name="line.66"></a>
+<FONT color="green">067</FONT>            CoordinatorJobBean job = store.getEntityManager().find(CoordinatorJobBean.class, jobId);<a name="line.67"></a>
+<FONT color="green">068</FONT>            setLogInfo(job);<a name="line.68"></a>
+<FONT color="green">069</FONT>            if (job.getLastActionTime() != null &amp;&amp; job.getLastActionTime().compareTo(endTime) &gt;= 0) {<a name="line.69"></a>
+<FONT color="green">070</FONT>                log.info("ENDED Coordinator materialization for jobId = " + jobId<a name="line.70"></a>
+<FONT color="green">071</FONT>                        + " Action is *already* materialized for Materialization start time = " + startTime + " : Materialization end time = " + endTime + " Job status = " + job.getStatusStr());<a name="line.71"></a>
+<FONT color="green">072</FONT>                return null;<a name="line.72"></a>
+<FONT color="green">073</FONT>            }<a name="line.73"></a>
+<FONT color="green">074</FONT>    <a name="line.74"></a>
+<FONT color="green">075</FONT>            if (endTime.after(job.getEndTime())) {<a name="line.75"></a>
+<FONT color="green">076</FONT>                log.info("ENDED Coordinator materialization for jobId = " + jobId + " Materialization end time = " + endTime<a name="line.76"></a>
+<FONT color="green">077</FONT>                        + " surpasses coordinator job's end time = " + job.getEndTime() + " Job status = " + job.getStatusStr());<a name="line.77"></a>
+<FONT color="green">078</FONT>                return null;<a name="line.78"></a>
+<FONT color="green">079</FONT>            }<a name="line.79"></a>
+<FONT color="green">080</FONT>    <a name="line.80"></a>
+<FONT color="green">081</FONT>            if (job.getPauseTime() != null &amp;&amp; !startTime.before(job.getPauseTime())) {<a name="line.81"></a>
+<FONT color="green">082</FONT>                log.info("ENDED Coordinator materialization for jobId = " + jobId + " Materialization start time = " + startTime<a name="line.82"></a>
+<FONT color="green">083</FONT>                        + " is after or equal to coordinator job's pause time = " + job.getPauseTime() + " Job status = " + job.getStatusStr());<a name="line.83"></a>
+<FONT color="green">084</FONT>                // pausetime blocks real materialization - we change job's status back to RUNNING;<a name="line.84"></a>
+<FONT color="green">085</FONT>                if (job.getStatus() == CoordinatorJob.Status.PREMATER) {<a name="line.85"></a>
+<FONT color="green">086</FONT>                    job.setStatus(CoordinatorJob.Status.RUNNING);<a name="line.86"></a>
+<FONT color="green">087</FONT>                }<a name="line.87"></a>
+<FONT color="green">088</FONT>                store.updateCoordinatorJob(job);<a name="line.88"></a>
+<FONT color="green">089</FONT>                return null;<a name="line.89"></a>
+<FONT color="green">090</FONT>            }<a name="line.90"></a>
+<FONT color="green">091</FONT>    <a name="line.91"></a>
+<FONT color="green">092</FONT>            this.user = job.getUser();<a name="line.92"></a>
+<FONT color="green">093</FONT>            this.group = job.getGroup();<a name="line.93"></a>
+<FONT color="green">094</FONT>    <a name="line.94"></a>
+<FONT color="green">095</FONT>            if (job.getStatus().equals(CoordinatorJobBean.Status.PREMATER)) {<a name="line.95"></a>
+<FONT color="green">096</FONT>                Configuration jobConf = null;<a name="line.96"></a>
+<FONT color="green">097</FONT>                log.debug("start job :" + jobId + " Materialization ");<a name="line.97"></a>
+<FONT color="green">098</FONT>                try {<a name="line.98"></a>
+<FONT color="green">099</FONT>                    jobConf = new XConfiguration(new StringReader(job.getConf()));<a name="line.99"></a>
+<FONT color="green">100</FONT>                }<a name="line.100"></a>
+<FONT color="green">101</FONT>                catch (IOException ioe) {<a name="line.101"></a>
+<FONT color="green">102</FONT>                    log.warn("Configuration parse error. read from DB :" + job.getConf(), ioe);<a name="line.102"></a>
+<FONT color="green">103</FONT>                    throw new CommandException(ErrorCode.E1005, ioe);<a name="line.103"></a>
+<FONT color="green">104</FONT>                }<a name="line.104"></a>
+<FONT color="green">105</FONT>    <a name="line.105"></a>
+<FONT color="green">106</FONT>                Instrumentation.Cron cron = new Instrumentation.Cron();<a name="line.106"></a>
+<FONT color="green">107</FONT>                cron.start();<a name="line.107"></a>
+<FONT color="green">108</FONT>                try {<a name="line.108"></a>
+<FONT color="green">109</FONT>                    materializeJobs(false, job, jobConf, store);<a name="line.109"></a>
+<FONT color="green">110</FONT>                    updateJobTable(job, store);<a name="line.110"></a>
+<FONT color="green">111</FONT>                }<a name="line.111"></a>
+<FONT color="green">112</FONT>                catch (CommandException ex) {<a name="line.112"></a>
+<FONT color="green">113</FONT>                    log.warn("Exception occurs:" + ex + " Making the job failed ");<a name="line.113"></a>
+<FONT color="green">114</FONT>                    job.setStatus(CoordinatorJobBean.Status.FAILED);<a name="line.114"></a>
+<FONT color="green">115</FONT>                    store.updateCoordinatorJob(job);<a name="line.115"></a>
+<FONT color="green">116</FONT>                }<a name="line.116"></a>
+<FONT color="green">117</FONT>                catch (Exception e) {<a name="line.117"></a>
+<FONT color="green">118</FONT>                    log.error("Excepion thrown :", e);<a name="line.118"></a>
+<FONT color="green">119</FONT>                    throw new CommandException(ErrorCode.E1001, e.getMessage(), e);<a name="line.119"></a>
+<FONT color="green">120</FONT>                }<a name="line.120"></a>
+<FONT color="green">121</FONT>                cron.stop();<a name="line.121"></a>
+<FONT color="green">122</FONT>            }<a name="line.122"></a>
+<FONT color="green">123</FONT>            else {<a name="line.123"></a>
+<FONT color="green">124</FONT>                log.info("WARN: action is not in PREMATER state!  It's in state=" + job.getStatus());<a name="line.124"></a>
+<FONT color="green">125</FONT>            }<a name="line.125"></a>
+<FONT color="green">126</FONT>            return null;<a name="line.126"></a>
+<FONT color="green">127</FONT>        }<a name="line.127"></a>
+<FONT color="green">128</FONT>    <a name="line.128"></a>
+<FONT color="green">129</FONT>        /**<a name="line.129"></a>
+<FONT color="green">130</FONT>         * Create action instances starting from "start-time" to end-time" and store them into Action table.<a name="line.130"></a>
+<FONT color="green">131</FONT>         *<a name="line.131"></a>
+<FONT color="green">132</FONT>         * @param dryrun<a name="line.132"></a>
+<FONT color="green">133</FONT>         * @param jobBean<a name="line.133"></a>
+<FONT color="green">134</FONT>         * @param conf<a name="line.134"></a>
+<FONT color="green">135</FONT>         * @param store<a name="line.135"></a>
+<FONT color="green">136</FONT>         * @throws Exception<a name="line.136"></a>
+<FONT color="green">137</FONT>         */<a name="line.137"></a>
+<FONT color="green">138</FONT>        protected String materializeJobs(boolean dryrun, CoordinatorJobBean jobBean, Configuration conf,<a name="line.138"></a>
+<FONT color="green">139</FONT>                                         CoordinatorStore store) throws Exception {<a name="line.139"></a>
+<FONT color="green">140</FONT>            String jobXml = jobBean.getJobXml();<a name="line.140"></a>
+<FONT color="green">141</FONT>            Element eJob = XmlUtils.parseXml(jobXml);<a name="line.141"></a>
+<FONT color="green">142</FONT>            // TODO: always UTC?<a name="line.142"></a>
+<FONT color="green">143</FONT>            TimeZone appTz = DateUtils.getTimeZone(jobBean.getTimeZone());<a name="line.143"></a>
+<FONT color="green">144</FONT>            // TimeZone appTz = DateUtils.getTimeZone("UTC");<a name="line.144"></a>
+<FONT color="green">145</FONT>            int frequency = jobBean.getFrequency();<a name="line.145"></a>
+<FONT color="green">146</FONT>            TimeUnit freqTU = TimeUnit.valueOf(eJob.getAttributeValue("freq_timeunit"));<a name="line.146"></a>
+<FONT color="green">147</FONT>            TimeUnit endOfFlag = TimeUnit.valueOf(eJob.getAttributeValue("end_of_duration"));<a name="line.147"></a>
+<FONT color="green">148</FONT>            Calendar start = Calendar.getInstance(appTz);<a name="line.148"></a>
+<FONT color="green">149</FONT>            start.setTime(startTime);<a name="line.149"></a>
+<FONT color="green">150</FONT>            DateUtils.moveToEnd(start, endOfFlag);<a name="line.150"></a>
+<FONT color="green">151</FONT>            Calendar end = Calendar.getInstance(appTz);<a name="line.151"></a>
+<FONT color="green">152</FONT>            end.setTime(endTime);<a name="line.152"></a>
+<FONT color="green">153</FONT>            lastActionNumber = jobBean.getLastActionNumber();<a name="line.153"></a>
+<FONT color="green">154</FONT>            // DateUtils.moveToEnd(end, endOfFlag);<a name="line.154"></a>
+<FONT color="green">155</FONT>            log.info("   *** materialize Actions for tz=" + appTz.getDisplayName() + ",\n start=" + start.getTime()<a name="line.155"></a>
+<FONT color="green">156</FONT>                    + ", end=" + end.getTime() + "\n TimeUNIT " + freqTU.getCalendarUnit() + " Frequency :" + frequency<a name="line.156"></a>
+<FONT color="green">157</FONT>                    + ":" + freqTU + " lastActionNumber " + lastActionNumber);<a name="line.157"></a>
+<FONT color="green">158</FONT>            // Keep the actual start time<a name="line.158"></a>
+<FONT color="green">159</FONT>            Calendar origStart = Calendar.getInstance(appTz);<a name="line.159"></a>
+<FONT color="green">160</FONT>            origStart.setTime(jobBean.getStartTimestamp());<a name="line.160"></a>
+<FONT color="green">161</FONT>            // Move to the End of duration, if needed.<a name="line.161"></a>
+<FONT color="green">162</FONT>            DateUtils.moveToEnd(origStart, endOfFlag);<a name="line.162"></a>
+<FONT color="green">163</FONT>            // Cloning the start time to be used in loop iteration<a name="line.163"></a>
+<FONT color="green">164</FONT>            Calendar effStart = (Calendar) origStart.clone();<a name="line.164"></a>
+<FONT color="green">165</FONT>            // Move the time when the previous action finished<a name="line.165"></a>
+<FONT color="green">166</FONT>            effStart.add(freqTU.getCalendarUnit(), lastActionNumber * frequency);<a name="line.166"></a>
+<FONT color="green">167</FONT>    <a name="line.167"></a>
+<FONT color="green">168</FONT>            String action = null;<a name="line.168"></a>
+<FONT color="green">169</FONT>            StringBuilder actionStrings = new StringBuilder();<a name="line.169"></a>
+<FONT color="green">170</FONT>            Date jobPauseTime = jobBean.getPauseTime();<a name="line.170"></a>
+<FONT color="green">171</FONT>            Calendar pause = null;<a name="line.171"></a>
+<FONT color="green">172</FONT>            if (jobPauseTime != null) {<a name="line.172"></a>
+<FONT color="green">173</FONT>                pause = Calendar.getInstance(appTz);<a name="line.173"></a>
+<FONT color="green">174</FONT>                pause.setTime(DateUtils.convertDateToTimestamp(jobPauseTime));<a name="line.174"></a>
+<FONT color="green">175</FONT>            }<a name="line.175"></a>
+<FONT color="green">176</FONT>    <a name="line.176"></a>
+<FONT color="green">177</FONT>            while (effStart.compareTo(end) &lt; 0) {<a name="line.177"></a>
+<FONT color="green">178</FONT>                if (pause != null &amp;&amp; effStart.compareTo(pause) &gt;= 0) {<a name="line.178"></a>
+<FONT color="green">179</FONT>                    break;<a name="line.179"></a>
+<FONT color="green">180</FONT>                }<a name="line.180"></a>
+<FONT color="green">181</FONT>                CoordinatorActionBean actionBean = new CoordinatorActionBean();<a name="line.181"></a>
+<FONT color="green">182</FONT>                lastActionNumber++;<a name="line.182"></a>
+<FONT color="green">183</FONT>    <a name="line.183"></a>
+<FONT color="green">184</FONT>                int timeout = jobBean.getTimeout();<a name="line.184"></a>
+<FONT color="green">185</FONT>                log.debug(origStart.getTime() + " Materializing action for time=" + effStart.getTime()<a name="line.185"></a>
+<FONT color="green">186</FONT>                        + ", lastactionnumber=" + lastActionNumber);<a name="line.186"></a>
+<FONT color="green">187</FONT>                action = CoordCommandUtils.materializeOneInstance(jobId, dryrun, (Element) eJob.clone(),<a name="line.187"></a>
+<FONT color="green">188</FONT>                        effStart.getTime(), lastActionNumber, conf, actionBean);<a name="line.188"></a>
+<FONT color="green">189</FONT>                int catchUpTOMultiplier = 1; // This value might be could be changed in future<a name="line.189"></a>
+<FONT color="green">190</FONT>                if (actionBean.getNominalTimestamp().before(jobBean.getCreatedTimestamp())) {<a name="line.190"></a>
+<FONT color="green">191</FONT>                    // Catchup action<a name="line.191"></a>
+<FONT color="green">192</FONT>                    timeout = catchUpTOMultiplier * timeout;<a name="line.192"></a>
+<FONT color="green">193</FONT>                    // actionBean.setTimeOut(Services.get().getConf().getInt(CONF_DEFAULT_TIMEOUT_CATCHUP,<a name="line.193"></a>
+<FONT color="green">194</FONT>                    // -1));<a name="line.194"></a>
+<FONT color="green">195</FONT>                    log.info("Catchup timeout is :" + actionBean.getTimeOut());<a name="line.195"></a>
+<FONT color="green">196</FONT>                }<a name="line.196"></a>
+<FONT color="green">197</FONT>                actionBean.setTimeOut(timeout);<a name="line.197"></a>
+<FONT color="green">198</FONT>    <a name="line.198"></a>
+<FONT color="green">199</FONT>                if (!dryrun) {<a name="line.199"></a>
+<FONT color="green">200</FONT>                    storeToDB(actionBean, action, store); // Storing to table<a name="line.200"></a>
+<FONT color="green">201</FONT>                }<a name="line.201"></a>
+<FONT color="green">202</FONT>                else {<a name="line.202"></a>
+<FONT color="green">203</FONT>                    actionStrings.append("action for new instance");<a name="line.203"></a>
+<FONT color="green">204</FONT>                    actionStrings.append(action);<a name="line.204"></a>
+<FONT color="green">205</FONT>                }<a name="line.205"></a>
+<FONT color="green">206</FONT>                // Restore the original start time<a name="line.206"></a>
+<FONT color="green">207</FONT>                effStart = (Calendar) origStart.clone();<a name="line.207"></a>
+<FONT color="green">208</FONT>                effStart.add(freqTU.getCalendarUnit(), lastActionNumber * frequency);<a name="line.208"></a>
+<FONT color="green">209</FONT>            }<a name="line.209"></a>
+<FONT color="green">210</FONT>    <a name="line.210"></a>
+<FONT color="green">211</FONT>            endTime = new Date(effStart.getTimeInMillis());<a name="line.211"></a>
+<FONT color="green">212</FONT>            if (!dryrun) {<a name="line.212"></a>
+<FONT color="green">213</FONT>                return action;<a name="line.213"></a>
+<FONT color="green">214</FONT>            }<a name="line.214"></a>
+<FONT color="green">215</FONT>            else {<a name="line.215"></a>
+<FONT color="green">216</FONT>                return actionStrings.toString();<a name="line.216"></a>
+<FONT color="green">217</FONT>            }<a name="line.217"></a>
+<FONT color="green">218</FONT>        }<a name="line.218"></a>
+<FONT color="green">219</FONT>    <a name="line.219"></a>
+<FONT color="green">220</FONT>        /**<a name="line.220"></a>
+<FONT color="green">221</FONT>         * Store an Action into database table.<a name="line.221"></a>
+<FONT color="green">222</FONT>         *<a name="line.222"></a>
+<FONT color="green">223</FONT>         * @param actionBean<a name="line.223"></a>
+<FONT color="green">224</FONT>         * @param actionXml<a name="line.224"></a>
+<FONT color="green">225</FONT>         * @param store<a name="line.225"></a>
+<FONT color="green">226</FONT>         * @param wantSla<a name="line.226"></a>
+<FONT color="green">227</FONT>         * @throws StoreException<a name="line.227"></a>
+<FONT color="green">228</FONT>         * @throws JDOMException<a name="line.228"></a>
+<FONT color="green">229</FONT>         */<a name="line.229"></a>
+<FONT color="green">230</FONT>        private void storeToDB(CoordinatorActionBean actionBean, String actionXml, CoordinatorStore store) throws Exception {<a name="line.230"></a>
+<FONT color="green">231</FONT>            log.debug("In storeToDB() action Id " + actionBean.getId() + " Size of actionXml " + actionXml.length());<a name="line.231"></a>
+<FONT color="green">232</FONT>            actionBean.setActionXml(actionXml);<a name="line.232"></a>
+<FONT color="green">233</FONT>            store.insertCoordinatorAction(actionBean);<a name="line.233"></a>
+<FONT color="green">234</FONT>            writeActionRegistration(actionXml, actionBean, store);<a name="line.234"></a>
+<FONT color="green">235</FONT>    <a name="line.235"></a>
+<FONT color="green">236</FONT>            // TODO: time 100s should be configurable<a name="line.236"></a>
+<FONT color="green">237</FONT>            queueCallable(new CoordActionNotification(actionBean), 100);<a name="line.237"></a>
+<FONT color="green">238</FONT>            queueCallable(new CoordActionInputCheckCommand(actionBean.getId()), 100);<a name="line.238"></a>
+<FONT color="green">239</FONT>        }<a name="line.239"></a>
+<FONT color="green">240</FONT>    <a name="line.240"></a>
+<FONT color="green">241</FONT>        /**<a name="line.241"></a>
+<FONT color="green">242</FONT>         * @param actionXml<a name="line.242"></a>
+<FONT color="green">243</FONT>         * @param actionBean<a name="line.243"></a>
+<FONT color="green">244</FONT>         * @param store<a name="line.244"></a>
+<FONT color="green">245</FONT>         * @throws Exception<a name="line.245"></a>
+<FONT color="green">246</FONT>         */<a name="line.246"></a>
+<FONT color="green">247</FONT>        private void writeActionRegistration(String actionXml, CoordinatorActionBean actionBean, CoordinatorStore store)<a name="line.247"></a>
+<FONT color="green">248</FONT>                throws Exception {<a name="line.248"></a>
+<FONT color="green">249</FONT>            Element eAction = XmlUtils.parseXml(actionXml);<a name="line.249"></a>
+<FONT color="green">250</FONT>            Element eSla = eAction.getChild("action", eAction.getNamespace()).getChild("info", eAction.getNamespace("sla"));<a name="line.250"></a>
+<FONT color="green">251</FONT>            SLADbOperations.writeSlaRegistrationEvent(eSla, store, actionBean.getId(), SlaAppType.COORDINATOR_ACTION, user,<a name="line.251"></a>
+<FONT color="green">252</FONT>                                                      group);<a name="line.252"></a>
+<FONT color="green">253</FONT>        }<a name="line.253"></a>
+<FONT color="green">254</FONT>    <a name="line.254"></a>
+<FONT color="green">255</FONT>        /**<a name="line.255"></a>
+<FONT color="green">256</FONT>         * @param job<a name="line.256"></a>
+<FONT color="green">257</FONT>         * @param store<a name="line.257"></a>
+<FONT color="green">258</FONT>         * @throws StoreException<a name="line.258"></a>
+<FONT color="green">259</FONT>         */<a name="line.259"></a>
+<FONT color="green">260</FONT>        private void updateJobTable(CoordinatorJobBean job, CoordinatorStore store) throws StoreException {<a name="line.260"></a>
+<FONT color="green">261</FONT>            // TODO: why do we need this? Isn't lastMatTime enough???<a name="line.261"></a>
+<FONT color="green">262</FONT>            job.setLastActionTime(endTime);<a name="line.262"></a>
+<FONT color="green">263</FONT>            job.setLastActionNumber(lastActionNumber);<a name="line.263"></a>
+<FONT color="green">264</FONT>            // if the job endtime == action endtime, then set status of job to<a name="line.264"></a>
+<FONT color="green">265</FONT>            // succeeded<a name="line.265"></a>
+<FONT color="green">266</FONT>            // we dont need to materialize this job anymore<a name="line.266"></a>
+<FONT color="green">267</FONT>            Date jobEndTime = job.getEndTime();<a name="line.267"></a>
+<FONT color="green">268</FONT>            if (jobEndTime.compareTo(endTime) &lt;= 0) {<a name="line.268"></a>
+<FONT color="green">269</FONT>                job.setStatus(CoordinatorJob.Status.SUCCEEDED);<a name="line.269"></a>
+<FONT color="green">270</FONT>                log.info("[" + job.getId() + "]: Update status from PREMATER to SUCCEEDED");<a name="line.270"></a>
+<FONT color="green">271</FONT>            }<a name="line.271"></a>
+<FONT color="green">272</FONT>            else {<a name="line.272"></a>
+<FONT color="green">273</FONT>                job.setStatus(CoordinatorJob.Status.RUNNING);<a name="line.273"></a>
+<FONT color="green">274</FONT>                log.info("[" + job.getId() + "]: Update status from PREMATER to RUNNING");<a name="line.274"></a>
+<FONT color="green">275</FONT>            }<a name="line.275"></a>
+<FONT color="green">276</FONT>            job.setNextMaterializedTime(endTime);<a name="line.276"></a>
+<FONT color="green">277</FONT>            store.updateCoordinatorJob(job);<a name="line.277"></a>
+<FONT color="green">278</FONT>        }<a name="line.278"></a>
+<FONT color="green">279</FONT>    <a name="line.279"></a>
+<FONT color="green">280</FONT>        @Override<a name="line.280"></a>
+<FONT color="green">281</FONT>        protected Void execute(CoordinatorStore store) throws StoreException, CommandException {<a name="line.281"></a>
+<FONT color="green">282</FONT>            log.info("STARTED CoordActionMaterializeCommand for jobId=" + jobId + ", startTime=" + startTime + ", endTime="<a name="line.282"></a>
+<FONT color="green">283</FONT>                    + endTime);<a name="line.283"></a>
+<FONT color="green">284</FONT>            try {<a name="line.284"></a>
+<FONT color="green">285</FONT>                if (lock(jobId)) {<a name="line.285"></a>
+<FONT color="green">286</FONT>                    call(store);<a name="line.286"></a>
+<FONT color="green">287</FONT>                }<a name="line.287"></a>
+<FONT color="green">288</FONT>                else {<a name="line.288"></a>
+<FONT color="green">289</FONT>                    queueCallable(new CoordActionMaterializeCommand(jobId, startTime, endTime),<a name="line.289"></a>
+<FONT color="green">290</FONT>                            LOCK_FAILURE_REQUEUE_INTERVAL);<a name="line.290"></a>
+<FONT color="green">291</FONT>                    log.warn("CoordActionMaterializeCommand lock was not acquired - failed jobId=" + jobId<a name="line.291"></a>
+<FONT color="green">292</FONT>                            + ". Requeing the same.");<a name="line.292"></a>
+<FONT color="green">293</FONT>                }<a name="line.293"></a>
+<FONT color="green">294</FONT>            }<a name="line.294"></a>
+<FONT color="green">295</FONT>            catch (InterruptedException e) {<a name="line.295"></a>
+<FONT color="green">296</FONT>                queueCallable(new CoordActionMaterializeCommand(jobId, startTime, endTime), LOCK_FAILURE_REQUEUE_INTERVAL);<a name="line.296"></a>
+<FONT color="green">297</FONT>                log.warn("CoordActionMaterializeCommand lock acquiring failed with exception " + e.getMessage()<a name="line.297"></a>
+<FONT color="green">298</FONT>                        + " for jobId=" + jobId + " Requeing the same.");<a name="line.298"></a>
+<FONT color="green">299</FONT>            }<a name="line.299"></a>
+<FONT color="green">300</FONT>            finally {<a name="line.300"></a>
+<FONT color="green">301</FONT>                log.info(" ENDED CoordActionMaterializeCommand for jobId=" + jobId + ", startTime=" + startTime<a name="line.301"></a>
+<FONT color="green">302</FONT>                        + ", endTime=" + endTime);<a name="line.302"></a>
+<FONT color="green">303</FONT>            }<a name="line.303"></a>
+<FONT color="green">304</FONT>            return null;<a name="line.304"></a>
+<FONT color="green">305</FONT>        }<a name="line.305"></a>
+<FONT color="green">306</FONT>    <a name="line.306"></a>
+<FONT color="green">307</FONT>    <a name="line.307"></a>
+<FONT color="green">308</FONT>    <a name="line.308"></a>
+<FONT color="green">309</FONT>        /**<a name="line.309"></a>
+<FONT color="green">310</FONT>         * For preliminery testing. Should be removed soon<a name="line.310"></a>
+<FONT color="green">311</FONT>         *<a name="line.311"></a>
+<FONT color="green">312</FONT>         * @param args<a name="line.312"></a>
+<FONT color="green">313</FONT>         * @throws Exception<a name="line.313"></a>
+<FONT color="green">314</FONT>         */<a name="line.314"></a>
+<FONT color="green">315</FONT>        public static void main(String[] args) throws Exception {<a name="line.315"></a>
+<FONT color="green">316</FONT>            new Services().init();<a name="line.316"></a>
+<FONT color="green">317</FONT>            try {<a name="line.317"></a>
+<FONT color="green">318</FONT>                Date startTime = DateUtils.parseDateUTC("2009-02-01T01:00Z");<a name="line.318"></a>
+<FONT color="green">319</FONT>                Date endTime = DateUtils.parseDateUTC("2009-02-02T01:00Z");<a name="line.319"></a>
+<FONT color="green">320</FONT>                String jobId = "0000000-091207151850551-oozie-dani-C";<a name="line.320"></a>
+<FONT color="green">321</FONT>                CoordActionMaterializeCommand matCmd = new CoordActionMaterializeCommand(jobId, startTime, endTime);<a name="line.321"></a>
+<FONT color="green">322</FONT>                matCmd.call();<a name="line.322"></a>
+<FONT color="green">323</FONT>            }<a name="line.323"></a>
+<FONT color="green">324</FONT>            finally {<a name="line.324"></a>
+<FONT color="green">325</FONT>                try {<a name="line.325"></a>
+<FONT color="green">326</FONT>                    Thread.sleep(60000);<a name="line.326"></a>
+<FONT color="green">327</FONT>                }<a name="line.327"></a>
+<FONT color="green">328</FONT>                catch (Exception ex) {<a name="line.328"></a>
+<FONT color="green">329</FONT>                }<a name="line.329"></a>
+<FONT color="green">330</FONT>                new Services().destroy();<a name="line.330"></a>
+<FONT color="green">331</FONT>            }<a name="line.331"></a>
+<FONT color="green">332</FONT>        }<a name="line.332"></a>
+<FONT color="green">333</FONT>    <a name="line.333"></a>
+<FONT color="green">334</FONT>    }<a name="line.334"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

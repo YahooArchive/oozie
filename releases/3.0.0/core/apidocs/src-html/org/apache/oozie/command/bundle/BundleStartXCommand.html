@@ -1,0 +1,422 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright (c) 2010 Yahoo! Inc. All rights reserved.<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Licensed under the Apache License, Version 2.0 (the "License");<a name="line.3"></a>
+<FONT color="green">004</FONT>     * you may not use this file except in compliance with the License.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * You may obtain a copy of the License at<a name="line.5"></a>
+<FONT color="green">006</FONT>     *<a name="line.6"></a>
+<FONT color="green">007</FONT>     *   http://www.apache.org/licenses/LICENSE-2.0<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *  Unless required by applicable law or agreed to in writing, software<a name="line.9"></a>
+<FONT color="green">010</FONT>     *  distributed under the License is distributed on an "AS IS" BASIS,<a name="line.10"></a>
+<FONT color="green">011</FONT>     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.11"></a>
+<FONT color="green">012</FONT>     *  See the License for the specific language governing permissions and<a name="line.12"></a>
+<FONT color="green">013</FONT>     *  limitations under the License. See accompanying LICENSE file.<a name="line.13"></a>
+<FONT color="green">014</FONT>     */<a name="line.14"></a>
+<FONT color="green">015</FONT>    package org.apache.oozie.command.bundle;<a name="line.15"></a>
+<FONT color="green">016</FONT>    <a name="line.16"></a>
+<FONT color="green">017</FONT>    import java.io.IOException;<a name="line.17"></a>
+<FONT color="green">018</FONT>    import java.io.StringReader;<a name="line.18"></a>
+<FONT color="green">019</FONT>    import java.util.Date;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.util.HashMap;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.util.List;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import java.util.Map;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import java.util.Map.Entry;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    import org.apache.hadoop.conf.Configuration;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import org.apache.oozie.BundleActionBean;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import org.apache.oozie.BundleJobBean;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import org.apache.oozie.ErrorCode;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import org.apache.oozie.XException;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import org.apache.oozie.client.Job;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import org.apache.oozie.client.OozieClient;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import org.apache.oozie.command.CommandException;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import org.apache.oozie.command.PreconditionException;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import org.apache.oozie.command.StartTransitionXCommand;<a name="line.34"></a>
+<FONT color="green">035</FONT>    import org.apache.oozie.command.coord.CoordSubmitXCommand;<a name="line.35"></a>
+<FONT color="green">036</FONT>    import org.apache.oozie.executor.jpa.BundleActionGetJPAExecutor;<a name="line.36"></a>
+<FONT color="green">037</FONT>    import org.apache.oozie.executor.jpa.BundleActionInsertJPAExecutor;<a name="line.37"></a>
+<FONT color="green">038</FONT>    import org.apache.oozie.executor.jpa.BundleActionUpdateJPAExecutor;<a name="line.38"></a>
+<FONT color="green">039</FONT>    import org.apache.oozie.executor.jpa.BundleJobGetJPAExecutor;<a name="line.39"></a>
+<FONT color="green">040</FONT>    import org.apache.oozie.executor.jpa.BundleJobUpdateJPAExecutor;<a name="line.40"></a>
+<FONT color="green">041</FONT>    import org.apache.oozie.executor.jpa.JPAExecutorException;<a name="line.41"></a>
+<FONT color="green">042</FONT>    import org.apache.oozie.service.JPAService;<a name="line.42"></a>
+<FONT color="green">043</FONT>    import org.apache.oozie.service.Services;<a name="line.43"></a>
+<FONT color="green">044</FONT>    import org.apache.oozie.util.JobUtils;<a name="line.44"></a>
+<FONT color="green">045</FONT>    import org.apache.oozie.util.LogUtils;<a name="line.45"></a>
+<FONT color="green">046</FONT>    import org.apache.oozie.util.ParamChecker;<a name="line.46"></a>
+<FONT color="green">047</FONT>    import org.apache.oozie.util.XConfiguration;<a name="line.47"></a>
+<FONT color="green">048</FONT>    import org.apache.oozie.util.XmlUtils;<a name="line.48"></a>
+<FONT color="green">049</FONT>    import org.jdom.Attribute;<a name="line.49"></a>
+<FONT color="green">050</FONT>    import org.jdom.Element;<a name="line.50"></a>
+<FONT color="green">051</FONT>    import org.jdom.JDOMException;<a name="line.51"></a>
+<FONT color="green">052</FONT>    <a name="line.52"></a>
+<FONT color="green">053</FONT>    /**<a name="line.53"></a>
+<FONT color="green">054</FONT>     * The command to start Bundle job<a name="line.54"></a>
+<FONT color="green">055</FONT>     */<a name="line.55"></a>
+<FONT color="green">056</FONT>    public class BundleStartXCommand extends StartTransitionXCommand {<a name="line.56"></a>
+<FONT color="green">057</FONT>        private final String jobId;<a name="line.57"></a>
+<FONT color="green">058</FONT>        private BundleJobBean bundleJob;<a name="line.58"></a>
+<FONT color="green">059</FONT>        private JPAService jpaService = null;<a name="line.59"></a>
+<FONT color="green">060</FONT>    <a name="line.60"></a>
+<FONT color="green">061</FONT>        /**<a name="line.61"></a>
+<FONT color="green">062</FONT>         * The constructor for class {@link BundleStartXCommand}<a name="line.62"></a>
+<FONT color="green">063</FONT>         *<a name="line.63"></a>
+<FONT color="green">064</FONT>         * @param jobId the bundle job id<a name="line.64"></a>
+<FONT color="green">065</FONT>         */<a name="line.65"></a>
+<FONT color="green">066</FONT>        public BundleStartXCommand(String jobId) {<a name="line.66"></a>
+<FONT color="green">067</FONT>            super("bundle_start", "bundle_start", 1);<a name="line.67"></a>
+<FONT color="green">068</FONT>            this.jobId = ParamChecker.notEmpty(jobId, "jobId");<a name="line.68"></a>
+<FONT color="green">069</FONT>        }<a name="line.69"></a>
+<FONT color="green">070</FONT>    <a name="line.70"></a>
+<FONT color="green">071</FONT>        /**<a name="line.71"></a>
+<FONT color="green">072</FONT>         * The constructor for class {@link BundleStartXCommand}<a name="line.72"></a>
+<FONT color="green">073</FONT>         *<a name="line.73"></a>
+<FONT color="green">074</FONT>         * @param jobId the bundle job id<a name="line.74"></a>
+<FONT color="green">075</FONT>         * @param dryrun true if dryrun is enable<a name="line.75"></a>
+<FONT color="green">076</FONT>         */<a name="line.76"></a>
+<FONT color="green">077</FONT>        public BundleStartXCommand(String jobId, boolean dryrun) {<a name="line.77"></a>
+<FONT color="green">078</FONT>            super("bundle_start", "bundle_start", 1, dryrun);<a name="line.78"></a>
+<FONT color="green">079</FONT>            this.jobId = ParamChecker.notEmpty(jobId, "jobId");<a name="line.79"></a>
+<FONT color="green">080</FONT>        }<a name="line.80"></a>
+<FONT color="green">081</FONT>    <a name="line.81"></a>
+<FONT color="green">082</FONT>        /* (non-Javadoc)<a name="line.82"></a>
+<FONT color="green">083</FONT>         * @see org.apache.oozie.command.XCommand#getEntityKey()<a name="line.83"></a>
+<FONT color="green">084</FONT>         */<a name="line.84"></a>
+<FONT color="green">085</FONT>        @Override<a name="line.85"></a>
+<FONT color="green">086</FONT>        protected String getEntityKey() {<a name="line.86"></a>
+<FONT color="green">087</FONT>            return jobId;<a name="line.87"></a>
+<FONT color="green">088</FONT>        }<a name="line.88"></a>
+<FONT color="green">089</FONT>    <a name="line.89"></a>
+<FONT color="green">090</FONT>        /* (non-Javadoc)<a name="line.90"></a>
+<FONT color="green">091</FONT>         * @see org.apache.oozie.command.XCommand#isLockRequired()<a name="line.91"></a>
+<FONT color="green">092</FONT>         */<a name="line.92"></a>
+<FONT color="green">093</FONT>        @Override<a name="line.93"></a>
+<FONT color="green">094</FONT>        protected boolean isLockRequired() {<a name="line.94"></a>
+<FONT color="green">095</FONT>            return true;<a name="line.95"></a>
+<FONT color="green">096</FONT>        }<a name="line.96"></a>
+<FONT color="green">097</FONT>    <a name="line.97"></a>
+<FONT color="green">098</FONT>        /* (non-Javadoc)<a name="line.98"></a>
+<FONT color="green">099</FONT>         * @see org.apache.oozie.command.XCommand#verifyPrecondition()<a name="line.99"></a>
+<FONT color="green">100</FONT>         */<a name="line.100"></a>
+<FONT color="green">101</FONT>        @Override<a name="line.101"></a>
+<FONT color="green">102</FONT>        protected void verifyPrecondition() throws CommandException, PreconditionException {<a name="line.102"></a>
+<FONT color="green">103</FONT>            eagerVerifyPrecondition();<a name="line.103"></a>
+<FONT color="green">104</FONT>        }<a name="line.104"></a>
+<FONT color="green">105</FONT>    <a name="line.105"></a>
+<FONT color="green">106</FONT>        /* (non-Javadoc)<a name="line.106"></a>
+<FONT color="green">107</FONT>         * @see org.apache.oozie.command.XCommand#eagerVerifyPrecondition()<a name="line.107"></a>
+<FONT color="green">108</FONT>         */<a name="line.108"></a>
+<FONT color="green">109</FONT>        @Override<a name="line.109"></a>
+<FONT color="green">110</FONT>        protected void eagerVerifyPrecondition() throws CommandException, PreconditionException {<a name="line.110"></a>
+<FONT color="green">111</FONT>            if (bundleJob.getStatus() != Job.Status.PREP) {<a name="line.111"></a>
+<FONT color="green">112</FONT>                String msg = "Bundle " + bundleJob.getId() + " is not in PREP status. It is in : " + bundleJob.getStatus();<a name="line.112"></a>
+<FONT color="green">113</FONT>                LOG.info(msg);<a name="line.113"></a>
+<FONT color="green">114</FONT>                throw new PreconditionException(ErrorCode.E1100, msg);<a name="line.114"></a>
+<FONT color="green">115</FONT>            }<a name="line.115"></a>
+<FONT color="green">116</FONT>        }<a name="line.116"></a>
+<FONT color="green">117</FONT>        /* (non-Javadoc)<a name="line.117"></a>
+<FONT color="green">118</FONT>         * @see org.apache.oozie.command.XCommand#loadState()<a name="line.118"></a>
+<FONT color="green">119</FONT>         */<a name="line.119"></a>
+<FONT color="green">120</FONT>        @Override<a name="line.120"></a>
+<FONT color="green">121</FONT>        public void loadState() throws CommandException {<a name="line.121"></a>
+<FONT color="green">122</FONT>            eagerLoadState();<a name="line.122"></a>
+<FONT color="green">123</FONT>        }<a name="line.123"></a>
+<FONT color="green">124</FONT>    <a name="line.124"></a>
+<FONT color="green">125</FONT>        /* (non-Javadoc)<a name="line.125"></a>
+<FONT color="green">126</FONT>         * @see org.apache.oozie.command.XCommand#eagerLoadState()<a name="line.126"></a>
+<FONT color="green">127</FONT>         */<a name="line.127"></a>
+<FONT color="green">128</FONT>        @Override<a name="line.128"></a>
+<FONT color="green">129</FONT>        public void eagerLoadState() throws CommandException {<a name="line.129"></a>
+<FONT color="green">130</FONT>            try {<a name="line.130"></a>
+<FONT color="green">131</FONT>                jpaService = Services.get().get(JPAService.class);<a name="line.131"></a>
+<FONT color="green">132</FONT>    <a name="line.132"></a>
+<FONT color="green">133</FONT>                if (jpaService != null) {<a name="line.133"></a>
+<FONT color="green">134</FONT>                    this.bundleJob = jpaService.execute(new BundleJobGetJPAExecutor(jobId));<a name="line.134"></a>
+<FONT color="green">135</FONT>                    LogUtils.setLogInfo(bundleJob, logInfo);<a name="line.135"></a>
+<FONT color="green">136</FONT>                    super.setJob(bundleJob);<a name="line.136"></a>
+<FONT color="green">137</FONT>    <a name="line.137"></a>
+<FONT color="green">138</FONT>                }<a name="line.138"></a>
+<FONT color="green">139</FONT>                else {<a name="line.139"></a>
+<FONT color="green">140</FONT>                    throw new CommandException(ErrorCode.E0610);<a name="line.140"></a>
+<FONT color="green">141</FONT>                }<a name="line.141"></a>
+<FONT color="green">142</FONT>            }<a name="line.142"></a>
+<FONT color="green">143</FONT>            catch (XException ex) {<a name="line.143"></a>
+<FONT color="green">144</FONT>                throw new CommandException(ex);<a name="line.144"></a>
+<FONT color="green">145</FONT>            }<a name="line.145"></a>
+<FONT color="green">146</FONT>        }<a name="line.146"></a>
+<FONT color="green">147</FONT>    <a name="line.147"></a>
+<FONT color="green">148</FONT>        /* (non-Javadoc)<a name="line.148"></a>
+<FONT color="green">149</FONT>         * @see org.apache.oozie.command.StartTransitionXCommand#StartChildren()<a name="line.149"></a>
+<FONT color="green">150</FONT>         */<a name="line.150"></a>
+<FONT color="green">151</FONT>        @Override<a name="line.151"></a>
+<FONT color="green">152</FONT>        public void StartChildren() throws CommandException {<a name="line.152"></a>
+<FONT color="green">153</FONT>            LOG.debug("Started coord jobs for the bundle=[{0}]", jobId);<a name="line.153"></a>
+<FONT color="green">154</FONT>            insertBundleActions();<a name="line.154"></a>
+<FONT color="green">155</FONT>            startCoordJobs();<a name="line.155"></a>
+<FONT color="green">156</FONT>            LOG.debug("Ended coord jobs for the bundle=[{0}]", jobId);<a name="line.156"></a>
+<FONT color="green">157</FONT>        }<a name="line.157"></a>
+<FONT color="green">158</FONT>    <a name="line.158"></a>
+<FONT color="green">159</FONT>        /* (non-Javadoc)<a name="line.159"></a>
+<FONT color="green">160</FONT>         * @see org.apache.oozie.command.TransitionXCommand#notifyParent()<a name="line.160"></a>
+<FONT color="green">161</FONT>         */<a name="line.161"></a>
+<FONT color="green">162</FONT>        @Override<a name="line.162"></a>
+<FONT color="green">163</FONT>        public void notifyParent() {<a name="line.163"></a>
+<FONT color="green">164</FONT>        }<a name="line.164"></a>
+<FONT color="green">165</FONT>    <a name="line.165"></a>
+<FONT color="green">166</FONT>        /**<a name="line.166"></a>
+<FONT color="green">167</FONT>         * Insert bundle actions<a name="line.167"></a>
+<FONT color="green">168</FONT>         *<a name="line.168"></a>
+<FONT color="green">169</FONT>         * @throws CommandException thrown if failed to create bundle actions<a name="line.169"></a>
+<FONT color="green">170</FONT>         */<a name="line.170"></a>
+<FONT color="green">171</FONT>        @SuppressWarnings("unchecked")<a name="line.171"></a>
+<FONT color="green">172</FONT>        private void insertBundleActions() throws CommandException {<a name="line.172"></a>
+<FONT color="green">173</FONT>            if (bundleJob != null) {<a name="line.173"></a>
+<FONT color="green">174</FONT>                Map&lt;String, Boolean&gt; map = new HashMap&lt;String, Boolean&gt;();<a name="line.174"></a>
+<FONT color="green">175</FONT>                try {<a name="line.175"></a>
+<FONT color="green">176</FONT>                    Element bAppXml = XmlUtils.parseXml(bundleJob.getJobXml());<a name="line.176"></a>
+<FONT color="green">177</FONT>                    List&lt;Element&gt; coordElems = bAppXml.getChildren("coordinator", bAppXml.getNamespace());<a name="line.177"></a>
+<FONT color="green">178</FONT>                    for (Element elem : coordElems) {<a name="line.178"></a>
+<FONT color="green">179</FONT>                        Attribute name = elem.getAttribute("name");<a name="line.179"></a>
+<FONT color="green">180</FONT>                        Attribute critical = elem.getAttribute("critical");<a name="line.180"></a>
+<FONT color="green">181</FONT>                        if (name != null) {<a name="line.181"></a>
+<FONT color="green">182</FONT>                            if (map.containsKey(name.getValue())) {<a name="line.182"></a>
+<FONT color="green">183</FONT>                                throw new CommandException(ErrorCode.E1304, name);<a name="line.183"></a>
+<FONT color="green">184</FONT>                            }<a name="line.184"></a>
+<FONT color="green">185</FONT>                            boolean isCritical = false;<a name="line.185"></a>
+<FONT color="green">186</FONT>                            if (critical != null &amp;&amp; Boolean.parseBoolean(critical.getValue())) {<a name="line.186"></a>
+<FONT color="green">187</FONT>                                isCritical = true;<a name="line.187"></a>
+<FONT color="green">188</FONT>                            }<a name="line.188"></a>
+<FONT color="green">189</FONT>                            map.put(name.getValue(), isCritical);<a name="line.189"></a>
+<FONT color="green">190</FONT>                        }<a name="line.190"></a>
+<FONT color="green">191</FONT>                        else {<a name="line.191"></a>
+<FONT color="green">192</FONT>                            throw new CommandException(ErrorCode.E1305);<a name="line.192"></a>
+<FONT color="green">193</FONT>                        }<a name="line.193"></a>
+<FONT color="green">194</FONT>                    }<a name="line.194"></a>
+<FONT color="green">195</FONT>                }<a name="line.195"></a>
+<FONT color="green">196</FONT>                catch (JDOMException jex) {<a name="line.196"></a>
+<FONT color="green">197</FONT>                    throw new CommandException(ErrorCode.E1301, jex);<a name="line.197"></a>
+<FONT color="green">198</FONT>                }<a name="line.198"></a>
+<FONT color="green">199</FONT>    <a name="line.199"></a>
+<FONT color="green">200</FONT>                try {<a name="line.200"></a>
+<FONT color="green">201</FONT>                    // if there is no coordinator for this bundle, failed it.<a name="line.201"></a>
+<FONT color="green">202</FONT>                    if (map.isEmpty()) {<a name="line.202"></a>
+<FONT color="green">203</FONT>                        bundleJob.setStatus(Job.Status.FAILED);<a name="line.203"></a>
+<FONT color="green">204</FONT>                        bundleJob.resetPending();<a name="line.204"></a>
+<FONT color="green">205</FONT>                        jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));<a name="line.205"></a>
+<FONT color="green">206</FONT>                        LOG.debug("No coord jobs for the bundle=[{0}], failed it!!", jobId);<a name="line.206"></a>
+<FONT color="green">207</FONT>                        throw new CommandException(ErrorCode.E1318, jobId);<a name="line.207"></a>
+<FONT color="green">208</FONT>                    }<a name="line.208"></a>
+<FONT color="green">209</FONT>    <a name="line.209"></a>
+<FONT color="green">210</FONT>                    for (Entry&lt;String, Boolean&gt; coordName : map.entrySet()) {<a name="line.210"></a>
+<FONT color="green">211</FONT>                        BundleActionBean action = createBundleAction(jobId, coordName.getKey(), coordName.getValue());<a name="line.211"></a>
+<FONT color="green">212</FONT>    <a name="line.212"></a>
+<FONT color="green">213</FONT>                        jpaService.execute(new BundleActionInsertJPAExecutor(action));<a name="line.213"></a>
+<FONT color="green">214</FONT>                    }<a name="line.214"></a>
+<FONT color="green">215</FONT>                }<a name="line.215"></a>
+<FONT color="green">216</FONT>                catch (JPAExecutorException je) {<a name="line.216"></a>
+<FONT color="green">217</FONT>                    throw new CommandException(je);<a name="line.217"></a>
+<FONT color="green">218</FONT>                }<a name="line.218"></a>
+<FONT color="green">219</FONT>    <a name="line.219"></a>
+<FONT color="green">220</FONT>            }<a name="line.220"></a>
+<FONT color="green">221</FONT>            else {<a name="line.221"></a>
+<FONT color="green">222</FONT>                throw new CommandException(ErrorCode.E0604, jobId);<a name="line.222"></a>
+<FONT color="green">223</FONT>            }<a name="line.223"></a>
+<FONT color="green">224</FONT>        }<a name="line.224"></a>
+<FONT color="green">225</FONT>    <a name="line.225"></a>
+<FONT color="green">226</FONT>        private BundleActionBean createBundleAction(String jobId, String coordName, boolean isCritical) {<a name="line.226"></a>
+<FONT color="green">227</FONT>            BundleActionBean action = new BundleActionBean();<a name="line.227"></a>
+<FONT color="green">228</FONT>            action.setBundleActionId(jobId + "_" + coordName);<a name="line.228"></a>
+<FONT color="green">229</FONT>            action.setBundleId(jobId);<a name="line.229"></a>
+<FONT color="green">230</FONT>            action.setCoordName(coordName);<a name="line.230"></a>
+<FONT color="green">231</FONT>            action.setStatus(Job.Status.PREP);<a name="line.231"></a>
+<FONT color="green">232</FONT>            action.setLastModifiedTime(new Date());<a name="line.232"></a>
+<FONT color="green">233</FONT>            if (isCritical) {<a name="line.233"></a>
+<FONT color="green">234</FONT>                action.setCritical();<a name="line.234"></a>
+<FONT color="green">235</FONT>            }<a name="line.235"></a>
+<FONT color="green">236</FONT>            else {<a name="line.236"></a>
+<FONT color="green">237</FONT>                action.resetCritical();<a name="line.237"></a>
+<FONT color="green">238</FONT>            }<a name="line.238"></a>
+<FONT color="green">239</FONT>            return action;<a name="line.239"></a>
+<FONT color="green">240</FONT>        }<a name="line.240"></a>
+<FONT color="green">241</FONT>    <a name="line.241"></a>
+<FONT color="green">242</FONT>        /**<a name="line.242"></a>
+<FONT color="green">243</FONT>         * Start Coord Jobs<a name="line.243"></a>
+<FONT color="green">244</FONT>         *<a name="line.244"></a>
+<FONT color="green">245</FONT>         * @throws CommandException thrown if failed to start coord jobs<a name="line.245"></a>
+<FONT color="green">246</FONT>         */<a name="line.246"></a>
+<FONT color="green">247</FONT>        @SuppressWarnings("unchecked")<a name="line.247"></a>
+<FONT color="green">248</FONT>        private void startCoordJobs() throws CommandException {<a name="line.248"></a>
+<FONT color="green">249</FONT>            if (bundleJob != null) {<a name="line.249"></a>
+<FONT color="green">250</FONT>                try {<a name="line.250"></a>
+<FONT color="green">251</FONT>                    Element bAppXml = XmlUtils.parseXml(bundleJob.getJobXml());<a name="line.251"></a>
+<FONT color="green">252</FONT>                    List&lt;Element&gt; coordElems = bAppXml.getChildren("coordinator", bAppXml.getNamespace());<a name="line.252"></a>
+<FONT color="green">253</FONT>                    for (Element coordElem : coordElems) {<a name="line.253"></a>
+<FONT color="green">254</FONT>                        Attribute name = coordElem.getAttribute("name");<a name="line.254"></a>
+<FONT color="green">255</FONT>                        Configuration coordConf = mergeConfig(coordElem);<a name="line.255"></a>
+<FONT color="green">256</FONT>                        coordConf.set(OozieClient.BUNDLE_ID, jobId);<a name="line.256"></a>
+<FONT color="green">257</FONT>    <a name="line.257"></a>
+<FONT color="green">258</FONT>                        queue(new CoordSubmitXCommand(coordConf, bundleJob.getAuthToken(), bundleJob.getId(), name.getValue()));<a name="line.258"></a>
+<FONT color="green">259</FONT>    <a name="line.259"></a>
+<FONT color="green">260</FONT>                        updateBundleAction(name.getValue());<a name="line.260"></a>
+<FONT color="green">261</FONT>                    }<a name="line.261"></a>
+<FONT color="green">262</FONT>                }<a name="line.262"></a>
+<FONT color="green">263</FONT>                catch (JDOMException jex) {<a name="line.263"></a>
+<FONT color="green">264</FONT>                    throw new CommandException(ErrorCode.E1301, jex);<a name="line.264"></a>
+<FONT color="green">265</FONT>                }<a name="line.265"></a>
+<FONT color="green">266</FONT>                catch (JPAExecutorException je) {<a name="line.266"></a>
+<FONT color="green">267</FONT>                    throw new CommandException(je);<a name="line.267"></a>
+<FONT color="green">268</FONT>                }<a name="line.268"></a>
+<FONT color="green">269</FONT>            }<a name="line.269"></a>
+<FONT color="green">270</FONT>            else {<a name="line.270"></a>
+<FONT color="green">271</FONT>                throw new CommandException(ErrorCode.E0604, jobId);<a name="line.271"></a>
+<FONT color="green">272</FONT>            }<a name="line.272"></a>
+<FONT color="green">273</FONT>        }<a name="line.273"></a>
+<FONT color="green">274</FONT>    <a name="line.274"></a>
+<FONT color="green">275</FONT>        private void updateBundleAction(String coordName) throws JPAExecutorException {<a name="line.275"></a>
+<FONT color="green">276</FONT>            BundleActionBean action = jpaService.execute(new BundleActionGetJPAExecutor(jobId, coordName));<a name="line.276"></a>
+<FONT color="green">277</FONT>            action.incrementAndGetPending();<a name="line.277"></a>
+<FONT color="green">278</FONT>            action.setLastModifiedTime(new Date());<a name="line.278"></a>
+<FONT color="green">279</FONT>            jpaService.execute(new BundleActionUpdateJPAExecutor(action));<a name="line.279"></a>
+<FONT color="green">280</FONT>        }<a name="line.280"></a>
+<FONT color="green">281</FONT>    <a name="line.281"></a>
+<FONT color="green">282</FONT>        /**<a name="line.282"></a>
+<FONT color="green">283</FONT>         * Merge Bundle job config and the configuration from the coord job to pass<a name="line.283"></a>
+<FONT color="green">284</FONT>         * to Coord Engine<a name="line.284"></a>
+<FONT color="green">285</FONT>         *<a name="line.285"></a>
+<FONT color="green">286</FONT>         * @param coordElem the coordinator configuration<a name="line.286"></a>
+<FONT color="green">287</FONT>         * @return Configuration merged configuration<a name="line.287"></a>
+<FONT color="green">288</FONT>         * @throws CommandException thrown if failed to merge configuration<a name="line.288"></a>
+<FONT color="green">289</FONT>         */<a name="line.289"></a>
+<FONT color="green">290</FONT>        private Configuration mergeConfig(Element coordElem) throws CommandException {<a name="line.290"></a>
+<FONT color="green">291</FONT>            String jobConf = bundleJob.getConf();<a name="line.291"></a>
+<FONT color="green">292</FONT>            // Step 1: runConf = jobConf<a name="line.292"></a>
+<FONT color="green">293</FONT>            Configuration runConf = null;<a name="line.293"></a>
+<FONT color="green">294</FONT>            try {<a name="line.294"></a>
+<FONT color="green">295</FONT>                runConf = new XConfiguration(new StringReader(jobConf));<a name="line.295"></a>
+<FONT color="green">296</FONT>            }<a name="line.296"></a>
+<FONT color="green">297</FONT>            catch (IOException e1) {<a name="line.297"></a>
+<FONT color="green">298</FONT>                LOG.warn("Configuration parse error in:" + jobConf);<a name="line.298"></a>
+<FONT color="green">299</FONT>                throw new CommandException(ErrorCode.E1306, e1.getMessage(), e1);<a name="line.299"></a>
+<FONT color="green">300</FONT>            }<a name="line.300"></a>
+<FONT color="green">301</FONT>            // Step 2: Merge local properties into runConf<a name="line.301"></a>
+<FONT color="green">302</FONT>            // extract 'property' tags under 'configuration' block in the coordElem<a name="line.302"></a>
+<FONT color="green">303</FONT>            // convert Element to XConfiguration<a name="line.303"></a>
+<FONT color="green">304</FONT>            Element localConfigElement = coordElem.getChild("configuration", coordElem.getNamespace());<a name="line.304"></a>
+<FONT color="green">305</FONT>    <a name="line.305"></a>
+<FONT color="green">306</FONT>            if (localConfigElement != null) {<a name="line.306"></a>
+<FONT color="green">307</FONT>                String strConfig = XmlUtils.prettyPrint(localConfigElement).toString();<a name="line.307"></a>
+<FONT color="green">308</FONT>                Configuration localConf;<a name="line.308"></a>
+<FONT color="green">309</FONT>                try {<a name="line.309"></a>
+<FONT color="green">310</FONT>                    localConf = new XConfiguration(new StringReader(strConfig));<a name="line.310"></a>
+<FONT color="green">311</FONT>                }<a name="line.311"></a>
+<FONT color="green">312</FONT>                catch (IOException e1) {<a name="line.312"></a>
+<FONT color="green">313</FONT>                    LOG.warn("Configuration parse error in:" + strConfig);<a name="line.313"></a>
+<FONT color="green">314</FONT>                    throw new CommandException(ErrorCode.E1307, e1.getMessage(), e1);<a name="line.314"></a>
+<FONT color="green">315</FONT>                }<a name="line.315"></a>
+<FONT color="green">316</FONT>    <a name="line.316"></a>
+<FONT color="green">317</FONT>                // copy configuration properties in the coordElem to the runConf<a name="line.317"></a>
+<FONT color="green">318</FONT>                XConfiguration.copy(localConf, runConf);<a name="line.318"></a>
+<FONT color="green">319</FONT>            }<a name="line.319"></a>
+<FONT color="green">320</FONT>    <a name="line.320"></a>
+<FONT color="green">321</FONT>            // Step 3: Extract value of 'app-path' in coordElem, save it as a<a name="line.321"></a>
+<FONT color="green">322</FONT>            // new property called 'oozie.coord.application.path', and normalize.<a name="line.322"></a>
+<FONT color="green">323</FONT>            String appPath = coordElem.getChild("app-path", coordElem.getNamespace()).getValue();<a name="line.323"></a>
+<FONT color="green">324</FONT>            runConf.set(OozieClient.COORDINATOR_APP_PATH, appPath);<a name="line.324"></a>
+<FONT color="green">325</FONT>            // Normalize coordinator appPath here;<a name="line.325"></a>
+<FONT color="green">326</FONT>            try {<a name="line.326"></a>
+<FONT color="green">327</FONT>                JobUtils.normalizeAppPath(runConf.get(OozieClient.USER_NAME), runConf.get(OozieClient.GROUP_NAME), runConf);<a name="line.327"></a>
+<FONT color="green">328</FONT>            }<a name="line.328"></a>
+<FONT color="green">329</FONT>            catch (IOException e) {<a name="line.329"></a>
+<FONT color="green">330</FONT>                throw new CommandException(ErrorCode.E1001, runConf.get(OozieClient.COORDINATOR_APP_PATH));<a name="line.330"></a>
+<FONT color="green">331</FONT>            }<a name="line.331"></a>
+<FONT color="green">332</FONT>            return runConf;<a name="line.332"></a>
+<FONT color="green">333</FONT>        }<a name="line.333"></a>
+<FONT color="green">334</FONT>    <a name="line.334"></a>
+<FONT color="green">335</FONT>        /* (non-Javadoc)<a name="line.335"></a>
+<FONT color="green">336</FONT>         * @see org.apache.oozie.command.TransitionXCommand#getJob()<a name="line.336"></a>
+<FONT color="green">337</FONT>         */<a name="line.337"></a>
+<FONT color="green">338</FONT>        @Override<a name="line.338"></a>
+<FONT color="green">339</FONT>        public Job getJob() {<a name="line.339"></a>
+<FONT color="green">340</FONT>            return bundleJob;<a name="line.340"></a>
+<FONT color="green">341</FONT>        }<a name="line.341"></a>
+<FONT color="green">342</FONT>    <a name="line.342"></a>
+<FONT color="green">343</FONT>        /* (non-Javadoc)<a name="line.343"></a>
+<FONT color="green">344</FONT>         * @see org.apache.oozie.command.TransitionXCommand#updateJob()<a name="line.344"></a>
+<FONT color="green">345</FONT>         */<a name="line.345"></a>
+<FONT color="green">346</FONT>        @Override<a name="line.346"></a>
+<FONT color="green">347</FONT>        public void updateJob() throws CommandException {<a name="line.347"></a>
+<FONT color="green">348</FONT>            try {<a name="line.348"></a>
+<FONT color="green">349</FONT>                bundleJob.setPending();<a name="line.349"></a>
+<FONT color="green">350</FONT>                jpaService.execute(new BundleJobUpdateJPAExecutor(bundleJob));<a name="line.350"></a>
+<FONT color="green">351</FONT>            }<a name="line.351"></a>
+<FONT color="green">352</FONT>            catch (JPAExecutorException je) {<a name="line.352"></a>
+<FONT color="green">353</FONT>                throw new CommandException(je);<a name="line.353"></a>
+<FONT color="green">354</FONT>            }<a name="line.354"></a>
+<FONT color="green">355</FONT>        }<a name="line.355"></a>
+<FONT color="green">356</FONT>    }<a name="line.356"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

@@ -1,0 +1,309 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright (c) 2010 Yahoo! Inc. All rights reserved.<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Licensed under the Apache License, Version 2.0 (the "License");<a name="line.3"></a>
+<FONT color="green">004</FONT>     * you may not use this file except in compliance with the License.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * You may obtain a copy of the License at<a name="line.5"></a>
+<FONT color="green">006</FONT>     *<a name="line.6"></a>
+<FONT color="green">007</FONT>     *   http://www.apache.org/licenses/LICENSE-2.0<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *  Unless required by applicable law or agreed to in writing, software<a name="line.9"></a>
+<FONT color="green">010</FONT>     *  distributed under the License is distributed on an "AS IS" BASIS,<a name="line.10"></a>
+<FONT color="green">011</FONT>     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.11"></a>
+<FONT color="green">012</FONT>     *  See the License for the specific language governing permissions and<a name="line.12"></a>
+<FONT color="green">013</FONT>     *  limitations under the License. See accompanying LICENSE file.<a name="line.13"></a>
+<FONT color="green">014</FONT>     */<a name="line.14"></a>
+<FONT color="green">015</FONT>    package org.apache.oozie;<a name="line.15"></a>
+<FONT color="green">016</FONT>    <a name="line.16"></a>
+<FONT color="green">017</FONT>    import org.apache.oozie.util.XLog;<a name="line.17"></a>
+<FONT color="green">018</FONT>    <a name="line.18"></a>
+<FONT color="green">019</FONT>    public enum ErrorCode {<a name="line.19"></a>
+<FONT color="green">020</FONT>        E0000(XLog.STD, "System property 'oozie.home.dir' not defined"),<a name="line.20"></a>
+<FONT color="green">021</FONT>        E0001(XLog.OPS, "Could not create runtime directory, {0}"),<a name="line.21"></a>
+<FONT color="green">022</FONT>        E0002(XLog.STD, "System is in safe mode"),<a name="line.22"></a>
+<FONT color="green">023</FONT>        E0003(XLog.OPS, "Oozie home directory must be an absolute path [{0}]"),<a name="line.23"></a>
+<FONT color="green">024</FONT>        E0004(XLog.OPS, "Oozie home directory does not exist [{0}]"),<a name="line.24"></a>
+<FONT color="green">025</FONT>    <a name="line.25"></a>
+<FONT color="green">026</FONT>        E0010(XLog.OPS, "Could not initialize log service, {0}"),<a name="line.26"></a>
+<FONT color="green">027</FONT>        E0011(XLog.OPS, "Log4j file must be a file name [{0}]"),<a name="line.27"></a>
+<FONT color="green">028</FONT>        E0012(XLog.OPS, "Log4j file must be a '.properties' file [{0}]"),<a name="line.28"></a>
+<FONT color="green">029</FONT>        E0013(XLog.OPS, "Log4j file [{0}] not found in configuration dir [{1}] neither in classpath"),<a name="line.29"></a>
+<FONT color="green">030</FONT>    <a name="line.30"></a>
+<FONT color="green">031</FONT>        E0020(XLog.OPS, "Environment variable {0} not defined"),<a name="line.31"></a>
+<FONT color="green">032</FONT>        E0022(XLog.OPS, "Configuration file must be a file name [{0}]"),<a name="line.32"></a>
+<FONT color="green">033</FONT>        E0023(XLog.OPS, "Default configuration file [{0}] not found in classpath"),<a name="line.33"></a>
+<FONT color="green">034</FONT>        E0024(XLog.OPS, "Oozie configuration directory does not exist [{0}]"),<a name="line.34"></a>
+<FONT color="green">035</FONT>        E0025(XLog.OPS, "Configuration service internal error, it should never happen, {0}"),<a name="line.35"></a>
+<FONT color="green">036</FONT>        E0026(XLog.OPS, "Missing required configuration property [{0}]"),<a name="line.36"></a>
+<FONT color="green">037</FONT>    <a name="line.37"></a>
+<FONT color="green">038</FONT>        E0100(XLog.OPS, "Could not initialize service [{0}], {1}"),<a name="line.38"></a>
+<FONT color="green">039</FONT>        E0110(XLog.OPS, "Could not parse or validate EL definition [{0}], {1}"),<a name="line.39"></a>
+<FONT color="green">040</FONT>        E0111(XLog.OPS, "class#method not found [{0}#{1}]"),<a name="line.40"></a>
+<FONT color="green">041</FONT>        E0112(XLog.OPS, "class#method does not have PUBLIC or STATIC modifier [{0}#{1}]"),<a name="line.41"></a>
+<FONT color="green">042</FONT>        E0113(XLog.OPS, "class not found [{0}]"),<a name="line.42"></a>
+<FONT color="green">043</FONT>        E0114(XLog.OPS, "class#constant does not have PUBLIC or STATIC modifier [{0}#{1}]"),<a name="line.43"></a>
+<FONT color="green">044</FONT>        E0115(XLog.OPS, "class#constant not found"),<a name="line.44"></a>
+<FONT color="green">045</FONT>        E0116(XLog.OPS, "class#constant does not have PUBLIC or STATIC modifier [{0}#{1}]"),<a name="line.45"></a>
+<FONT color="green">046</FONT>        E0120(XLog.OPS, "UUID, invalid generator type [{0}]"),<a name="line.46"></a>
+<FONT color="green">047</FONT>        E0130(XLog.OPS, "Could not parse workflow schemas file/s, {0}"),<a name="line.47"></a>
+<FONT color="green">048</FONT>        E0131(XLog.OPS, "Could not read workflow schemas file/s, {0}"),<a name="line.48"></a>
+<FONT color="green">049</FONT>        E0140(XLog.OPS, "Could not access database, {0}"),<a name="line.49"></a>
+<FONT color="green">050</FONT>        E0141(XLog.OPS, "Could not create DataSource connection pool, {0}"),<a name="line.50"></a>
+<FONT color="green">051</FONT>        E0150(XLog.OPS, "Actionexecutor type already registered [{0}]"),<a name="line.51"></a>
+<FONT color="green">052</FONT>        E0160(XLog.OPS, "Could not read admin users file [{0}], {1}"),<a name="line.52"></a>
+<FONT color="green">053</FONT>    <a name="line.53"></a>
+<FONT color="green">054</FONT>        E0300(XLog.STD, "Invalid content-type [{0}]"),<a name="line.54"></a>
+<FONT color="green">055</FONT>        E0301(XLog.STD, "Invalid resource [{0}]"),<a name="line.55"></a>
+<FONT color="green">056</FONT>        E0302(XLog.STD, "Invalid parameter [{0}]"),<a name="line.56"></a>
+<FONT color="green">057</FONT>        E0303(XLog.STD, "Invalid parameter value, [{0}] = [{1}]"),<a name="line.57"></a>
+<FONT color="green">058</FONT>        E0304(XLog.STD, "Invalid parameter type, parameter [{0}] expected type [{1}]"),<a name="line.58"></a>
+<FONT color="green">059</FONT>        E0305(XLog.STD, "Missing parameter [{0}]"),<a name="line.59"></a>
+<FONT color="green">060</FONT>        E0306(XLog.STD, "Invalid parameter"),<a name="line.60"></a>
+<FONT color="green">061</FONT>        E0307(XLog.STD, "Runtime error [{0}]"),<a name="line.61"></a>
+<FONT color="green">062</FONT>    <a name="line.62"></a>
+<FONT color="green">063</FONT>    <a name="line.63"></a>
+<FONT color="green">064</FONT>        E0400(XLog.STD, "User mismatch, request user [{0}] configuration user [{1}]"),<a name="line.64"></a>
+<FONT color="green">065</FONT>        E0401(XLog.STD, "Missing configuration property [{0}]"),<a name="line.65"></a>
+<FONT color="green">066</FONT>        E0402(XLog.STD, "Invalid callback ID [{0}]"),<a name="line.66"></a>
+<FONT color="green">067</FONT>        E0403(XLog.STD, "Invalid callback data, {0}"),<a name="line.67"></a>
+<FONT color="green">068</FONT>        E0404(XLog.STD, "Only one of the properties are allowed [{0}]"),<a name="line.68"></a>
+<FONT color="green">069</FONT>    <a name="line.69"></a>
+<FONT color="green">070</FONT>        E0420(XLog.STD, "Invalid jobs filter [{0}], {1}"),<a name="line.70"></a>
+<FONT color="green">071</FONT>    <a name="line.71"></a>
+<FONT color="green">072</FONT>        E0500(XLog.OPS, "Not authorized, {0}"),<a name="line.72"></a>
+<FONT color="green">073</FONT>        E0501(XLog.OPS, "Could not perform authorization operation, {0}"),<a name="line.73"></a>
+<FONT color="green">074</FONT>        E0502(XLog.OPS, "User [{0}] does not belong to group [{1}]"),<a name="line.74"></a>
+<FONT color="green">075</FONT>        E0503(XLog.OPS, "User [{0}] does not have admin privileges"),<a name="line.75"></a>
+<FONT color="green">076</FONT>        E0504(XLog.OPS, "App directory [{0}] does not exist"),<a name="line.76"></a>
+<FONT color="green">077</FONT>        E0505(XLog.OPS, "App definition [{0}] does not exist"),<a name="line.77"></a>
+<FONT color="green">078</FONT>        E0506(XLog.OPS, "App definition [{0}] is not a file"),<a name="line.78"></a>
+<FONT color="green">079</FONT>        E0507(XLog.OPS, "Could not access to [{0}], {1}"),<a name="line.79"></a>
+<FONT color="green">080</FONT>        E0508(XLog.OPS, "User [{0}] not authorized for WF job [{1}]"),<a name="line.80"></a>
+<FONT color="green">081</FONT>        E0509(XLog.OPS, "User [{0}] not authorized for Coord job [{1}]"),<a name="line.81"></a>
+<FONT color="green">082</FONT>        E0510(XLog.OPS, "Unable to get Credential [{0}]"),<a name="line.82"></a>
+<FONT color="green">083</FONT>    <a name="line.83"></a>
+<FONT color="green">084</FONT>        E0600(XLog.OPS, "Could not get connection, {0}"),<a name="line.84"></a>
+<FONT color="green">085</FONT>        E0601(XLog.OPS, "Could not close connection, {0}"),<a name="line.85"></a>
+<FONT color="green">086</FONT>        E0602(XLog.OPS, "Could not commit connection, {0}"),<a name="line.86"></a>
+<FONT color="green">087</FONT>        E0603(XLog.OPS, "SQL error in operation [{0}], {1}"),<a name="line.87"></a>
+<FONT color="green">088</FONT>        E0604(XLog.STD, "Job does not exist [{0}]"),<a name="line.88"></a>
+<FONT color="green">089</FONT>        E0605(XLog.STD, "Action does not exist [{0}]"),<a name="line.89"></a>
+<FONT color="green">090</FONT>        E0606(XLog.STD, "Could not get lock [{0}], timed out [{1}]ms"),<a name="line.90"></a>
+<FONT color="green">091</FONT>        E0607(XLog.OPS, "Other error in operation [{0}], {1}"),<a name="line.91"></a>
+<FONT color="green">092</FONT>        E0608(XLog.OPS, "JDBC setup error [{0}], {1}"),<a name="line.92"></a>
+<FONT color="green">093</FONT>        E0609(XLog.OPS, "Missing [{0}] ORM file [{1}]"),<a name="line.93"></a>
+<FONT color="green">094</FONT>        E0610(XLog.OPS, "Missing JPAService, StoreService cannot run without a JPAService"),<a name="line.94"></a>
+<FONT color="green">095</FONT>    <a name="line.95"></a>
+<FONT color="green">096</FONT>        E0700(XLog.STD, "XML error, {0}"),<a name="line.96"></a>
+<FONT color="green">097</FONT>        E0701(XLog.STD, "XML schema error, {0}"),<a name="line.97"></a>
+<FONT color="green">098</FONT>        E0702(XLog.STD, "IO error, {0}"),<a name="line.98"></a>
+<FONT color="green">099</FONT>        E0703(XLog.STD, "Invalid workflow element [{0}]"),<a name="line.99"></a>
+<FONT color="green">100</FONT>        E0704(XLog.STD, "Definition already complete, application [{0}]"),<a name="line.100"></a>
+<FONT color="green">101</FONT>        E0705(XLog.STD, "Nnode already defined, node [{0}]"),<a name="line.101"></a>
+<FONT color="green">102</FONT>        E0706(XLog.STD, "Node cannot transition to itself node [{0}]"),<a name="line.102"></a>
+<FONT color="green">103</FONT>        E0707(XLog.STD, "Loop detected at parsing, node [{0}]"),<a name="line.103"></a>
+<FONT color="green">104</FONT>        E0708(XLog.STD, "Invalid transition, node [{0}] transition [{1}]"),<a name="line.104"></a>
+<FONT color="green">105</FONT>        E0709(XLog.STD, "Loop detected at runtime, node [{0}]"),<a name="line.105"></a>
+<FONT color="green">106</FONT>        E0710(XLog.STD, "Could not read the workflow definition, {0}"),<a name="line.106"></a>
+<FONT color="green">107</FONT>        E0711(XLog.STD, "Invalid application URI [{0}], {1}"),<a name="line.107"></a>
+<FONT color="green">108</FONT>        E0712(XLog.STD, "Could not create lib paths list for application [{0}], {1}"),<a name="line.108"></a>
+<FONT color="green">109</FONT>        E0713(XLog.OPS, "SQL error, {0}"),<a name="line.109"></a>
+<FONT color="green">110</FONT>        E0714(XLog.OPS, "Workflow lib error, {0}"),<a name="line.110"></a>
+<FONT color="green">111</FONT>        E0715(XLog.OPS, "Invalid signal value for the start node, signal [{0}]"),<a name="line.111"></a>
+<FONT color="green">112</FONT>        E0716(XLog.OPS, "Workflow not running"),<a name="line.112"></a>
+<FONT color="green">113</FONT>        E0717(XLog.OPS, "Workflow not suspended"),<a name="line.113"></a>
+<FONT color="green">114</FONT>        E0718(XLog.OPS, "Workflow already completed"),<a name="line.114"></a>
+<FONT color="green">115</FONT>        E0719(XLog.OPS, "Job already started"),<a name="line.115"></a>
+<FONT color="green">116</FONT>        E0720(XLog.OPS, "Fork/join mismatch, node [{0}]"),<a name="line.116"></a>
+<FONT color="green">117</FONT>        E0721(XLog.OPS, "Invalid signal/transition, decision node [{0}] signal [{1}]"),<a name="line.117"></a>
+<FONT color="green">118</FONT>        E0722(XLog.OPS, "Action signals can only be OK or ERROR, action node [{0}]"),<a name="line.118"></a>
+<FONT color="green">119</FONT>        E0723(XLog.STD, "Unsupported action type, node [{0}] type [{1}]"),<a name="line.119"></a>
+<FONT color="green">120</FONT>        E0724(XLog.STD, "Invalid node name, {0}"),<a name="line.120"></a>
+<FONT color="green">121</FONT>        E0725(XLog.STD, "Workflow instance can not be killed, {0}"),<a name="line.121"></a>
+<FONT color="green">122</FONT>        E0726(XLog.STD, "Workflow action can not be killed, {0}"),<a name="line.122"></a>
+<FONT color="green">123</FONT>        E0727(XLog.STD, "Workflow Job can not be suspended as its not in running state, {0}, Status: {1}"),<a name="line.123"></a>
+<FONT color="green">124</FONT>        E0728(XLog.STD, "Coordinator Job can not be suspended as job finished or failed or killed, id : {0}, status : {1}"),<a name="line.124"></a>
+<FONT color="green">125</FONT>    <a name="line.125"></a>
+<FONT color="green">126</FONT>        E0800(XLog.STD, "Action it is not running its in [{1}] state, action [{0}]"),<a name="line.126"></a>
+<FONT color="green">127</FONT>        E0801(XLog.STD, "Workflow already running, workflow [{0}]"),<a name="line.127"></a>
+<FONT color="green">128</FONT>        E0802(XLog.STD, "Invalid action type [{0}]"),<a name="line.128"></a>
+<FONT color="green">129</FONT>        E0803(XLog.STD, "IO error, {0}"),<a name="line.129"></a>
+<FONT color="green">130</FONT>        E0804(XLog.STD, "Disallowed default property [{0}]"),<a name="line.130"></a>
+<FONT color="green">131</FONT>        E0805(XLog.STD, "Workflow job not completed, status [{0}]"),<a name="line.131"></a>
+<FONT color="green">132</FONT>        E0806(XLog.STD, "Action did not complete in previous run, action [{0}]"),<a name="line.132"></a>
+<FONT color="green">133</FONT>        E0807(XLog.STD, "Some skip actions were not executed [{0}]"),<a name="line.133"></a>
+<FONT color="green">134</FONT>        E0808(XLog.STD, "Disallowed user property [{0}]"),<a name="line.134"></a>
+<FONT color="green">135</FONT>        E0809(XLog.STD, "Workflow action is not eligible to start [{0}]"),<a name="line.135"></a>
+<FONT color="green">136</FONT>        E0810(XLog.STD, "Job state is not [{0}]. Skipping ActionStart Execution"),<a name="line.136"></a>
+<FONT color="green">137</FONT>        E0811(XLog.STD, "Job state is not [{0}]. Skipping ActionEnd Execution"),<a name="line.137"></a>
+<FONT color="green">138</FONT>        E0812(XLog.STD, "Action pending=[{0}], status=[{1}]. Skipping ActionEnd Execution"),<a name="line.138"></a>
+<FONT color="green">139</FONT>        E0813(XLog.STD, "Workflow not RUNNING, current status [{0}]"),<a name="line.139"></a>
+<FONT color="green">140</FONT>        E0814(XLog.STD, "SignalCommand for action id=[{0}] is already processed, status=[{1}], , pending=[{2}]"),<a name="line.140"></a>
+<FONT color="green">141</FONT>        E0815(XLog.STD, "Action pending=[{0}], status=[{1}]. Skipping ActionCheck Execution"),<a name="line.141"></a>
+<FONT color="green">142</FONT>        E0816(XLog.STD, "Action pending=[{0}], status=[{1}]. Skipping ActionStart Execution"),<a name="line.142"></a>
+<FONT color="green">143</FONT>        E0817(XLog.STD, "The wf action [{0}] has been udated recently. Ignoring ActionCheck."),<a name="line.143"></a>
+<FONT color="green">144</FONT>        E0818(XLog.STD, "Action [{0}] status is running but WF Job [{1}] status is [{2}]. Expected status is RUNNING."),<a name="line.144"></a>
+<FONT color="green">145</FONT>        E0819(XLog.STD, "Unable to delete the temp dir of job WF Job [{1}]."),<a name="line.145"></a>
+<FONT color="green">146</FONT>    <a name="line.146"></a>
+<FONT color="green">147</FONT>        E0900(XLog.OPS, "Jobtracker [{0}] not allowed, not in Oozie's whitelist"),<a name="line.147"></a>
+<FONT color="green">148</FONT>        E0901(XLog.OPS, "Namenode [{0}] not allowed, not in Oozie's whitelist"),<a name="line.148"></a>
+<FONT color="green">149</FONT>        E0902(XLog.OPS, "Exception occured: [{0}]"),<a name="line.149"></a>
+<FONT color="green">150</FONT>    <a name="line.150"></a>
+<FONT color="green">151</FONT>        E1001(XLog.STD, "Could not read the coordinator job definition, {0}"),<a name="line.151"></a>
+<FONT color="green">152</FONT>        E1002(XLog.STD, "Invalid coordinator application URI [{0}], {1}"),<a name="line.152"></a>
+<FONT color="green">153</FONT>        E1003(XLog.STD, "Invalid coordinator application attributes [{0}], {1}"),<a name="line.153"></a>
+<FONT color="green">154</FONT>        E1004(XLog.STD, "Expression language evaluation error [{0}], {1}"),<a name="line.154"></a>
+<FONT color="green">155</FONT>        E1005(XLog.STD, "Could not read the coordinator job configuration read from DB, {0}"),<a name="line.155"></a>
+<FONT color="green">156</FONT>        E1006(XLog.STD, "Invalid coordinator application [{0}], {1}"),<a name="line.156"></a>
+<FONT color="green">157</FONT>        E1007(XLog.STD, "Unable to add record to SLA table. [{0}], {1}"),<a name="line.157"></a>
+<FONT color="green">158</FONT>        E1008(XLog.STD, "Not implemented. [{0}]"),<a name="line.158"></a>
+<FONT color="green">159</FONT>        E1009(XLog.STD, "Unable to parse XML response. [{0}]"),<a name="line.159"></a>
+<FONT color="green">160</FONT>        E1010(XLog.STD, "Invalid data in coordinator xml. [{0}]"),<a name="line.160"></a>
+<FONT color="green">161</FONT>        E1011(XLog.STD, "Cannot update coordinator job [{0}], {1}"),<a name="line.161"></a>
+<FONT color="green">162</FONT>        E1012(XLog.STD, "Coord Job Materialization Error: {0}"),<a name="line.162"></a>
+<FONT color="green">163</FONT>        E1013(XLog.STD, "Coord Job Recovery Error: {0}"),<a name="line.163"></a>
+<FONT color="green">164</FONT>        E1014(XLog.STD, "Coord job change command not supported"),<a name="line.164"></a>
+<FONT color="green">165</FONT>        E1015(XLog.STD, "Invalid coordinator job change value {0}, {1}"),<a name="line.165"></a>
+<FONT color="green">166</FONT>        E1016(XLog.STD, "Cannot change a killed coordinator job"),<a name="line.166"></a>
+<FONT color="green">167</FONT>        E1017(XLog.STD, "Cannot change a workflow job"),<a name="line.167"></a>
+<FONT color="green">168</FONT>        E1018(XLog.STD, "Coord Job Rerun Error: {0}"),<a name="line.168"></a>
+<FONT color="green">169</FONT>        E1019(XLog.STD, "Could not submit coord job, [{0}]"),<a name="line.169"></a>
+<FONT color="green">170</FONT>        E1020(XLog.STD, "Could not kill coord job, this job either finished successfully or does not exist , [{0}]"),<a name="line.170"></a>
+<FONT color="green">171</FONT>    <a name="line.171"></a>
+<FONT color="green">172</FONT>        E1100(XLog.STD, "Command precondition does not hold before execution"),<a name="line.172"></a>
+<FONT color="green">173</FONT>    <a name="line.173"></a>
+<FONT color="green">174</FONT>        E1101(XLog.STD, "SLA Nominal time is required."),<a name="line.174"></a>
+<FONT color="green">175</FONT>        E1102(XLog.STD, "SLA should-start can't be empty."),<a name="line.175"></a>
+<FONT color="green">176</FONT>    <a name="line.176"></a>
+<FONT color="green">177</FONT>        E1201(XLog.STD, "State [{0}] is invalid for job [{1}]."),<a name="line.177"></a>
+<FONT color="green">178</FONT>    <a name="line.178"></a>
+<FONT color="green">179</FONT>        E1301(XLog.STD, "Could not read the bundle job definition, [{0}]"),<a name="line.179"></a>
+<FONT color="green">180</FONT>        E1302(XLog.STD, "Invalid bundle application URI [{0}], {1}"),<a name="line.180"></a>
+<FONT color="green">181</FONT>        E1303(XLog.STD, "Invalid bundle application attributes [{0}], {1}"),<a name="line.181"></a>
+<FONT color="green">182</FONT>        E1304(XLog.STD, "Duplicate bundle application coordinator name [{0}]"),<a name="line.182"></a>
+<FONT color="green">183</FONT>        E1305(XLog.STD, "Empty bundle application coordinator name."),<a name="line.183"></a>
+<FONT color="green">184</FONT>        E1306(XLog.STD, "Could not read the bundle job configuration, [{0}]"),<a name="line.184"></a>
+<FONT color="green">185</FONT>        E1307(XLog.STD, "Could not read the bundle coord job configuration, [{0}]"),<a name="line.185"></a>
+<FONT color="green">186</FONT>        E1308(XLog.STD, "Bundle Action Status  [{0}] is not matching with coordinator previous status [{1}]."),<a name="line.186"></a>
+<FONT color="green">187</FONT>        E1309(XLog.STD, "Bundle Action for bundle ID  [{0}] and Coordinator [{1}] could not be update by BundleStatusUpdateXCommand"),<a name="line.187"></a>
+<FONT color="green">188</FONT>        E1310(XLog.STD, "Bundle Job submission Error: [{0}]"),<a name="line.188"></a>
+<FONT color="green">189</FONT>        E1311(XLog.STD, "Bundle Action for bundle ID  [{0}] could not be get."),<a name="line.189"></a>
+<FONT color="green">190</FONT>        E1312(XLog.STD, "Bundle Job can not be suspended as job finished or failed or killed, id : {0}, status : {1}"),<a name="line.190"></a>
+<FONT color="green">191</FONT>        E1313(XLog.STD, "Bundle Job can not be changed as job finished, {0}, Status: {1}"),<a name="line.191"></a>
+<FONT color="green">192</FONT>        E1314(XLog.STD, "Bundle Job can not be changed as job does not exist, {0}"),<a name="line.192"></a>
+<FONT color="green">193</FONT>        E1315(XLog.STD, "Bundle job can not be paused, {0}"),<a name="line.193"></a>
+<FONT color="green">194</FONT>        E1316(XLog.STD, "Bundle job can not be unpaused, {0}"),<a name="line.194"></a>
+<FONT color="green">195</FONT>        E1317(XLog.STD, "Invalid bundle job change value {0}, {1}"),<a name="line.195"></a>
+<FONT color="green">196</FONT>        E1318(XLog.STD, "No coord jobs for the bundle=[{0}], fail the bundle"),<a name="line.196"></a>
+<FONT color="green">197</FONT>    <a name="line.197"></a>
+<FONT color="green">198</FONT>    <a name="line.198"></a>
+<FONT color="green">199</FONT>        ETEST(XLog.STD, "THIS SHOULD HAPPEN ONLY IN TESTING, invalid job id [{0}]"),;<a name="line.199"></a>
+<FONT color="green">200</FONT>    <a name="line.200"></a>
+<FONT color="green">201</FONT>        private String template;<a name="line.201"></a>
+<FONT color="green">202</FONT>        private int logMask;<a name="line.202"></a>
+<FONT color="green">203</FONT>    <a name="line.203"></a>
+<FONT color="green">204</FONT>        /**<a name="line.204"></a>
+<FONT color="green">205</FONT>         * Create an error code.<a name="line.205"></a>
+<FONT color="green">206</FONT>         *<a name="line.206"></a>
+<FONT color="green">207</FONT>         * @param template template for the exception message.<a name="line.207"></a>
+<FONT color="green">208</FONT>         * @param logMask log mask for the exception.<a name="line.208"></a>
+<FONT color="green">209</FONT>         */<a name="line.209"></a>
+<FONT color="green">210</FONT>        private ErrorCode(int logMask, String template) {<a name="line.210"></a>
+<FONT color="green">211</FONT>            this.logMask = logMask;<a name="line.211"></a>
+<FONT color="green">212</FONT>            this.template = template;<a name="line.212"></a>
+<FONT color="green">213</FONT>        }<a name="line.213"></a>
+<FONT color="green">214</FONT>    <a name="line.214"></a>
+<FONT color="green">215</FONT>        /**<a name="line.215"></a>
+<FONT color="green">216</FONT>         * Return the message (StringFormat) template for the error code.<a name="line.216"></a>
+<FONT color="green">217</FONT>         *<a name="line.217"></a>
+<FONT color="green">218</FONT>         * @return message template.<a name="line.218"></a>
+<FONT color="green">219</FONT>         */<a name="line.219"></a>
+<FONT color="green">220</FONT>        public String getTemplate() {<a name="line.220"></a>
+<FONT color="green">221</FONT>            return template;<a name="line.221"></a>
+<FONT color="green">222</FONT>        }<a name="line.222"></a>
+<FONT color="green">223</FONT>    <a name="line.223"></a>
+<FONT color="green">224</FONT>        /**<a name="line.224"></a>
+<FONT color="green">225</FONT>         * Return the log mask (to which log the exception should be logged) of the error.<a name="line.225"></a>
+<FONT color="green">226</FONT>         *<a name="line.226"></a>
+<FONT color="green">227</FONT>         * @return error log mask.<a name="line.227"></a>
+<FONT color="green">228</FONT>         */<a name="line.228"></a>
+<FONT color="green">229</FONT>        public int getLogMask() {<a name="line.229"></a>
+<FONT color="green">230</FONT>            return logMask;<a name="line.230"></a>
+<FONT color="green">231</FONT>        }<a name="line.231"></a>
+<FONT color="green">232</FONT>    <a name="line.232"></a>
+<FONT color="green">233</FONT>        /**<a name="line.233"></a>
+<FONT color="green">234</FONT>         * Return a templatized error message for the error code.<a name="line.234"></a>
+<FONT color="green">235</FONT>         *<a name="line.235"></a>
+<FONT color="green">236</FONT>         * @param args the parameters for the templatized message.<a name="line.236"></a>
+<FONT color="green">237</FONT>         * @return error message.<a name="line.237"></a>
+<FONT color="green">238</FONT>         */<a name="line.238"></a>
+<FONT color="green">239</FONT>        public String format(Object... args) {<a name="line.239"></a>
+<FONT color="green">240</FONT>            return XLog.format("{0}: {1}", toString(), XLog.format(getTemplate(), args));<a name="line.240"></a>
+<FONT color="green">241</FONT>        }<a name="line.241"></a>
+<FONT color="green">242</FONT>    <a name="line.242"></a>
+<FONT color="green">243</FONT>    }<a name="line.243"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

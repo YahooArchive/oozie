@@ -1,0 +1,4 @@
+org.apache.oozie.client
+org.apache.oozie.client.rest
+org.apache.oozie.cli
+org.apache.oozie
