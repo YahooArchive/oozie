@@ -262,12 +262,12 @@ public class StatusTransitService implements Service {
 
                     if (checkCoordTerminalStatus(coordActionStatus, coordActions, coordStatus)) {
                         LOG.info("Coord job [" + jobId + "] Status set to " + coordStatus[0].toString());
-                        updateCoordJob(coordActionStatus,coordActions,coordJob, coordStatus[0]);
+                        updateCoordJob(coordActionStatus, coordActions, coordJob, coordStatus[0]);
                         continue;
                     }
                     else if (checkCoordSuspendStatus(coordActionStatus, coordActions, coordStatus)) {
                         LOG.info("Coord job [" + jobId + "] Status set to " + coordStatus[0].toString());
-                        updateCoordJob(coordActionStatus,coordActions,coordJob, coordStatus[0]);
+                        updateCoordJob(coordActionStatus, coordActions, coordJob, coordStatus[0]);
                         continue;
                     }
                 }
@@ -342,23 +342,18 @@ public class StatusTransitService implements Service {
             }
 
             if (coordActions.size() == (totalValuesSucceed + totalValuesFailed + totalValuesKilled + totalValuesTimeOut)) {
-                // If all the bundle actions are succeeded then bundle job should be succeeded.
+                // If all the coordinator actions are succeeded then coordinator job should be succeeded.
                 if (coordActions.size() == totalValuesSucceed) {
                     coordStatus[0] = Job.Status.SUCCEEDED;
                     ret = true;
                 }
                 else if (coordActions.size() == totalValuesKilled) {
-                    // If all the bundle actions are KILLED then bundle job should be KILLED.
+                    // If all the coordinator actions are KILLED then coordinator job should be KILLED.
                     coordStatus[0] = Job.Status.KILLED;
                     ret = true;
                 }
                 else if (coordActions.size() == totalValuesFailed) {
-                    // If all the bundle actions are FAILED then bundle job should be FAILED.
-                    coordStatus[0] = Job.Status.FAILED;
-                    ret = true;
-                }
-                else if (coordActions.size() == totalValuesTimeOut) {
-                    // If all the bundle actions are TIMEOUT then bundle job should be FAILED.
+                    // If all the coordinator actions are FAILED then coordinator job should be FAILED.
                     coordStatus[0] = Job.Status.FAILED;
                     ret = true;
                 }
