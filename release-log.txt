@@ -1,3 +1,7 @@
+-- Oozie 3.0.1 release
+
+OOZIE-48 fix log messages when message logged at early stages
+
 -- Oozie 3.0.0 release
 
 GH-0069 Create a coordinator bundle.
