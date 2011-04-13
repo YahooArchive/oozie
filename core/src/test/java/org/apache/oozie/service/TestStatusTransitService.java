@@ -215,7 +215,7 @@ public class TestStatusTransitService extends XDataTestCase {
     public void testCoordStatusTransitServiceSuspendedBottomUp() throws Exception {
         Date start = DateUtils.parseDateUTC("2009-02-01T01:00Z");
         Date end = DateUtils.parseDateUTC("2009-02-02T23:59Z");
-        CoordinatorJobBean job = addRecordToCoordJobTable(CoordinatorJob.Status.RUNNING, start, end, true, false, 3);
+        CoordinatorJobBean job = addRecordToCoordJobTable(CoordinatorJob.Status.RUNNING, start, end, true, true, 3);
         addRecordToCoordActionTable(job.getId(), 1, CoordinatorAction.Status.SUSPENDED, "coord-action-get.xml");
         addRecordToCoordActionTable(job.getId(), 2, CoordinatorAction.Status.SUSPENDED, "coord-action-get.xml");
         addRecordToCoordActionTable(job.getId(), 3, CoordinatorAction.Status.SUSPENDED, "coord-action-get.xml");

@@ -264,7 +264,7 @@ public class StatusTransitService implements Service {
                         LOG.info("Coord job [" + jobId + "] Status set to " + coordStatus[0].toString());
                         updateCoordJob(coordActionStatus, coordActions, coordJob, coordStatus[0]);
                     }
-                    else if (checkCoordSuspendStatus(coordActionStatus, coordActions, coordStatus)) {
+                    else if (coordJob.isDoneMaterialization() && checkCoordSuspendStatus(coordActionStatus, coordActions, coordStatus)) {
                         LOG.info("Coord job [" + jobId + "] Status set to " + coordStatus[0].toString());
                         updateCoordJob(coordActionStatus, coordActions, coordJob, coordStatus[0]);
                     }
@@ -272,6 +272,7 @@ public class StatusTransitService implements Service {
                         LOG.info("Coord job [" + jobId + "] Status set to " + coordStatus[0].toString());
                         updateCoordJob(coordActionStatus, coordActions, coordJob, coordStatus[0]);
                     }
+                    // checking pending flag for job when user killed or suspended the job
                     else {
                         checkCoordPending(coordActionStatus, coordActions, coordJob, true);
                     }
