@@ -92,9 +92,9 @@ public class BundleJobChangeXCommand extends XCommand<Void> {
      */
     private void checkEndTime(Date newEndTime) throws CommandException {
         // New endTime has to be a non-past start time.
-        Date startTime = bundleJob.getStartTime();
-        if (newEndTime.before(startTime)) {
-            throw new CommandException(ErrorCode.E1317, newEndTime, "must be greater then start time");
+        Date startTime = bundleJob.getKickoffTime();
+        if (startTime != null && newEndTime.before(startTime)) {
+            throw new CommandException(ErrorCode.E1317, newEndTime, "must be greater then kickoff time");
         }
     }
 
@@ -254,14 +254,14 @@ public class BundleJobChangeXCommand extends XCommand<Void> {
             if (bundleJob.getStatus() == Job.Status.SUCCEEDED || bundleJob.getStatus() == Job.Status.FAILED
                     || bundleJob.getStatus() == Job.Status.KILLED || bundleJob.getStatus() == Job.Status.DONEWITHERROR
                     || bundleJob == null) {
-                LOG.info("BundleChangeCommand not succeeded - " + "job " + jobId + " finished, status is "
+                LOG.info("BundleChangeCommand not succeeded for changing pausetime- " + "job " + jobId + " finished, status is "
                         + bundleJob.getStatusStr());
                 throw new PreconditionException(ErrorCode.E1312, jobId, bundleJob.getStatus().toString());
             }
         }
         else if(isChangeEndTime){
             if (bundleJob.getStatus() == Job.Status.KILLED || bundleJob == null) {
-                LOG.info("BundleChangeCommand not succeeded - " + "job " + jobId + " finished, status is "
+                LOG.info("BundleChangeCommand not succeeded for changing endtime- " + "job " + jobId + " finished, status is "
                         + bundleJob.getStatusStr());
                 throw new PreconditionException(ErrorCode.E1312, jobId, bundleJob.getStatus().toString());
             }
