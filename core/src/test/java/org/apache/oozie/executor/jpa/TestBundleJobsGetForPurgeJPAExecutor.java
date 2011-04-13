@@ -16,6 +16,7 @@ package org.apache.oozie.executor.jpa;
 
 import java.util.Date;
 import java.util.List;
+
 import org.apache.oozie.BundleJobBean;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.service.JPAService;
@@ -50,7 +51,7 @@ public class TestBundleJobsGetForPurgeJPAExecutor extends XDataTestCase {
         this.addRecordToBundleJobTable(Job.Status.SUCCEEDED, DateUtils.parseDateUTC("2011-01-01T01:00Z"));
 
         _testBundleJobsForPurge(10, 1);
-        _testBundleJobsForPurge(100, 0);
+        _testBundleJobsForPurge(1000, 0);
 
         this.addRecordToBundleJobTable(Job.Status.SUCCEEDED, DateUtils.parseDateUTC("2011-01-02T01:00Z"));
         _testBundleJobsForPurge(10, 2);
