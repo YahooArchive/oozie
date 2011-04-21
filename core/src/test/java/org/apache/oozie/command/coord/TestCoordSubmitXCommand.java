@@ -28,7 +28,6 @@ import org.apache.oozie.command.CommandException;
 import org.apache.oozie.executor.jpa.CoordJobGetJPAExecutor;
 import org.apache.oozie.executor.jpa.JPAExecutorException;
 import org.apache.oozie.service.JPAService;
-import org.apache.oozie.service.SchemaService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.test.XDataTestCase;
 import org.apache.oozie.util.XConfiguration;
@@ -127,7 +126,7 @@ public class TestCoordSubmitXCommand extends XDataTestCase {
         if (job != null) {
             assertEquals("OOZIE-B", job.getBundleId());
             assertEquals("COORD-NAME", job.getAppName());
-            assertEquals(SchemaService.COORDINATOR_NAMESPACE_URI_2, job.getAppNamespace());
+            assertEquals("uri:oozie:coordinator:0.2", job.getAppNamespace());
         } else {
             fail();
         }

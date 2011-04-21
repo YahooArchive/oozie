@@ -322,9 +322,9 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
         try {
             Element coordXmlElement = XmlUtils.parseXml(xmlContent);
             Namespace ns = coordXmlElement.getNamespace();
-            if (bundleId != null && !ns.getURI().equals(SchemaService.COORDINATOR_NAMESPACE_URI_2)) {
-                throw new CoordinatorJobException(ErrorCode.E1319, "bundle app can only submit coordinator namespace = "
-                        + SchemaService.COORDINATOR_NAMESPACE_URI_2);
+            if (ns != null && bundleId != null && ns.getURI().equals(SchemaService.COORDINATOR_NAMESPACE_URI_1)) {
+                throw new CoordinatorJobException(ErrorCode.E1319, "bundle app can not submit coordinator namespace "
+                        + SchemaService.COORDINATOR_NAMESPACE_URI_1 + ", please use 0.2 or later");
             }
             if (ns != null) {
                 return ns.getURI();

@@ -48,8 +48,6 @@ public class SchemaService implements Service {
 
     public static final String COORDINATOR_NAMESPACE_URI_1 = "uri:oozie:coordinator:0.1";
 
-    public static final String COORDINATOR_NAMESPACE_URI_2 = "uri:oozie:coordinator:0.2";
-
     private Schema wfSchema;
 
     private Schema coordSchema;
