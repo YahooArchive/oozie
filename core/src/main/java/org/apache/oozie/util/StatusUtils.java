@@ -27,22 +27,27 @@ public class StatusUtils {
      * @return Job.Status This would be the new status based on the app version.
      */
     public static Job.Status getStatus(CoordinatorJobBean coordJob) {
-        Job.Status newStatus = coordJob.getStatus();
-        if (coordJob.getAppNamespace().equals(SchemaService.COORDINATOR_NAMESPACE_URI_1)) {
-            if (coordJob.getStatus() == Job.Status.DONEWITHERROR) {
-                newStatus = Job.Status.SUCCEEDED;
-            }
-            else if (coordJob.getStatus() == Job.Status.PAUSED) {
-                newStatus = Job.Status.RUNNING;
-            }
-            else if (coordJob.getStatus() == Job.Status.RUNNING && coordJob.isDoneMaterialization()) {
-                newStatus = Job.Status.SUCCEEDED;
-            }
-            else if (coordJob.getStatus() == Job.Status.PREPSUSPENDED) {
-                newStatus = Job.Status.SUSPENDED;
-            }
-            else if (coordJob.getStatus() == Job.Status.PREPPAUSED) {
-                newStatus = Job.Status.PREP;
+        Job.Status newStatus = null;
+        if (coordJob != null) {
+            newStatus = coordJob.getStatus();
+            if (coordJob.getAppNamespace() != null
+                    && coordJob.getAppNamespace().equals(SchemaService.COORDINATOR_NAMESPACE_URI_1)) {
+
+                if (coordJob.getStatus() == Job.Status.DONEWITHERROR) {
+                    newStatus = Job.Status.SUCCEEDED;
+                }
+                else if (coordJob.getStatus() == Job.Status.PAUSED) {
+                    newStatus = Job.Status.RUNNING;
+                }
+                else if (coordJob.getStatus() == Job.Status.RUNNING && coordJob.isDoneMaterialization()) {
+                    newStatus = Job.Status.SUCCEEDED;
+                }
+                else if (coordJob.getStatus() == Job.Status.PREPSUSPENDED) {
+                    newStatus = Job.Status.SUSPENDED;
+                }
+                else if (coordJob.getStatus() == Job.Status.PREPPAUSED) {
+                    newStatus = Job.Status.PREP;
+                }
             }
         }
         return newStatus;
