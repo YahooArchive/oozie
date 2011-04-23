@@ -1,5 +1,6 @@
 -- Oozie 3.0.1 release
 
+OOZIE-76 Add coordinator state backward compatibility for DONEWITHERROR and PAUSED
 OOZIE-77 add updatescripts for 3.0.0 to 3.0.1
 OOZIE-59 Adding util class for transforming the statuses based on app version
 OOZIE-62 client command error when bundle rerun with -action.
