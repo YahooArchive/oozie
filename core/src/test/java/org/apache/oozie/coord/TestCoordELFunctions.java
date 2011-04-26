@@ -15,20 +15,12 @@
 package org.apache.oozie.coord;
 
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-
-import javax.servlet.jsp.el.ELException;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.service.ELService;
-import org.apache.oozie.service.ServiceException;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.test.XTestCase;
 import org.apache.oozie.util.DateUtils;
-import org.apache.oozie.util.ELEvaluationException;
 import org.apache.oozie.util.ELEvaluator;
 
 public class TestCoordELFunctions extends XTestCase {
@@ -704,6 +696,30 @@ public class TestCoordELFunctions extends XTestCase {
         init("coord-job-submit-instances");
         String expr = "${coord:future(1, 10)}";
         assertEquals(expr, CoordELFunctions.evalAndWrap(eval, expr));
+    }
+
+    public void testFormatTime() throws Exception {
+        String expr1 = "${coord:formatTime(\"2009-09-08T23:59Z\", \"yyyy\")}";
+        String expr2 = "${coord:formatTime(\"2009-09-08T23:59Z\", \"yyyyMMdd_HHmmss\")}";
+        init("coord-action-create");
+        assertEquals("2009", CoordELFunctions.evalAndWrap(eval, expr1));
+        assertEquals("20090908_235900", CoordELFunctions.evalAndWrap(eval, expr2));
+        init("coord-action-create-inst");
+        assertEquals("2009", CoordELFunctions.evalAndWrap(eval, expr1));
+        assertEquals("20090908_235900", CoordELFunctions.evalAndWrap(eval, expr2));
+        init("coord-action-start");
+        assertEquals("2009", CoordELFunctions.evalAndWrap(eval, expr1));
+        assertEquals("20090908_235900", CoordELFunctions.evalAndWrap(eval, expr2));
+
+        String utcDate = "2009-09-08T23:59Z";
+        String expr3 = "${coord:formatTime(date, \"yyyy\")}";
+        String expr3_eval = "${coord:formatTime('" + utcDate + "' , " + "yyyy)}";
+        init("coord-job-submit-instances");
+        eval.setVariable("date", utcDate);
+        assertEquals(expr3_eval, CoordELFunctions.evalAndWrap(eval, expr3));
+        init("coord-job-submit-data");
+        eval.setVariable("date", utcDate);
+        assertEquals(expr3_eval, CoordELFunctions.evalAndWrap(eval, expr3));
     }
 
     public void testFuture() throws Exception {
