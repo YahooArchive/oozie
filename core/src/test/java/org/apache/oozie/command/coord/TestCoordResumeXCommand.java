@@ -18,6 +18,7 @@ import org.apache.oozie.CoordinatorJobBean;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.executor.jpa.CoordJobGetJPAExecutor;
 import org.apache.oozie.service.JPAService;
+import org.apache.oozie.service.SchemaService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.test.XDataTestCase;
 
@@ -77,7 +78,12 @@ public class TestCoordResumeXCommand extends XDataTestCase {
 
         new CoordSuspendXCommand(job.getId()).call();
         job = jpaService.execute(coordJobGetCmd);
-        assertEquals(job.getStatus(), CoordinatorJob.Status.PREPSUSPENDED);
+        if (job.getAppNamespace() != null && job.getAppNamespace().equals(SchemaService.COORDINATOR_NAMESPACE_URI_1)) {
+            assertEquals(job.getStatus(), CoordinatorJob.Status.SUSPENDED);
+        }
+        else {
+            assertEquals(job.getStatus(), CoordinatorJob.Status.PREPSUSPENDED);
+        }
 
         new CoordResumeXCommand(job.getId()).call();
         job = jpaService.execute(coordJobGetCmd);

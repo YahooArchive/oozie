@@ -45,6 +45,7 @@ import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.Instrumentation;
 import org.apache.oozie.util.LogUtils;
 import org.apache.oozie.util.ParamChecker;
+import org.apache.oozie.util.StatusUtils;
 import org.apache.oozie.util.XConfiguration;
 import org.apache.oozie.util.XmlUtils;
 import org.apache.oozie.util.db.SLADbOperations;
@@ -362,7 +363,7 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
         Date jobEndTime = job.getEndTime();
 
         LOG.info("[" + job.getId() + "]: Update status from " + job.getStatus() + " to RUNNING");
-        job.setStatus(Job.Status.RUNNING);
+        job.setStatus(StatusUtils.getStatus(job));
         job.setPending();
 
         if (jobEndTime.compareTo(endMatdTime) <= 0) {

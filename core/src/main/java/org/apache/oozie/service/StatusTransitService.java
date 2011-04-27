@@ -43,11 +43,9 @@ import org.apache.oozie.executor.jpa.CoordJobGetJPAExecutor;
 import org.apache.oozie.executor.jpa.CoordJobUpdateJPAExecutor;
 import org.apache.oozie.executor.jpa.CoordJobsGetPendingJPAExecutor;
 import org.apache.oozie.executor.jpa.JPAExecutorException;
-import org.apache.oozie.service.SchedulerService;
-import org.apache.oozie.service.Service;
-import org.apache.oozie.service.Services;
 import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.MemoryLocks;
+import org.apache.oozie.util.StatusUtils;
 import org.apache.oozie.util.XLog;
 
 /**
@@ -543,6 +541,7 @@ public class StatusTransitService implements Service {
             checkCoordPending(coordActionStatus, coordActions, coordJob, false);
             coordJob.setStatus(coordStatus);
             coordJob.setLastModifiedTime(new Date());
+            StatusUtils.getStatus(coordJob);
             jpaService.execute(new CoordJobUpdateJPAExecutor(coordJob));
             // update bundle action only when status changes in coord job
             if (coordJob.getBundleId() != null) {

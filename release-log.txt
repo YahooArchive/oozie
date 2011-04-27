@@ -1,5 +1,6 @@
 -- Oozie 3.0.1 release
 
+OOZIE-80 Make coordinator backward compatible for RUNNING and PREPSUSPENDED
 OOZIE-76 Add coordinator state backward compatibility for DONEWITHERROR and PAUSED
 OOZIE-77 add updatescripts for 3.0.0 to 3.0.1
 OOZIE-75 fix coord el function actualTime()
