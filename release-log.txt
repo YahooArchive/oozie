@@ -1,5 +1,7 @@
 -- Oozie 3.0.1 release
 
+OOZIE-85 kill a SUCCEEDED coordinator job with 0.1 schema and backward compatibility is true
+OOZIE-84 add bundle id to coordinator submit
 OOZIE-80 Make coordinator backward compatible for RUNNING and PREPSUSPENDED
 OOZIE-78 Resume coordinator actions should check the status is suspended
 OOZIE-58 Add date/time formatting function to coord.
