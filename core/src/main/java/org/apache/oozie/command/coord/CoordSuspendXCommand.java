@@ -213,6 +213,7 @@ public class CoordSuspendXCommand extends SuspendTransitionXCommand {
             coordJob = (CoordinatorJobBean) this.getJob();
         }
         if (coordJob.getStatus() == Job.Status.PREP) {
+            coordJob.setStatus(Job.Status.PREPSUSPENDED);
             coordJob.setStatus(StatusUtils.getStatus(coordJob));
         }
         else if (coordJob.getStatus() == Job.Status.RUNNING) {

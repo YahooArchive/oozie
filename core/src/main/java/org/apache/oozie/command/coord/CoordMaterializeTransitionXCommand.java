@@ -363,7 +363,7 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
         Date jobEndTime = job.getEndTime();
 
         LOG.info("[" + job.getId() + "]: Update status from " + job.getStatus() + " to RUNNING");
-        job.setStatus(StatusUtils.getStatus(job));
+        job.setStatus(Job.Status.RUNNING);
         job.setPending();
 
         if (jobEndTime.compareTo(endMatdTime) <= 0) {
@@ -372,7 +372,7 @@ public class CoordMaterializeTransitionXCommand extends MaterializeTransitionXCo
             // set doneMaterialization to true when materialization is done
             job.setDoneMaterialization();
         }
-
+        job.setStatus(StatusUtils.getStatus(job));
         job.setNextMaterializedTime(endMatdTime);
     }
 

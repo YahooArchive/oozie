@@ -54,7 +54,7 @@ public abstract class PauseTransitionXCommand extends TransitionXCommand<Void> {
             job = this.getJob();
         }
 
-        if (job.getStatus() == Job.Status.RUNNING && job.getStatus() == Job.Status.SUCCEEDED) {
+        if (job.getStatus() == Job.Status.RUNNING) {
             job.setStatus(Job.Status.PAUSED);
         }
         else if (job.getStatus() == Job.Status.RUNNINGWITHERROR) {
