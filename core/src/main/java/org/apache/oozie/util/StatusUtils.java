@@ -86,6 +86,11 @@ public class StatusUtils {
                     else if (coordJob.getStatus() == Job.Status.RUNNING && coordJob.isDoneMaterialization()) {
                         newStatus = Job.Status.SUCCEEDED;
                     }
+                    // for jobs that are SUCCEEDED before update to Oozie 3.0.1 and doneMaterialization is not set
+                    else if (coordJob.getStatus() == Job.Status.RUNNING && prevStatus == Job.Status.SUCCEEDED) {
+                        newStatus = Job.Status.SUCCEEDED;
+                        coordJob.setDoneMaterialization();
+                    }
                 }
             }
         }
