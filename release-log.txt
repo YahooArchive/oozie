@@ -1,5 +1,6 @@
 -- Oozie 2.3.2 release
 
+OOZIE-101 ${wf:lastErrorNode()} is not set when an action ends in error
 OOZIE-99 action errorMessage is not being set
 GH-0566 If Java Main exit code !=0, LauncherMapper should the exit code as the error code
 OOZIE-34 LauncherMapper security manager fails when a permission with context is check
