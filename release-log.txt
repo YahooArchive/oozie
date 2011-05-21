@@ -1,3 +1,7 @@
+-- Oozie 3.1.0 release
+
+OOZIE-107 add test case to test uniqueness of CoordActionInputCheckXCommand
+
 -- Oozie 3.0.1 release
 
 OOZIE-93 coordinator start and end instances doesn't work with float number.
