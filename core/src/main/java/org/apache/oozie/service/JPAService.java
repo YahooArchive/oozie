@@ -59,9 +59,14 @@ public class JPAService implements Service, Instrumentable {
     public static final String CONF_DRIVER = CONF_PREFIX + "jdbc.driver";
     public static final String CONF_USERNAME = CONF_PREFIX + "jdbc.username";
     public static final String CONF_PASSWORD = CONF_PREFIX + "jdbc.password";
+    public static final String CONF_CONN_DATA_SOURCE = CONF_PREFIX + "connection.data.source";
+
     public static final String CONF_MAX_ACTIVE_CONN = CONF_PREFIX + "pool.max.active.conn";
     public static final String CONF_CREATE_DB_SCHEMA = CONF_PREFIX + "create.db.schema";
     public static final String CONF_VALIDATE_DB_CONN = CONF_PREFIX + "validate.db.connection";
+    public static final String CONF_VALIDATE_DB_CONN_EVICTION_INTERVAL = CONF_PREFIX + "validate.db.connection.eviction.interval";
+    public static final String CONF_VALIDATE_DB_CONN_EVICTION_NUM = CONF_PREFIX + "validate.db.connection.eviction.num";
+
 
     private EntityManagerFactory factory;
     private Instrumentation instr;
@@ -96,8 +101,11 @@ public class JPAService implements Service, Instrumentable {
         String user = conf.get(CONF_USERNAME, "sa");
         String password = conf.get(CONF_PASSWORD, "").trim();
         String maxConn = conf.get(CONF_MAX_ACTIVE_CONN, "10").trim();
+        String dataSource = conf.get(CONF_CONN_DATA_SOURCE, "org.apache.commons.dbcp.BasicDataSource");
         boolean autoSchemaCreation = conf.getBoolean(CONF_CREATE_DB_SCHEMA, true);
         boolean validateDbConn = conf.getBoolean(CONF_VALIDATE_DB_CONN, false);
+        String evictionInterval = conf.get(CONF_VALIDATE_DB_CONN_EVICTION_INTERVAL, "300000").trim();
+        String evictionNum = conf.get(CONF_VALIDATE_DB_CONN_EVICTION_NUM, "10").trim();
 
         if (!url.startsWith("jdbc:")) {
             throw new ServiceException(ErrorCode.E0608, url, "invalid JDBC URL, must start with 'jdbc:'");
@@ -123,16 +131,24 @@ public class JPAService implements Service, Instrumentable {
         connProps = MessageFormat.format(connProps, driver, url, user, password, maxConn);
         Properties props = new Properties();
         if (autoSchemaCreation) {
+            connProps += ",TestOnBorrow=false,TestOnReturn=false,TestWhileIdle=false";
             props.setProperty("openjpa.jdbc.SynchronizeMappings", "buildSchema(ForeignKeys=true)");
         }
         else if (validateDbConn) {
             // validation can be done only if the schema already exist, else a
             // connection cannot be obtained to create the schema.
-            connProps += ",TestOnBorrow=true,TestOnReturn=false,TestWhileIdle=false";
+            String interval = "timeBetweenEvictionRunsMillis=" + evictionInterval;
+            String num = "numTestsPerEvictionRun=" + evictionNum;
+            connProps += ",TestOnBorrow=true,TestOnReturn=true,TestWhileIdle=true," + interval + "," + num;
             connProps += ",ValidationQuery=select count(*) from VALIDATE_CONN";
             connProps = MessageFormat.format(connProps, dbSchema);
         }
+        else {
+            connProps += ",TestOnBorrow=false,TestOnReturn=false,TestWhileIdle=false";
+        }
         props.setProperty("openjpa.ConnectionProperties", connProps);
+
+        props.setProperty("openjpa.ConnectionDriverName", dataSource);
 
         factory = Persistence.createEntityManagerFactory(persistentUnit, props);
 
