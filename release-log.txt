@@ -1,5 +1,7 @@
 -- Oozie 3.1.0 release
 
+OOZIE-113 merge changes for OOZIE-101 to ActionEndXCommand 
+OOZIE-112 workflow kill node message is not resolved and set it to action error message
 OOZIE-110 add coordinator 0.3 schema for app name parametrization
 OOZIE-101 ${wf:lastErrorNode()} is not set when an action ends in error
 OOZIE-99 action errorMessage is not being set
