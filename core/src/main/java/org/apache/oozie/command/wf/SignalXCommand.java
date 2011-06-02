@@ -225,23 +225,29 @@ public class SignalXCommand extends WorkflowXCommand<Void> {
             }
 
             // output message for Kill node
-            NodeDef nodeDef = workflowInstance.getNodeDef(wfAction.getExecutionPath());
-            if (nodeDef instanceof KillNodeDef) {
-                ActionExecutorContext context = new ActionXCommand.ActionExecutorContext(wfJob, wfAction, false);
-                try {
-                    String tmpNodeConf = nodeDef.getConf();
-                    String actionConf = context.getELEvaluator().evaluate(tmpNodeConf, String.class);
-                    LOG.debug("Try to resolve KillNode message for jobid [{0}], actionId [{1}], before resolve [{2}], after resolve [{3}]",
-                                    jobId, actionId, tmpNodeConf, actionConf);
-                    wfAction.setErrorInfo(ErrorCode.E0729.toString(), actionConf);
-                    jpaService.execute(new WorkflowActionUpdateJPAExecutor(wfAction));
-                }
-                catch (JPAExecutorException je) {
-                    throw new CommandException(je);
-                }
-                catch (Exception ex) {
-                    LOG.warn("Exception in SignalXCommand ", ex.getMessage(), ex);
-                    throw new CommandException(ErrorCode.E0729, wfAction.getName(), ex);
+            if (wfAction != null) { // wfAction could be a no-op job
+                NodeDef nodeDef = workflowInstance.getNodeDef(wfAction.getExecutionPath());
+                if (nodeDef instanceof KillNodeDef) {
+                    ActionExecutorContext context = new ActionXCommand.ActionExecutorContext(wfJob, wfAction, false);
+                    try {
+                        String tmpNodeConf = nodeDef.getConf();
+                        String actionConf = context.getELEvaluator().evaluate(tmpNodeConf, String.class);
+                        LOG.debug("Try to resolve KillNode message for jobid [{0}], actionId [{1}], before resolve [{2}], after resolve [{3}]",
+                                jobId, actionId, tmpNodeConf, actionConf);
+                        if (wfAction.getErrorCode() != null) {
+                            wfAction.setErrorInfo(wfAction.getErrorCode(), actionConf);
+                        } else {
+                            wfAction.setErrorInfo(ErrorCode.E0729.toString(), actionConf);
+                        }
+                        jpaService.execute(new WorkflowActionUpdateJPAExecutor(wfAction));
+                    }
+                    catch (JPAExecutorException je) {
+                        throw new CommandException(je);
+                    }
+                    catch (Exception ex) {
+                        LOG.warn("Exception in SignalXCommand ", ex.getMessage(), ex);
+                        throw new CommandException(ErrorCode.E0729, wfAction.getName(), ex);
+                    }
                 }
             }
 
