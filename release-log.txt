@@ -1,3 +1,7 @@
+-- Oozie 3.0.2 release
+
+OOZIE-115 oozie should check if app path is directory and read the app xml under it
+
 -- Oozie 3.0.1 release
 
 OOZIE-93 coordinator start and end instances doesn't work with float number.
