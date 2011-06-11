@@ -1,5 +1,6 @@
 -- Oozie 3.0.2 release
 
+OOZIE-119 relative path in coord dataset include should throw exception if given
 OOZIE-115 oozie should check if app path is directory and read the app xml under it
 
 -- Oozie 3.0.1 release
