@@ -1,5 +1,6 @@
 -- Oozie 3.0.2 release
 
+OOZIE-118 fix pipes program accept relative path
 OOZIE-120 coordinator resolve config default variable
 OOZIE-119 relative path in coord dataset include should throw exception if given
 OOZIE-115 oozie should check if app path is directory and read the app xml under it
