@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -87,7 +88,7 @@ import org.xml.sax.SAXException;
  */
 public class CoordSubmitXCommand extends SubmitTransitionXCommand {
 
-    private final Configuration conf;
+    private Configuration conf;
     private final String authToken;
     private final String bundleId;
     private final String coordName;
@@ -345,15 +346,22 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
      * @throws CommandException thrown if failed to read or merge configurations
      */
     protected void mergeDefaultConfig() throws CommandException {
-        Path coordAppDir = new Path(conf.get(OozieClient.COORDINATOR_APP_PATH)).getParent();
-        Path configDefault = new Path(coordAppDir, CONFIG_DEFAULT);
-        Path appPath = new Path(conf.get(OozieClient.COORDINATOR_APP_PATH));
-        // Configuration fsConfig = CoordUtils.getHadoopConf(conf);
+        Path configDefault = null;
         try {
+            String coordAppPathStr = conf.get(OozieClient.COORDINATOR_APP_PATH);
+            Path coordAppPath = new Path(coordAppPathStr);
             String user = ParamChecker.notEmpty(conf.get(OozieClient.USER_NAME), OozieClient.USER_NAME);
             String group = ParamChecker.notEmpty(conf.get(OozieClient.GROUP_NAME), OozieClient.GROUP_NAME);
             FileSystem fs = Services.get().get(HadoopAccessorService.class).createFileSystem(user, group,
-                    configDefault.toUri(), new Configuration());
+                    coordAppPath.toUri(), new Configuration());
+
+            // app path could be a directory
+            if (!fs.isFile(coordAppPath)) {
+                configDefault = new Path(coordAppPath, CONFIG_DEFAULT);
+            } else {
+                configDefault = new Path(coordAppPath.getParent(), CONFIG_DEFAULT);
+            }
+
             if (fs.exists(configDefault)) {
                 Configuration defaultConf = new XConfiguration(fs.open(configDefault));
                 PropertiesUtils.checkDisallowedProperties(defaultConf, DISALLOWED_DEFAULT_PROPERTIES);
@@ -363,6 +371,14 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
                 LOG.info("configDefault Doesn't exist " + configDefault);
             }
             PropertiesUtils.checkDisallowedProperties(conf, DISALLOWED_USER_PROPERTIES);
+
+            // Resolving all variables in the job properties.
+            // This ensures the Hadoop Configuration semantics is preserved.
+            XConfiguration resolvedVarsConf = new XConfiguration();
+            for (Map.Entry<String, String> entry : conf) {
+                resolvedVarsConf.set(entry.getKey(), conf.get(entry.getKey()));
+            }
+            conf = resolvedVarsConf;
         }
         catch (IOException e) {
             throw new CommandException(ErrorCode.E0702, e.getMessage() + " : Problem reading default config "
@@ -860,9 +876,21 @@ public class CoordSubmitXCommand extends SubmitTransitionXCommand {
             LOG.debug("user =" + user + " group =" + group);
             FileSystem fs = Services.get().get(HadoopAccessorService.class).createFileSystem(user, group, uri,
                     new Configuration());
-            Path p = new Path(uri.getPath());
+            Path appDefPath = null;
 
-            Reader reader = new InputStreamReader(fs.open(p));
+            // app path could be a directory
+            Path path = new Path(uri.getPath());
+            // check file exists for dataset include file, app xml already checked
+            if (!fs.exists(path)) {
+                throw new URISyntaxException(path.toString(), "path not existed : " + path.toString());
+            }
+            if (!fs.isFile(path)) {
+                appDefPath = new Path(path, COORDINATOR_XML_FILE);
+            } else {
+                appDefPath = path;
+            }
+
+            Reader reader = new InputStreamReader(fs.open(appDefPath));
             StringWriter writer = new StringWriter();
             IOUtils.copyCharStream(reader, writer);
             return writer.toString();
