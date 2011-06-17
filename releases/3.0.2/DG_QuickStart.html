@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2011-06-16
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Quick_Start"></a>
+<div class="section"><h2> Oozie Quick Start</h2>
+<p>These instructions install and run Oozie using an embedded Tomcat server and an embedded Derby database.</p>
+<p>For detailed install and configuration instructions refer to <a href="./AG_Install.html">Oozie Install</a>
+.</p>
+<a name="System_Requirements"></a>
+<div class="section"><h3>System Requirements</h3>
+<p><ul><li>Unix (tested in Linux and Mac OS X)</li>
+<li>Java 1.6+</li>
+<li>Hadoop<ul><li><a class="externalLink" href="http://hadoop.apache.org">Apache Hadoop</a>
+ (tested with 0.20.2)</li>
+<li><a class="externalLink" href="http://developer.yahoo.com/hadoop">Yahoo! Hadoop</a>
+ (tested with 0.20.104.2)</li>
+</ul>
+</li>
+<li>ExtJS library (optional, to enable Oozie webconsole)<ul><li><a class="externalLink" href="http://extjs.com/deploy/ext-2.2.zip">ExtJS 2.2</a>
+</li>
+</ul>
+</li>
+</ul>
+</p>
+<p>The Java 1.6+ <tt>bin</tt>
+ directory should be in the command path.</p>
+<a name="Server_Installation"></a>
+</div>
+<div class="section"><h3>Server Installation</h3>
+<p><b>IMPORTANT:</b>
+ Oozie ignores any set value for <tt>OOZIE_HOME</tt>
+, Oozie computes its home automatically.</p>
+<p><ul><li>Download or build an Oozie binary distribution</li>
+<li>Download a Hadoop binary distribution</li>
+<li>Download ExtJS library (it must be version 2.2)</li>
+</ul>
+</p>
+<p><b>NOTE:</b>
+ The ExtJS library is not bundled with Oozie because it uses a different license.</p>
+<p><b>NOTE:</b>
+ It is recommended to use a Oozie Unix user for the Oozie server.</p>
+<p>Expand the Oozie distribution <tt>tar.gz</tt>
+.</p>
+<p>Expand the Hadoop distribution <tt>tar.gz</tt>
+ (as the Oozie Unix user).</p>
+<p>Oozie is bundled without Hadoop JAR files and without the ExtJS library.</p>
+<p><ul><li>The Hadoop JARs are required to run Oozie</li>
+<li>The ExtJS library is optional (only required for the Oozie web-console to work)</li>
+</ul>
+</p>
+<p><b>IMPORTANT:</b>
+ all Oozie server scripts (=oozie-setup.sh=, <tt>oozie-start.sh</tt>
+, <tt>oozie-run.sh</tt>
+
+and <tt>oozie-stop.sh</tt>
+) run only under the Unix user that owns the Oozie installation directory,
+if necessary use <tt>sudo -u OOZIE_USER</tt>
+ when invoking the scripts.</p>
+<p>Use the <tt>oozie-setup.sh</tt>
+ script to add the Hadoop JARs and the ExtJS library to Oozie.</p>
+<p><pre>
+$ bin/oozie-setup.sh -hadoop 0.20.200 ${HADOOP_HOME} -extjs /tmp/ext-2.2.zip
+</pre></p>
+<p>To start Oozie as a daemon process run:</p>
+<p><pre>
+$ bin/oozie-start.sh
+</pre></p>
+<p>To start Oozie as a foreground process run:</p>
+<p><pre>
+$ bin/oozie-run.sh
+</pre></p>
+<p>Check the Oozie log file <tt>logs/oozie.log</tt>
+ to ensure Oozie started properly.</p>
+<p>Using the Oozie command line tool check the status of Oozie:</p>
+<p><pre>
+$ bin/oozie admin -oozie http://localhost:11000/oozie -status
+</pre></p>
+<p>Using a browser go to the <a class="externalLink" href="http://localhost:11000/oozie">Oozie web console</a>
+, Oozie status should be <b>NORMAL</b>
+.</p>
+<p>Refer to the <a href="./DG_Examples.html">Running the Examples</a>
+ document for details on running the examples.</p>
+<a name="Client_Installation"></a>
+</div>
+<div class="section"><h3>Client Installation</h3>
+<p>Copy and expand the <tt>oozie-client</tt>
+ TAR.GZ file bundled with the distribution. Add the <tt>bin/</tt>
+ directory to the <tt>PATH</tt>
+.</p>
+<p>Refer to the <a href="./DG_CommandLineTool.html">Command Line Interface Utilities</a>
+ document for a a full reference of the <tt>oozie</tt>
+
+command line tool.</p>
+<p>NOTE: The Oozie server installation includes the Oozie client. The Oozie client should be installed in remote machines
+only.</p>
+<a name="Oozie_Share_Lib_Installation"></a>
+</div>
+<div class="section"><h3>Oozie Share Lib Installation</h3>
+<p>Expand the <tt>oozie-sharelib</tt>
+ TAR.GZ file bundled with the distribution.</p>
+<p>The <tt>share/</tt>
+ directory must be copied to the Oozie HOME directory in HDFS:</p>
+<p><pre>
+$ hadoop fs -put share share
+</pre></p>
+<p><b>IMPORTANT:</b>
+ This must be done using the Oozie Hadoop (HDFS) user. If a <tt>share</tt>
+ directory already exists in HDFS,
+it must be deleted before copying it again.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2011
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

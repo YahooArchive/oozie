@@ -1,0 +1,368 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2011-06-16
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Building_Oozie"></a>
+<div class="section"><h2> Building Oozie</h2>
+<p><ul><ul><li><a href="#System_Requirements">System Requirements</a>
+</li>
+<li><a href="#Oozie_Documentation_Generation">Oozie Documentation Generation</a>
+</li>
+<li><a href="#Passphare-less_SSH_Setup">Passphare-less SSH Setup</a>
+</li>
+<li><a href="#Building_and_Testing_Oozie">Building and Testing Oozie</a>
+<ul><li><a href="#Examples_Running_Oozie_Testcases_with_Different_Configurations">Examples Running Oozie Testcases with Different Configurations</a>
+</li>
+<li><a href="#Build_Options_Reference">Build Options Reference</a>
+</li>
+</ul>
+</li>
+<li><a href="#Building_an_Oozie_Distribution">Building an Oozie Distribution</a>
+</li>
+<li><a href="#IDE_Setup">IDE Setup</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="System_Requirements"></a>
+<div class="section"><h3>System Requirements</h3>
+<p><ul><li>Unix box (tested on Mac OS X and Linux)</li>
+<li>Java JDK 1.6+</li>
+<li><a class="externalLink" href="http://maven.apache.org/">Maven 3.0.1+</a>
+</li>
+<li><a class="externalLink" href="http://hadoop.apache.org/core/releases.html">Hadoop 0.20.2+</a>
+</li>
+<li><a class="externalLink" href="http://hadoop.apache.org/pig/releases.html">Pig 0.7+</a>
+</li>
+</ul>
+</p>
+<p>JDK commands (java, javac) must be in the command path.</p>
+<p>The Maven command (mvn) must be in the command path.</p>
+<a name="Oozie_Documentation_Generation"></a>
+</div>
+<div class="section"><h3>Oozie Documentation Generation</h3>
+<p>To generate the documentation, Oozie uses a patched Doxia plugin for Maven with improved twiki support.</p>
+<p>This plugin is available from <a class="externalLink" href="http://yahoo.github.com/maven/repository">Yahoo GitHub Maven repository</a>
+ and
+it is automatically downloaded by Maven when building Oozie.</p>
+<p>The source of the modified plugin is available in the Oozie GitHub repository, in the <tt>ydoxia</tt>
+ branch.</p>
+<p>To build and install it locally run the following command in the <tt>ydoxia</tt>
+ branch:</p>
+<p><verbation>
+$ mvn install
+</pre></p>
+<p><a name="SshSetup"></a>
+</p>
+<a name="Passphare-less_SSH_Setup"></a>
+</div>
+<div class="section"><h3>Passphare-less SSH Setup</h3>
+<p><b>NOTE: SSH actions are deprecated in Oozie 2.</b>
+</p>
+<p>To run SSH Testcases and for easier Hadoop start/stop configure SSH to localhost to be passphrase-less.</p>
+<p>Create your SSH keys without a passphrase and add the public key to the authorized file:</p>
+<p><pre>
+$ ssh-keygen -t dsa
+$ cat ~/.ssh/id_dsa.pub &gt;&gt; ~/.ssh/authorized_keys2
+</pre></p>
+<p>Test that you can ssh without password:</p>
+<p><pre>
+$ ssh localhost
+</pre></p>
+<a name="Building_and_Testing_Oozie"></a>
+</div>
+<div class="section"><h3>Building and Testing Oozie</h3>
+<p>The JARs for the specified Hadoop and Pig versions must be available in one of the Maven repositories defined in Oozie
+main 'pom.xml' file. Or they must be installed in the local Maven cache.</p>
+<a name="Examples_Running_Oozie_Testcases_with_Different_Configurations"></a>
+<div class="section"><h4>Examples Running Oozie Testcases with Different Configurations</h4>
+<p><b>Using embedded Hadoop minicluster with 'simple' authentication:</b>
+</p>
+<p><pre>
+$ mvn clean test
+</pre></p>
+<p><b>Using a Hadoop cluster with 'simple' authentication:</b>
+</p>
+<p><pre>
+$ mvn clean test -Doozie.test.hadoop.minicluster=false
+</pre></p>
+<p><b>Using embedded Hadoop minicluster with 'simple' authentication and Derby database:</b>
+</p>
+<p><pre>
+$ mvn clean test -Doozie.test.hadoop.minicluster=false -Doozie.test.db=derby
+</pre></p>
+<p><b>Using a Hadoop cluster with 'kerberos' authentication:</b>
+</p>
+<p><pre>
+$ mvn clean test -Doozie.test.hadoop.minicluster=false -Doozie.test.hadoop.security=kerberos
+</pre></p>
+<p>NOTE: The embedded minicluster cannot be used when testing with 'kerberos' authentication.</p>
+<p><b>Using a custom Oozie configuration for testcases (for example, to use a MySQL DB):</b>
+</p>
+<p><pre>
+$ mvn clean test -Dmysql -Doozie.test.config.file=/home/tucu/oozie-site-mysql.xml
+</pre></p>
+<a name="Build_Options_Reference"></a>
+</div>
+<div class="section"><h4>Build Options Reference</h4>
+<p>All these options can be set using <b>-D</b>
+.</p>
+<p>Except for the options marked with <tt>(*)</tt>
+, the options can be specified in the <tt>test.properties</tt>
+ in the root
+of the Oozie project. The options marked with <tt>(*)</tt>
+ are used in Maven POMs, thus they don't take effect if
+specified in the <tt>test.properties</tt>
+ file (which is loaded by the <tt>XTestCase</tt>
+ class at class initialization time).</p>
+<p><b>includeHadoopJars</b>
+ (*): includes Hadoop JARs and its transitive dependencies in the Oozie WAR file, default is
+undefined (Hadoop JARs are not included).</p>
+<p><b>generateSite</b>
+ (*): generates Oozie documentation, default is undefined (no documentation is generated)</p>
+<p><b>mysql</b>
+ (*): Includes MySQL JDBC driver in the distro, default is undefined, MySQL JDBC driver is not included.</p>
+<p><b>oracle</b>
+ (*): Includes Oracle JDBC driver in the distro, default is undefined, Oracle JDBC driver is not included.</p>
+<p><b>skipTests</b>
+ (*): skips the execution of all testcases, no value required, default is undefined</p>
+<p><b>test</b>
+= (*): runs a single test case, to run a test give the test class name without package and extension, no default</p>
+<p><b>hadoop20</b>
+= (*) : indicates the build/test should not include classes for Hadoop 20S, default is 'false'</p>
+<p><b>oozie.test.db</b>
+= (*): indicates the database to use for running the testcases, supported values are 'hsqldb' and 'derby',
+default value is 'hsqldb'. IMPORTANT, when using 'derby' a Maven profile is activated to run all the testcases in
+'always' fork mode (otherwise Derby driver goes bonker after 50 testcases or so due to repeated initializations).</p>
+<p><b>oozie.test.properties</b>
+ (*): indicates the file to load the test properties from, by default is <tt>test.properties</tt>
+.
+Having this option allows having different test properties sets, for example: minicluster, simple &amp; kerberos.</p>
+<p><b>oozie.test.waitfor.ratio</b>
+<tt> : multiplication factor for testcases using waitfor, the ratio is used to adjust the
+effective time out. For slow machines the ratio should be increased. The default value is =1</tt>
+.</p>
+<p><b>oozie.test.config.file</b>
+= : indicates a custom Oozie configuration file for running the testcases. The specified file
+must be an absolute path. For example, it can be useful to specify different database than HSQL for running the
+testcases.</p>
+<p><b>oozie.test.hadoop.minicluster</b>
+= : indicates if Hadoop minicluster should be started for testcases, default value 'true'</p>
+<p><b>oozie.test.job.tracker</b>
+= : indicates the URI of the JobTracker when using a Hadoop cluster for testing, default value
+'localhost:9001'</p>
+<p><b>oozie.test.name.node</b>
+= : indicates the URI of the NameNode when using a Hadoop cluster for testing, default value
+'hdfs://localhost:9000'</p>
+<p><b>oozie.test.hadoop.pipes</b>
+= : indicates if Hadoop pipes test case should be run or not, default value 'false'</p>
+<p><b>oozie.test.hadoop.security</b>
+= : indicates the type of Hadoop authentication for testing, valid values are 'simple' or
+'kerberos, default value 'simple'</p>
+<p><b>oozie.test.kerberos.keytab.file</b>
+= : indicates the location of the keytab file, default value
+'${user.home}/oozie.keytab'</p>
+<p><b>oozie.test.kerberos.realm</b>
+= : indicates the Kerberos real, default value 'LOCALHOST'</p>
+<p><b>oozie.test.kerberos.oozie.principal</b>
+= : indicates the Kerberos principal for oozie, default value
+'${user.name}/localhost'</p>
+<p><b>oozie.test.kerberos.jobtracker.principal</b>
+= : indicates the Kerberos principal for the JobTracker, default value
+'mapred/localhost'</p>
+<p><b>oozie.test.kerberos.namenode.principal</b>
+= : indicates the Kerberos principal for the NameNode, default value
+'hdfs/localhost'</p>
+<p><b>oozie.test.user.oozie</b>
+<tt> : specifies the user ID used to start Oozie server in testcases, default value
+is =${user.name}</tt>
+.</p>
+<p><b>oozie.test.user.test</b>
+<tt> : specifies primary user ID used as the user submitting jobs to Oozie Server in testcases,
+default value is =test</tt>
+.</p>
+<p><b>oozie.test.user.test2</b>
+<tt> : specifies secondary user ID used as the user submitting jobs to Oozie Server in testcases,
+default value is =test2</tt>
+.</p>
+<p><b>oozie.test.user.test3</b>
+<tt> : specifies secondary user ID used as the user submitting jobs to Oozie Server in testcases,
+default value is =test3</tt>
+.</p>
+<p><b>oozie.test.group</b>
+<tt> : specifies group ID used as group when submitting jobs to Oozie Server in testcases,
+default value is =testg</tt>
+.</p>
+<p>NOTE: The users/group specified in <b>oozie.test.user.test2</b>
+, <b>oozie.test.user.test3</b>
+= and <b>oozie.test.user.group</b>
+=
+are used for the authorization testcases only.</p>
+<p><b>oozie.test.dir</b>
+<tt> : specifies the directory where the =oozietests</tt>
+ directory will be created, default value is <tt>/tmp</tt>
+.
+The <tt>oozietests</tt>
+ directory is used by testcases when they need a local filesystem directory.</p>
+<p><b>hadoop.log.dir</b>
+<tt> : specifies the directory where Hadoop minicluster will write its logs during testcases, default
+value is =/tmp</tt>
+.</p>
+<p><b>test.exclude</b>
+<tt> : specifies a testcase class (just the class name) to exclude for the tests run, for example =TestSubmitCommand</tt>
+.</p>
+<p><b>test.exclude.pattern</b>
+<tt> : specifies one or more patterns for testcases to exclude, for example =**/Test*Command.java</tt>
+.</p>
+<a name="Building_an_Oozie_Distribution"></a>
+</div>
+</div>
+<div class="section"><h3>Building an Oozie Distribution</h3>
+<p>An Oozie distribution bundles an embedded Tomcat server. The Oozie distro module downloads Tomcat TAR.GZ from Apache
+once (in the <tt>distro/downloads/</tt>
+ directory) and uses it when creating the distro.</p>
+<p>The following Maven invocation builds an Oozie distribution:</p>
+<p><pre>
+$ mvn clean package assembly:single
+</pre></p>
+<p>The following properties should be specified when building a release:</p>
+<p><ul><li>-DgenerateDocs : forces the generation of Oozie documentation</li>
+<li>-Dbuild.time=  : timestamps the distribution</li>
+<li>-Dvc.revision= : specifies the source control revision number of the distribution</li>
+<li>-Dvc.url=      : specifies the source control URL of the distribution</li>
+</ul>
+</p>
+<p>The provided <tt>bin/mkdistro.sh</tt>
+ script runs the above Maven invocation setting all these properties to the
+right values (the 'vc.*' properties are obtained from the local git repository).</p>
+<a name="IDE_Setup"></a>
+</div>
+<div class="section"><h3>IDE Setup</h3>
+<p>Eclipse and IntelliJ can use directly Oozie Maven project files.</p>
+<p>The only special consideration is that the following source directories from the <tt>client</tt>
+ module must be added to
+the <tt>core</tt>
+ module source path:</p>
+<p><ul><li><tt>client/src/main/java</tt>
+ : as source directory</li>
+<li><tt>client/src/main/resources</tt>
+ : as source directory</li>
+<li><tt>client/src/test/java</tt>
+ : as test-source directory</li>
+<li><tt>client/src/test/resources</tt>
+ : as test-source directory</li>
+</ul>
+</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2011
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

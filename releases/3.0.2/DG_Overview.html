@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2011-06-16
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Workflow_Overview"></a>
+<div class="section"><h2>Oozie Workflow Overview</h2>
+<p>Oozie is a server based <i>Workflow Engine</i>
+ specialized in running workflow jobs with actions that run Hadoop Map/Reduce
+and Pig jobs.</p>
+<p>Oozie is a Java Web-Application that runs in a Java servlet-container.</p>
+<p>For the purposes of Oozie, a workflow is a collection of actions (i.e. Hadoop Map/Reduce jobs, Pig jobs) arranged in
+a control dependency DAG (Direct Acyclic Graph). &quot;control dependency&quot; from one action to another means that the second
+action can't run until the first action has completed.</p>
+<p>Oozie workflows definitions are written in hPDL (a XML Process Definition Language similar to
+<a class="externalLink" href="http://www.jboss.org/jbossjbpm/">JBOSS JBPM</a>
+ jPDL).</p>
+<p>Oozie workflow actions start jobs in remote systems (i.e. Hadoop, Pig). Upon action completion, the remote systems
+callback Oozie to notify the action completion, at this point Oozie proceeds to the next action in the workflow.</p>
+<p>Oozie workflows contain control flow nodes and action nodes.</p>
+<p>Control flow nodes define the beginning and the end of a workflow ( <tt>start</tt>
+, <tt>end</tt>
+ and <tt>fail</tt>
+ nodes) and provide a
+mechanism to control the workflow execution path ( <tt>decision</tt>
+, <tt>fork</tt>
+ and <tt>join</tt>
+ nodes).</p>
+<p>Action nodes are the mechanism by which a workflow triggers the execution of a computation/processing task. Oozie
+provides support for different types of actions: Hadoop map-reduce, Hadoop file system, Pig, SSH, HTTP, eMail and
+Oozie sub-workflow. Oozie can be extended to support additional type of actions.</p>
+<p>Oozie workflows can be parameterized (using variables like <tt>${inputDir}</tt>
+ within the workflow definition). When
+submitting a workflow job values for the parameters must be provided. If properly parameterized (i.e. using different
+output directories) several identical workflow jobs can concurrently.</p>
+<a name="WordCount_Workflow_Example"></a>
+<div class="section"><h3>WordCount Workflow Example</h3>
+<p><b>Workflow Diagram:</b>
+</p>
+<p><img src="./DG_Overview.png"/></p>
+<p><b>hPDL Workflow Definition:</b>
+</p>
+<p><pre>
+&lt;workflow-app name='wordcount-wf' xmlns=&quot;uri:oozie:workflow:0.1&quot;&gt;
+    &lt;start to='wordcount'/&gt;
+    &lt;action name='wordcount'&gt;
+        &lt;map-reduce&gt;
+            &lt;job-tracker&gt;${jobTracker}&lt;/job-tracker&gt;
+            &lt;name-node&gt;${nameNode}&lt;/name-node&gt;
+            &lt;configuration&gt;
+                &lt;property&gt;
+                    &lt;name&gt;mapred.mapper.class&lt;/name&gt;
+                    &lt;value&gt;org.myorg.WordCount.Map&lt;/value&gt;
+                &lt;/property&gt;
+                &lt;property&gt;
+                    &lt;name&gt;mapred.reducer.class&lt;/name&gt;
+                    &lt;value&gt;org.myorg.WordCount.Reduce&lt;/value&gt;
+                &lt;/property&gt;
+                &lt;property&gt;
+                    &lt;name&gt;mapred.input.dir&lt;/name&gt;
+                    &lt;value&gt;${inputDir}&lt;/value&gt;
+                &lt;/property&gt;
+                &lt;property&gt;
+                    &lt;name&gt;mapred.output.dir&lt;/name&gt;
+                    &lt;value&gt;${outputDir}&lt;/value&gt;
+                &lt;/property&gt;
+            &lt;/configuration&gt;
+        &lt;/map-reduce&gt;
+        &lt;ok to='end'/&gt;
+        &lt;error to='end'/&gt;
+    &lt;/action&gt;
+    &lt;kill name='kill'&gt;
+        &lt;message&gt;Something went wrong: ${wf:errorCode('wordcount')}&lt;/message&gt;
+    &lt;/kill/&gt;
+    &lt;end name='end'/&gt;
+&lt;/workflow-app&gt;
+</pre></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2011
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

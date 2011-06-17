@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2011-06-16
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Oozie_Monitoring"></a>
+<div class="section"><h2> Oozie Monitoring</h2>
+<p><ul><ul><li><a href="#Oozie_Instrumentation">Oozie Instrumentation</a>
+<ul><li><a href="#Variables">Variables</a>
+</li>
+<li><a href="#Samplers_-_Poll_data_at_a_fixed_interval_default_1_sec_and_report_an_average_utlization_over_a_longer_period_of_time_default_60_seconds.">Samplers - Poll data at a fixed interval (default 1 sec) and report an average utlization over a longer period of time (default 60 seconds).</a>
+</li>
+<li><a href="#Counters_-_Maintain_statistics_about_the_number_of_times_an_event_has_occured_for_the_running_Oozie_instance._The_values_are_reset_if_the_Oozie_instance_is_restarted.">Counters - Maintain statistics about the number of times an event has occured, for the running Oozie instance. The values are reset if the Oozie instance is restarted.</a>
+</li>
+<li><a href="#Timers_-_Maintain_information_about_the_time_spent_in_various_operations.">Timers - Maintain information about the time spent in various operations.</a>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Oozie_Instrumentation"></a>
+<div class="section"><h3>Oozie Instrumentation</h3>
+<p>Oozie code is instrumented in several places to collect runtime metrics. The instrumentation data can be used to
+determine the health of the system, performance of the system, and to tune the system.</p>
+<p>The instrumentation is accessible via the Admin web-services API and is also written on regular intervals to an
+instrumentation log.</p>
+<p>Instrumentation data includes variables, samplers, timers and counters.</p>
+<a name="Variables"></a>
+<div class="section"><h4>Variables</h4>
+<p><ul><li>oozie<ul><li>version: Oozie build version.</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>configuration<ul><li>config.dir: directory from where the configuration files are loaded. If null, all configuration files are loaded from the classpath. <a href="./AG_Configuration.html">Configuration Files</a>
+.</li>
+<li>config.file: the Oozie custom configuration for the instance.</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>jvm<ul><li>free.memory</li>
+<li>max.memory</li>
+<li>total.memory</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>locks<ul><li>locks: Locks are used by Oozie to synchronize access to workflow and action entries when the database being used does not support 'select for update' queries. (MySQL supports 'select for update').</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>logging<ul><li>config.file: Log4j '.properties' configuration file.</li>
+<li>from.classpath: whether the config file has been read from the claspath or from the config directory.</li>
+<li>reload.interval: interval at which the config file will be realoded. 0 if the config file will never be reloaded, when loaded from the classpath is never reloaded.</li>
+</ul>
+</li>
+</ul>
+</p>
+<a name="Samplers_-_Poll_data_at_a_fixed_interval_default_1_sec_and_report_an_average_utlization_over_a_longer_period_of_time_default_60_seconds."></a>
+</div>
+<div class="section"><h4>Samplers - Poll data at a fixed interval (default 1 sec) and report an average utlization over a longer period of time (default 60 seconds).</h4>
+<p>Poll for data over fixed interval and generate an average over the time interval. Unless specified, all samplers in
+Oozie work on a 1 minute interval.</p>
+<p><ul><li>callablequeue<ul><li>delayed.queue.size: The size of the delayed command queue.</li>
+<li>queue.size: The size of the command queue.</li>
+<li>threads.active: The number of threads processing callables.</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>jdbc:<ul><li>connections.active: Active Connections over the past minute.</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>webservices: Requests to the Oozie HTTP endpoints over the last minute.<ul><li>admin</li>
+<li>callback</li>
+<li>job</li>
+<li>jobs</li>
+<li>requests</li>
+<li>version</li>
+</ul>
+</li>
+</ul>
+</p>
+<a name="Counters_-_Maintain_statistics_about_the_number_of_times_an_event_has_occured_for_the_running_Oozie_instance._The_values_are_reset_if_the_Oozie_instance_is_restarted."></a>
+</div>
+<div class="section"><h4>Counters - Maintain statistics about the number of times an event has occured, for the running Oozie instance. The values are reset if the Oozie instance is restarted.</h4>
+<p><ul><li>action.executors - Counters related to actions.<ul><li>[action_type]#action.[operation_performed] (start, end, check, kill)</li>
+<li>[action_type]#ex.[exception_type] (transient, non-transient, error, failed)</li>
+<li>e.g.  <pre></li>
+</ul>
+</li>
+</ul>
+            ssh#action.end: 306
+            ssh#action.start: 316 </pre>
+</p>
+<p><ul><li>callablequeue - count of events in various execution queues.<ul><li>delayed.queued: Number of commands queued with a delay.</li>
+<li>executed: Number of executions from the queue.</li>
+<li>failed: Number of queue attempts which failed.</li>
+<li>queued: Number of queued commands.</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>commands: Execution Counts for various commands. This data is generated for all commands.<ul><li>action.end</li>
+<li>action.notification</li>
+<li>action.start</li>
+<li>callback</li>
+<li>job.info</li>
+<li>job.notification</li>
+<li>purge</li>
+<li>signal</li>
+<li>start</li>
+<li>submit</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>jobs: Job Statistics<ul><li>start: Number of started jobs.</li>
+<li>submit: Number of submitted jobs.</li>
+<li>succeeded: Number of jobs which succeeded.</li>
+<li>kill: Number of killed jobs.</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>authorization<ul><li>failed: Number of failed authorization attempts.</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>webservices: Number of request to various web services along with the request type.<ul><li>failed: total number of failed requests.</li>
+<li>requests: total number of requests.</li>
+<li>admin</li>
+<li>admin-GET</li>
+<li>callback</li>
+<li>callback-GET</li>
+<li>jobs</li>
+<li>jobs-GET</li>
+<li>jobs-POST</li>
+<li>version</li>
+<li>version-GET</li>
+</ul>
+</li>
+</ul>
+</p>
+<a name="Timers_-_Maintain_information_about_the_time_spent_in_various_operations."></a>
+</div>
+<div class="section"><h4>Timers - Maintain information about the time spent in various operations.</h4>
+<p><ul><li>action.executors - Counters related to actions.<ul><li>[action_type]#action.[operation_performed] (start, end, check, kill)</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>callablequeue<ul><li>time.in.queue: Time a callable spent in the queue before being processed.</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>commands: Generated for all Commands.<ul><li>action.end</li>
+<li>action.notification</li>
+<li>action.start</li>
+<li>callback</li>
+<li>job.info</li>
+<li>job.notification</li>
+<li>purge</li>
+<li>signal</li>
+<li>start</li>
+<li>submit</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>db - Timers related to various database operations.<ul><li>create-workflow</li>
+<li>load-action</li>
+<li>load-pending-actions</li>
+<li>load-running-actions</li>
+<li>load-workflow</li>
+<li>load-workflows</li>
+<li>purge-old-workflows</li>
+<li>save-action</li>
+<li>update-action</li>
+<li>update-workflow</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><ul><li>webservices<ul><li>admin</li>
+<li>admin-GET</li>
+<li>callback</li>
+<li>callback-GET</li>
+<li>jobs</li>
+<li>jobs-GET</li>
+<li>jobs-POST</li>
+<li>version</li>
+<li>version-GET</li>
+</ul>
+</li>
+</ul>
+</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2011
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>
