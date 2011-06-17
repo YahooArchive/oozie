@@ -1,0 +1,30 @@
+-classpath
+'/homes/angeloh/workspaces/git-y-oozie-0202/oozie-main/core/target/classes:/homes/angeloh/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar:/homes/angeloh/.m2/repository/commons-net/commons-net/1.4.1/commons-net-1.4.1.jar:/homes/angeloh/.m2/repository/org/apache/geronimo/specs/geronimo-jms_1.1_spec/1.0.1/geronimo-jms_1.1_spec-1.0.1.jar:/homes/angeloh/.m2/repository/commons-httpclient/commons-httpclient/3.0.1/commons-httpclient-3.0.1.jar:/homes/angeloh/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.0.1/jackson-core-asl-1.0.1.jar:/homes/angeloh/.m2/repository/com/thoughtworks/qdox/qdox/1.10.1/qdox-1.10.1.jar:/homes/angeloh/.m2/repository/net/java/dev/jets3t/jets3t/0.7.1/jets3t-0.7.1.jar:/homes/angeloh/.m2/repository/commons-logging/commons-logging/1.1/commons-logging-1.1.jar:/homes/angeloh/.m2/repository/org/apache/openjpa/openjpa-persistence/1.2.1/openjpa-persistence-1.2.1.jar:/homes/angeloh/.m2/repository/commons-pool/commons-pool/1.5.4/commons-pool-1.5.4.jar:/homes/angeloh/workspaces/git-y-oozie-0202/oozie-main/client/target/oozie-client-3.0.2.jar:/homes/angeloh/.m2/repository/xmlenc/xmlenc/0.52/xmlenc-0.52.jar:/homes/angeloh/.m2/repository/org/mortbay/jetty/jsp-2.1/6.1.14/jsp-2.1-6.1.14.jar:/homes/angeloh/.m2/repository/commons-el/commons-el/1.0/commons-el-1.0.jar:/homes/angeloh/.m2/repository/javax/persistence/persistence-api/1.0/persistence-api-1.0.jar:/homes/angeloh/.m2/repository/jline/jline/0.9.94/jline-0.9.94.jar:/homes/angeloh/.m2/repository/javax/servlet/jsp/jsp-api/2.0/jsp-api-2.0.jar:/homes/angeloh/.m2/repository/org/apache/openjpa/openjpa-jdbc/1.2.1/openjpa-jdbc-1.2.1.jar:/homes/angeloh/.m2/repository/org/mortbay/jetty/jetty-util/6.1.14/jetty-util-6.1.14.jar:/homes/angeloh/.m2/repository/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar:/homes/angeloh/.m2/repository/com/yahoo/hadoop/hadoop-streaming/0.20.104.2/hadoop-streaming-0.20.104.2.jar:/homes/angeloh/.m2/repository/org/apache/openjpa/openjpa-kernel/1.2.1/openjpa-kernel-1.2.1.jar:/homes/angeloh/.m2/repository/org/slf4j/slf4j-api/1.4.3/slf4j-api-1.4.3.jar:/homes/angeloh/.m2/repository/ant/ant/1.6.5/ant-1.6.5.jar:/homes/angeloh/.m2/repository/commons-dbcp/commons-dbcp/1.4/commons-dbcp-1.4.jar:/homes/angeloh/.m2/repository/org/apache/pig/pig/0.8.0/pig-0.8.0.jar:/homes/angeloh/.m2/repository/javax/xml/bind/jsr173_api/1.0/jsr173_api-1.0.jar:/homes/angeloh/.m2/repository/com/thoughtworks/paranamer/paranamer-ant/2.2/paranamer-ant-2.2.jar:/homes/angeloh/.m2/repository/org/apache/derby/derby/10.6.1.0/derby-10.6.1.0.jar:/homes/angeloh/.m2/repository/org/apache/openjpa/openjpa-persistence-jdbc/1.2.1/openjpa-persistence-jdbc-1.2.1.jar:/homes/angeloh/.m2/repository/commons-lang/commons-lang/2.1/commons-lang-2.1.jar:/homes/angeloh/.m2/repository/javax/xml/bind/jaxb-api/2.0/jaxb-api-2.0.jar:/homes/angeloh/.m2/repository/net/sourceforge/serp/serp/1.13.1/serp-1.13.1.jar:/homes/angeloh/.m2/repository/commons-collections/commons-collections/3.2/commons-collections-3.2.jar:/homes/angeloh/.m2/repository/org/apache/geronimo/specs/geronimo-jpa_3.0_spec/1.0/geronimo-jpa_3.0_spec-1.0.jar:/homes/angeloh/.m2/repository/com/thoughtworks/paranamer/paranamer/2.2/paranamer-2.2.jar:/homes/angeloh/.m2/repository/tomcat/jasper-runtime/5.5.12/jasper-runtime-5.5.12.jar:/homes/angeloh/.m2/repository/com/yahoo/hadoop/hadoop-core/0.20.104.2/hadoop-core-0.20.104.2.jar:/homes/angeloh/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.0.1/jackson-mapper-asl-1.0.1.jar:/homes/angeloh/.m2/repository/com/googlecode/json-simple/json-simple/1.1/json-simple-1.1.jar:/homes/angeloh/.m2/repository/commons-logging/commons-logging-api/1.0.4/commons-logging-api-1.0.4.jar:/homes/angeloh/.m2/repository/org/mortbay/jetty/servlet-api-2.5/6.1.14/servlet-api-2.5-6.1.14.jar:/homes/angeloh/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar:/homes/angeloh/.m2/repository/org/apache/hadoop/avro/1.3.2/avro-1.3.2.jar:/homes/angeloh/.m2/repository/org/mortbay/jetty/jsp-api-2.1/6.1.14/jsp-api-2.1-6.1.14.jar:/homes/angeloh/.m2/repository/hsqldb/hsqldb/1.8.0.7/hsqldb-1.8.0.7.jar:/homes/angeloh/.m2/repository/commons-cli/commons-cli/1.2/commons-cli-1.2.jar:/homes/angeloh/.m2/repository/org/apache/geronimo/specs/geronimo-jta_1.1_spec/1.1/geronimo-jta_1.1_spec-1.1.jar:/homes/angeloh/.m2/repository/net/sf/kosmosfs/kfs/0.3/kfs-0.3.jar:/homes/angeloh/.m2/repository/com/thoughtworks/paranamer/paranamer-generator/2.2/paranamer-generator-2.2.jar:/homes/angeloh/.m2/repository/tomcat/jasper-compiler/5.5.12/jasper-compiler-5.5.12.jar:/homes/angeloh/.m2/repository/org/mortbay/jetty/jetty/6.1.14/jetty-6.1.14.jar:/homes/angeloh/.m2/repository/oro/oro/2.0.8/oro-2.0.8.jar:/homes/angeloh/.m2/repository/org/eclipse/jdt/core/3.1.1/core-3.1.1.jar:/homes/angeloh/.m2/repository/asm/asm/3.2/asm-3.2.jar:/homes/angeloh/.m2/repository/org/jdom/jdom/1.1/jdom-1.1.jar:/homes/angeloh/.m2/repository/org/apache/openjpa/openjpa-lib/1.2.1/openjpa-lib-1.2.1.jar:/homes/angeloh/.m2/repository/commons-codec/commons-codec/1.3/commons-codec-1.3.jar:/homes/angeloh/workspaces/git-y-oozie-0202/oozie-main/sharelib/target/oozie-sharelib-3.0.2.jar'
+-encoding
+'UTF-8'
+-protected
+-quiet
+-sourcepath
+'/homes/angeloh/workspaces/git-y-oozie-0202/oozie-main/core/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2011 <a href="http://www.yahoo.com">Yahoo</a>. All Rights Reserved.'
+-charset
+'UTF-8'
+-d
+'/homes/angeloh/workspaces/git-y-oozie-0202/oozie-main/core/target/site/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Oozie Core 3.0.2 API'
+-group
+'Action Executor API' 'org.apache.oozie.action'
+-group
+'Local Oozie (for application development/testing)' 'org.apache.oozie.local'
+-link
+'http://java.sun.com/javase/6/docs/api'
+-linksource
+-use
+-version
+-windowtitle
+'Oozie Core 3.0.2 API'

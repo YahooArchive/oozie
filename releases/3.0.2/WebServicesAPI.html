@@ -1,0 +1,814 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2011-06-16
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<hr />
+<p><ul><li><a href="#Oozie_Web_Services_API_V1_Workflow__Coordinator_And_Bundle">Oozie Web Services API, V1 (Workflow , Coordinator And Bundle)</a>
+<ul><li><a href="#Versions_End-Point">Versions End-Point</a>
+</li>
+<li><a href="#Admin_End-Point">Admin End-Point</a>
+<ul><li><a href="#System_Status">System Status</a>
+</li>
+<li><a href="#OS_Environment">OS Environment</a>
+</li>
+<li><a href="#Java_System_Properties">Java System Properties</a>
+</li>
+<li><a href="#Oozie_Configuration">Oozie Configuration</a>
+</li>
+<li><a href="#Oozie_Instrumentation">Oozie Instrumentation</a>
+</li>
+<li><a href="#Version">Version</a>
+</li>
+</ul>
+</li>
+<li><a href="#Job_and_Jobs_End-Points">Job and Jobs End-Points</a>
+<ul><li><a href="#Job_Submission">Job Submission</a>
+</li>
+<li><a href="#Managing_a_Job">Managing a Job</a>
+<ul><li><a href="#Re-Runing_a_Workflow_Job">Re-Runing a Workflow Job</a>
+</li>
+<li><a href="#Re-Runing_a_coordinator_job">Re-Runing a coordinator job</a>
+</li>
+</ul>
+</li>
+<li><a href="#Job_Information">Job Information</a>
+</li>
+<li><a href="#Job_Application_Definition">Job Application Definition</a>
+</li>
+<li><a href="#Job_Log">Job Log</a>
+</li>
+<li><a href="#Jobs_Information">Jobs Information</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</p>
+<a name="Oozie_Web_Services_API_V1_Workflow__Coordinator_And_Bundle"></a>
+<div class="section"><h3>Oozie Web Services API, V1 (Workflow , Coordinator And Bundle)</h3>
+<p>The Oozie Web Services API is a HTTP REST JSON API.</p>
+<p>All responses are in <tt>UTF-8</tt>
+.</p>
+<p>Assuming Oozie is runing at <tt>OOZIE_URL</tt>
+, the following web services end points are supported:</p>
+<p><ul><li><OOZIE_URL>/versions</li>
+<li><OOZIE_URL>/v1/admin</li>
+<li><OOZIE_URL>/v1/job</li>
+<li><OOZIE_URL>/v1/jobs</li>
+</ul>
+</p>
+<a name="Versions_End-Point"></a>
+<div class="section"><h4>Versions End-Point</h4>
+<p><i>Identical to the corresponding Oozie v0 WS API</i>
+</p>
+<p>This endpoint is for clients to perform protocol negotiation.</p>
+<p>It support only HTTP GET request and not sub-resources.</p>
+<p>It returns the supported Oozie protocol versions by the server.</p>
+<p>Current returned values are <tt>0, 1</tt>
+.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/versions
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+[0,1]
+</pre></p>
+<a name="Admin_End-Point"></a>
+</div>
+<div class="section"><h4>Admin End-Point</h4>
+<p>This endpoint is for obtaining Oozie system status and configuration information.</p>
+<p>It supports the following sub-resources: <tt>status, os-env, sys-props, configuration, instrumentation, systems</tt>
+.</p>
+<a name="System_Status"></a>
+<div class="section"><h5>System Status</h5>
+<p><i>Identical to the corresponding Oozie v0 WS API</i>
+</p>
+<p>A HTTP GET request returns the system status.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/admin/status
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{&quot;safeMode&quot;:false}
+</pre></p>
+<p>With a HTTP PUT request it is possible to bring in and out hte system from safemode.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+PUT /oozie/v1/admin/status?safemode=true
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+</pre></p>
+<a name="OS_Environment"></a>
+</div>
+<div class="section"><h5>OS Environment</h5>
+<p><i>Identical to the corresponding Oozie v0 WS API</i>
+</p>
+<p>A HTTP GET request returns the Oozie system OS environment.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/admin/os-env
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{
+  TERM: &quot;xterm&quot;,
+  JAVA_HOME: &quot;/usr/java/latest&quot;,
+  XCURSOR_SIZE: &quot;&quot;,
+  SSH_CLIENT: &quot;::ffff:127.0.0.1 49082 22&quot;,
+  XCURSOR_THEME: &quot;default&quot;,
+  INPUTRC: &quot;/etc/inputrc&quot;,
+  HISTSIZE: &quot;1000&quot;,
+  PATH: &quot;/usr/java/latest/bin&quot;
+  KDE_FULL_SESSION: &quot;true&quot;,
+  LANG: &quot;en_US.UTF-8&quot;,
+  ...
+}
+</pre></p>
+<a name="Java_System_Properties"></a>
+</div>
+<div class="section"><h5>Java System Properties</h5>
+<p><i>Identical to the corresponding Oozie v0 WS API</i>
+</p>
+<p>A HTTP GET request returns the Oozie Java system properties.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/admin/java-sys-properties
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{
+  java.vm.version: &quot;11.0-b15&quot;,
+  sun.jnu.encoding: &quot;UTF-8&quot;,
+  java.vendor.url: &quot;http://java.sun.com/&quot;,
+  java.vm.info: &quot;mixed mode&quot;,
+  ...
+}
+</pre></p>
+<a name="Oozie_Configuration"></a>
+</div>
+<div class="section"><h5>Oozie Configuration</h5>
+<p><i>Identical to the corresponding Oozie v0 WS API</i>
+</p>
+<p>A HTTP GET request returns the Oozie system configuration.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/admin/configuration
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{
+  oozie.service.SchedulerService.threads: &quot;5&quot;,
+  oozie.service.ActionService.executor.classes: &quot;
+            org.apache.oozie.dag.action.decision.DecisionActionExecutor,
+            org.apache.oozie.dag.action.hadoop.HadoopActionExecutor,
+            org.apache.oozie.dag.action.hadoop.FsActionExecutor
+        &quot;,
+  oozie.service.CallableQueueService.threads.min: &quot;10&quot;,
+  oozie.service.DBLiteWorkflowStoreService.oozie.autoinstall: &quot;true&quot;,
+  ...
+}
+</pre></p>
+<a name="Oozie_Instrumentation"></a>
+</div>
+<div class="section"><h5>Oozie Instrumentation</h5>
+<p><i>Identical to the corresponding Oozie v0 WS API</i>
+</p>
+<p>A HTTP GET request returns the Oozie instrumentation information.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/admin/instrumentation
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{
+  timers: [
+    {
+      group: &quot;db&quot;,
+      data: [
+        {
+          ownMinTime: 2,
+          ownTimeStdDev: 0,
+          totalTimeStdDev: 0,
+          ownTimeAvg: 3,
+          ticks: 117,
+          name: &quot;update-workflow&quot;,
+          ownMaxTime: 32,
+          totalMinTime: 2,
+          totalMaxTime: 32,
+          totalTimeAvg: 3
+        },
+        ...
+      ]
+    },
+    ...
+  ],
+  samplers: [
+    {
+      group: &quot;callablequeue&quot;,
+      data: [
+        {
+          name: &quot;threads.active&quot;,
+          value: 1.8333333333333333
+        },
+        {
+          name: &quot;delayed.queue.size&quot;,
+          value: 0
+        },
+        {
+          name: &quot;queue.size&quot;,
+          value: 0
+        }
+      ]
+    },
+    ...
+  ],
+  variables: [
+    {
+      group: &quot;jvm&quot;,
+      data: [
+        {
+          name: &quot;max.memory&quot;,
+          value: 506920960
+        },
+        {
+          name: &quot;total.memory&quot;,
+          value: 56492032
+        },
+        {
+          name: &quot;free.memory&quot;,
+          value: 45776800
+        }
+      ]
+    },
+    ...
+  ]
+}
+</pre></p>
+<a name="Version"></a>
+</div>
+<div class="section"><h5>Version</h5>
+<p><i>Identical to the corresponding Oozie v0 WS API</i>
+</p>
+<p>A HTTP GET request returns the Oozie build version.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/admin/build-version
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{buildVersion: &quot;3.0.0-SNAPSHOT&quot; }
+</pre></p>
+<a name="Job_and_Jobs_End-Points"></a>
+</div>
+</div>
+<div class="section"><h4>Job and Jobs End-Points</h4>
+<p><i>Modified in Oozie v1 WS API</i>
+</p>
+<p>These endpoints is for submitting, managing and retrieving information of workflow and coordinator jobs.</p>
+<a name="Job_Submission"></a>
+<div class="section"><h5>Job Submission</h5>
+<p>A HTTP POST request with an XML configuration as payload creates a job.</p>
+<p>The type of job is determined by the presence of one of the following 2 properties (only one must be present):</p>
+<p><ul><li><tt>oozie.wf.application.path</tt>
+ : path to a workflow aplication directory, creates a workflow job</li>
+<li><tt>oozie.coord.application.path</tt>
+ : path to a coordinator application file, creates a coordinator job</li>
+<li><tt>oozie.bundle.application.path</tt>
+ : path to a bundle application file, creates a bundle job</li>
+</ul>
+</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+POST /oozie/v1/jobs
+Content-Type: application/xml;charset=UTF-8
+.
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;user.name&lt;/name&gt;
+        &lt;value&gt;bansalm&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;oozie.wf.application.path&lt;/name&gt;
+        &lt;value&gt;hdfs://foo:9000/user/bansalm/myapp/&lt;/value&gt;
+    &lt;/property&gt;
+    ...
+&lt;/configuration&gt;
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 201 CREATED
+Content-Type: application/json;charset=UTF-8
+.
+{
+  id: &quot;job-3&quot;
+}
+</pre></p>
+<p>A created job will be in <tt>PREP</tt>
+ status. If the query string parameter 'action=start' is provided in 
+the POST URL, the job will be started immediately and its status will be <tt>RUNNING</tt>
+.</p>
+<p>Coordinator jobs with start time in the future they will not create any action until the start time 
+happens.</p>
+<a name="Managing_a_Job"></a>
+</div>
+<div class="section"><h5>Managing a Job</h5>
+<p>A HTTP PUT request starts, suspends, resumes or kills a job.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+PUT /oozie/v1/job/job-3?action=start
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+</pre></p>
+<p>Valid values for the 'action' parameter are 'start', 'suspend', 'resume' and 'kill' and 'rerun'.</p>
+<a name="Re-Runing_a_Workflow_Job"></a>
+<div class="section"><h6>Re-Runing a Workflow Job</h6>
+<p>A workflow job in <tt>SUCCEEDED</tt>
+, <tt>KILLED</tt>
+ or <tt>FAILED</tt>
+ status can be partially rerun specifying a list
+of workflow nodes to skip during the rerun. All the nodes in the skip list must have complete its
+execution.</p>
+<p>The rerun job will have the same job ID.</p>
+<p>A rerun request is done with a HTTP PUT request with a <tt>rerun</tt>
+ action.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+PUT /oozie/v1/job/job-3?action=rerun
+Content-Type: application/xml;charset=UTF-8
+.
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;configuration&gt;
+    &lt;property&gt;
+        &lt;name&gt;user.name&lt;/name&gt;
+        &lt;value&gt;tucu&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;oozie.wf.application.path&lt;/name&gt;
+        &lt;value&gt;hdfs://foo:9000/user/tucu/myapp/&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property&gt;
+        &lt;name&gt;oozie.wf.rerun.skip.nodes&lt;/name&gt;
+        &lt;value&gt;firstAction,secondAction&lt;/value&gt;
+    &lt;/property&gt;
+    ...
+&lt;/configuration&gt;
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+</pre></p>
+<a name="Re-Runing_a_coordinator_job"></a>
+</div>
+<div class="section"><h6>Re-Runing a coordinator job</h6>
+<p>A coordinator job in <tt>RUNNING</tt>
+ <tt>SUCCEEDED</tt>
+, <tt>KILLED</tt>
+ or <tt>FAILED</tt>
+ status can be partially rerun by
+specifying the coordinator actions to re-execute. The actions to execute can be specified in a
+closed action number range (start-action to end-action) or in a closed datetime range (start-datetime 
+to end-datetime). All the actions to rerun must have run already.</p>
+<p>A rerun request is done with a HTTP PUT request with a <tt>rerun</tt>
+ action and type of rerun.</p>
+<p>The type of rerun can be <tt>exact</tt>
+ or <tt>current</tt>
+.</p>
+<p>An <tt>exact</tt>
+ rerun will take the action XML resolved for the previous run (with all latest and version instances fixed) and it will run using the exact same dataset instances for everything.</p>
+<p>A <tt>current</tt>
+ rerun will take the action XML resolved for the action creation and it will resolve to the current values.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+PUT /oozie/v1/job/job-3?action=rerun&amp;type=exact&amp;start-action=4&amp;end-action=10
+.
+</pre></p>
+<p>or</p>
+<p><pre>
+PUT /oozie/v1/job/job-3?action=rerun&amp;type=current&amp;start-time=2009-02-01T00:10Z&amp;end-time=2009-03-01T00:10Z
+.
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+</pre></p>
+<a name="Job_Information"></a>
+</div>
+</div>
+<div class="section"><h5>Job Information</h5>
+<p>A HTTP GET request retrieves the job information.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/job/job-3?show=info
+</pre></p>
+<p><b>Response for a workflow job:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{ 
+**jobType: &quot;workflow&quot;,
+  id: &quot;0-200905191240-oozie-W&quot;,
+  appName: &quot;indexer-workflow&quot;,
+  appPath: &quot;hdfs://user/bansalm/indexer.wf&quot;,
+  externalId: &quot;0-200905191230-oozie-pepe&quot;,
+  user: &quot;bansalm&quot;,
+  group: &quot;other&quot;,
+  status: &quot;RUNNING&quot;,
+  conf: &quot;&lt;configuration&gt; ... &lt;/configuration&gt;&quot;,
+  createdTime: &quot;Thu, 01 Jan 2009 00:00:00 GMT&quot;,
+  startTime: &quot;Fri, 02 Jan 2009 00:00:00 GMT&quot;,
+  endTime: null,
+  run: 0,
+  actions: [
+    {
+      id: &quot;0-200905191240-oozie-W@indexer&quot;,
+      name: &quot;indexer&quot;,
+      type: &quot;map-reduce&quot;,
+      conf: &quot;&lt;configuration&gt; ...&lt;/configuration&gt;&quot;,
+      startTime: &quot;Thu, 01 Jan 2009 00:00:00 GMT&quot;,
+      endTime: &quot;Fri, 02 Jan 2009 00:00:00 GMT&quot;,
+      status: &quot;OK&quot;,
+      externalId: &quot;job-123-200903101010&quot;,
+      externalStatus: &quot;SUCCEEDED&quot;,
+      trackerUri: &quot;foo:9001&quot;,
+      consoleUrl: &quot;http://foo:50040/jobdetailshistory.jsp?jobId=...&quot;,
+      transition: &quot;reporter&quot;,
+      data: null,
+      errorCode: null,
+      errorMessage: null,
+      retries: 0
+    },
+    ...
+  ]
+}
+</pre></p>
+<p><b>Response for a coordinator job:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{
+  jobType: &quot;coordinator&quot;,
+  id: &quot;0-200905191240-oozie-C&quot;,
+  appName: &quot;indexer-Coord&quot;,
+  appPath: &quot;hdfs://user/bansalm/myapp/logprocessor-coord.xml&quot;,
+  externalId: &quot;0-200905191230-oozie-pepe&quot;,
+  user: &quot;bansalm&quot;,
+  group: &quot;other&quot;,
+  status: &quot;RUNNING&quot;,
+  conf: &quot;&lt;configuration&gt; ... &lt;/configuration&gt;&quot;,
+  createdTime: &quot;Thu, 01 Jan 2009 00:00:00 GMT&quot;,
+  startTime: &quot;Fri, 02 Jan 2009 00:00:00 GMT&quot;,
+  endTime: &quot;Fri, 31 Dec 2009 00:00:00 GMT&quot;,
+  frequency: &quot;${days(1)}&quot;
+  ...
+  **************TBD********************
+}
+</pre></p>
+<p><b>Response for a bundle job:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{
+  jobType: &quot;bundle&quot;,
+  id: &quot;0-200905191240-oozie-B&quot;,
+  appName: &quot;new-bundle&quot;,
+  appPath: &quot;hdfs://user/bansalm/myapp/logprocessor-bundle.xml&quot;,
+  externalId: &quot;0-200905191230-oozie-pepe&quot;,
+  user: &quot;bansalm&quot;,
+  group: &quot;other&quot;,
+  status: &quot;RUNNING&quot;,
+  conf: &quot;&lt;configuration&gt; ... &lt;/configuration&gt;&quot;,
+  createdTime: &quot;Thu, 01 Jan 2009 00:00:00 GMT&quot;,
+  startTime: &quot;Fri, 02 Jan 2009 00:00:00 GMT&quot;,
+  endTime: &quot;Fri, 31 Dec 2009 00:00:00 GMT&quot;
+  ...
+  **************TBD********************
+}
+</pre></p>
+<a name="Job_Application_Definition"></a>
+</div>
+<div class="section"><h5>Job Application Definition</h5>
+<p>A HTTP GET request retrieves the workflow or a coordinator job definition file.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/job/job-3?show=definition
+</pre></p>
+<p><b>Response for a workflow job:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/xml;charset=UTF-8
+.
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;workflow-app name='xyz-app' xmlns=&quot;uri:oozie:workflow:0.1&quot;&gt;
+    &lt;start to='firstaction' /&gt;
+    ...
+    &lt;end name='end' /&gt;
+&lt;/workflow-app&gt;
+</pre></p>
+<p><b>Response for a coordinator job:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/xml;charset=UTF-8
+.
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;coordinator-app name='abc-app' xmlns=&quot;uri:oozie:coordinator:0.1&quot; frequency=&quot;${days(1)} 
+                 start=&quot;2009-01-01T00:00Z&quot; end=&quot;2009-12-31T00:00Z&quot; timezone=&quot;America/Los_Angeles&quot;&gt;
+    &lt;datasets&gt;
+    ...
+    &lt;/datasets&gt;
+    ...
+&lt;/cordinator-app&gt;
+</pre></p>
+<p><b>Response for a bundle job:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/xml;charset=UTF-8
+.
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;bundle-app name='abc-app' xmlns=&quot;uri:oozie:coordinator:0.1&quot; 
+                 start=&quot;2009-01-01T00:00Z&quot; end=&quot;2009-12-31T00:00Z&quot;&quot;&gt;
+    &lt;datasets&gt;
+    ...
+    &lt;/datasets&gt;
+    ...
+&lt;/bundle-app&gt;
+</pre></p>
+<a name="Job_Log"></a>
+</div>
+<div class="section"><h5>Job Log</h5>
+<p>A HTTP GET request retrieves the job log.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/job/job-3?show=log
+</pre></p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=UTF-8
+.
+...
+23:21:31,272 TRACE oozieapp:526 - USER[bansalm] GROUP[other] TOKEN[-] APP[test-wf] JOB[0-20090518232130-oozie-tucu] ACTION[mr-1] Start
+23:21:31,305 TRACE oozieapp:526 - USER[bansalm] GROUP[other] TOKEN[-] APP[test-wf] JOB[0-20090518232130-oozie-tucu] ACTION[mr-1] End
+...
+</pre></p>
+<a name="Jobs_Information"></a>
+</div>
+<div class="section"><h5>Jobs Information</h5>
+<p>A HTTP GET request retrieves workflow and coordinator jobs information.</p>
+<p><b>Request:</b>
+</p>
+<p><pre>
+GET /oozie/v1/jobs?filter=user%3Dbansalm&amp;offset=1&amp;len=50
+</pre></p>
+<p>Note that the filter is URL encoded, its decoded value is <tt>user=tucu</tt>
+.</p>
+<p><b>Response:</b>
+</p>
+<p><pre>
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+.
+{
+  offset: 1,
+  len: 50,
+  total: 1002,
+**jobs: [
+    {
+**    jobType: &quot;workflow&quot;
+      id: &quot;0-200905191240-oozie-W&quot;,
+      appName: &quot;indexer-workflow&quot;,
+      appPath: &quot;hdfs://user/tucu/indexer-wf&quot;,
+      user: &quot;bansalm&quot;,
+      group: &quot;other&quot;,
+      status: &quot;RUNNING&quot;,
+      createdTime: &quot;Thu, 01 Jan 2009 00:00:00 GMT&quot;,
+      startTime: &quot;Fri, 02 Jan 2009 00:00:00 GMT&quot;,
+      endTime: null,
+      info: &quot;run=0&quot;,
+    },
+    {
+**    jobType: &quot;coordinator&quot;
+      id: &quot;0-200905191240-oozie-C&quot;,
+      appName: &quot;logprocessor-coord&quot;,
+      appPath: &quot;hdfs://user/bansalm/myapp/logprocessor-coord.xml&quot;,
+      user: &quot;bansalm&quot;,
+      group: &quot;other&quot;,
+      status: &quot;RUNNING&quot;,
+      createdTime: &quot;Thu, 01 Jan 2009 00:00:00 GMT&quot;,
+      startTime: &quot;Fri, 02 Jan 2009 00:00:00 GMT&quot;,
+      endTime: &quot;Fri, 31 Dec 2009 00:00:00 GMT&quot;,
+      info: &quot;nextAction=5&quot;,
+    },
+    {
+**    jobType: &quot;bindle&quot;
+      id: &quot;0-200905191240-oozie-B&quot;,
+      appName: &quot;logprocessor-bundle&quot;,
+      appPath: &quot;hdfs://user/bansalm/myapp/logprocessor-bundle.xml&quot;,
+      user: &quot;bansalm&quot;,
+      group: &quot;other&quot;,
+      status: &quot;RUNNING&quot;,
+      createdTime: &quot;Thu, 01 Jan 2009 00:00:00 GMT&quot;,
+      startTime: &quot;Fri, 02 Jan 2009 00:00:00 GMT&quot;,
+      endTime: &quot;Fri, 31 Dec 2009 00:00:00 GMT&quot;,
+    },
+    ...
+  ]
+}
+</pre></p>
+<p>No action information is returned when querying for multiple jobs.</p>
+<p>The syntax for the filter is <pre>[NAME=VALUE][;NAME=VALUE]*</pre></p>
+<p>Valid filter names are:</p>
+<p><ul><li>type: the type of job, <tt>workflow</tt>
+, <tt>coordinator</tt>
+ or <tt>bundle</tt>
+</li>
+<li>name: the application name from the workflow/coordinator/bundle definition</li>
+<li>user: the user that submitted the job</li>
+<li>group: the group for the job</li>
+<li>status: the status of the job</li>
+</ul>
+</p>
+<p>The query will do an AND among all the filter names.</p>
+<p>The query will do an OR among all the filter values for the same name. Multiple values must be specified as different
+name value pairs.</p>
+<p>Additionally the <tt>start</tt>
+ and <tt>len</tt>
+ parameters can be used for pagination. The start parameter is base 1.</p>
+<p></p>
+</div>
+</div>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2011
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

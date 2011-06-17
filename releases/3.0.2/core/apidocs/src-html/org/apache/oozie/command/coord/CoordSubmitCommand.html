@@ -1,0 +1,940 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright (c) 2010 Yahoo! Inc. All rights reserved.<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Licensed under the Apache License, Version 2.0 (the "License");<a name="line.3"></a>
+<FONT color="green">004</FONT>     * you may not use this file except in compliance with the License.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * You may obtain a copy of the License at<a name="line.5"></a>
+<FONT color="green">006</FONT>     *<a name="line.6"></a>
+<FONT color="green">007</FONT>     *   http://www.apache.org/licenses/LICENSE-2.0<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *  Unless required by applicable law or agreed to in writing, software<a name="line.9"></a>
+<FONT color="green">010</FONT>     *  distributed under the License is distributed on an "AS IS" BASIS,<a name="line.10"></a>
+<FONT color="green">011</FONT>     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.11"></a>
+<FONT color="green">012</FONT>     *  See the License for the specific language governing permissions and<a name="line.12"></a>
+<FONT color="green">013</FONT>     *  limitations under the License. See accompanying LICENSE file.<a name="line.13"></a>
+<FONT color="green">014</FONT>     */<a name="line.14"></a>
+<FONT color="green">015</FONT>    package org.apache.oozie.command.coord;<a name="line.15"></a>
+<FONT color="green">016</FONT>    <a name="line.16"></a>
+<FONT color="green">017</FONT>    import java.io.IOException;<a name="line.17"></a>
+<FONT color="green">018</FONT>    import java.io.InputStreamReader;<a name="line.18"></a>
+<FONT color="green">019</FONT>    import java.io.Reader;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import java.io.StringReader;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import java.io.StringWriter;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import java.net.URI;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import java.net.URISyntaxException;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import java.util.ArrayList;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.util.Date;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.util.HashMap;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import java.util.HashSet;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import java.util.List;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import java.util.Set;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import java.util.TreeSet;<a name="line.30"></a>
+<FONT color="green">031</FONT>    <a name="line.31"></a>
+<FONT color="green">032</FONT>    import javax.xml.transform.stream.StreamSource;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import javax.xml.validation.Validator;<a name="line.33"></a>
+<FONT color="green">034</FONT>    <a name="line.34"></a>
+<FONT color="green">035</FONT>    import org.apache.hadoop.conf.Configuration;<a name="line.35"></a>
+<FONT color="green">036</FONT>    import org.apache.hadoop.fs.FileSystem;<a name="line.36"></a>
+<FONT color="green">037</FONT>    import org.apache.hadoop.fs.Path;<a name="line.37"></a>
+<FONT color="green">038</FONT>    import org.apache.oozie.CoordinatorJobBean;<a name="line.38"></a>
+<FONT color="green">039</FONT>    import org.apache.oozie.ErrorCode;<a name="line.39"></a>
+<FONT color="green">040</FONT>    import org.apache.oozie.client.CoordinatorJob;<a name="line.40"></a>
+<FONT color="green">041</FONT>    import org.apache.oozie.client.OozieClient;<a name="line.41"></a>
+<FONT color="green">042</FONT>    import org.apache.oozie.client.CoordinatorJob.Execution;<a name="line.42"></a>
+<FONT color="green">043</FONT>    import org.apache.oozie.command.CommandException;<a name="line.43"></a>
+<FONT color="green">044</FONT>    import org.apache.oozie.coord.CoordELEvaluator;<a name="line.44"></a>
+<FONT color="green">045</FONT>    import org.apache.oozie.coord.CoordELFunctions;<a name="line.45"></a>
+<FONT color="green">046</FONT>    import org.apache.oozie.coord.CoordUtils;<a name="line.46"></a>
+<FONT color="green">047</FONT>    import org.apache.oozie.coord.CoordinatorJobException;<a name="line.47"></a>
+<FONT color="green">048</FONT>    import org.apache.oozie.coord.TimeUnit;<a name="line.48"></a>
+<FONT color="green">049</FONT>    import org.apache.oozie.service.DagXLogInfoService;<a name="line.49"></a>
+<FONT color="green">050</FONT>    import org.apache.oozie.service.HadoopAccessorException;<a name="line.50"></a>
+<FONT color="green">051</FONT>    import org.apache.oozie.service.SchemaService;<a name="line.51"></a>
+<FONT color="green">052</FONT>    import org.apache.oozie.service.Service;<a name="line.52"></a>
+<FONT color="green">053</FONT>    import org.apache.oozie.service.Services;<a name="line.53"></a>
+<FONT color="green">054</FONT>    import org.apache.oozie.service.UUIDService;<a name="line.54"></a>
+<FONT color="green">055</FONT>    import org.apache.oozie.service.HadoopAccessorService;<a name="line.55"></a>
+<FONT color="green">056</FONT>    import org.apache.oozie.service.WorkflowAppService;<a name="line.56"></a>
+<FONT color="green">057</FONT>    import org.apache.oozie.service.SchemaService.SchemaName;<a name="line.57"></a>
+<FONT color="green">058</FONT>    import org.apache.oozie.service.UUIDService.ApplicationType;<a name="line.58"></a>
+<FONT color="green">059</FONT>    import org.apache.oozie.store.CoordinatorStore;<a name="line.59"></a>
+<FONT color="green">060</FONT>    import org.apache.oozie.store.StoreException;<a name="line.60"></a>
+<FONT color="green">061</FONT>    import org.apache.oozie.util.DateUtils;<a name="line.61"></a>
+<FONT color="green">062</FONT>    import org.apache.oozie.util.ELEvaluator;<a name="line.62"></a>
+<FONT color="green">063</FONT>    import org.apache.oozie.util.IOUtils;<a name="line.63"></a>
+<FONT color="green">064</FONT>    import org.apache.oozie.util.ParamChecker;<a name="line.64"></a>
+<FONT color="green">065</FONT>    import org.apache.oozie.util.PropertiesUtils;<a name="line.65"></a>
+<FONT color="green">066</FONT>    import org.apache.oozie.util.XConfiguration;<a name="line.66"></a>
+<FONT color="green">067</FONT>    import org.apache.oozie.util.XLog;<a name="line.67"></a>
+<FONT color="green">068</FONT>    import org.apache.oozie.util.XmlUtils;<a name="line.68"></a>
+<FONT color="green">069</FONT>    import org.apache.oozie.workflow.WorkflowException;<a name="line.69"></a>
+<FONT color="green">070</FONT>    import org.jdom.Attribute;<a name="line.70"></a>
+<FONT color="green">071</FONT>    import org.jdom.Element;<a name="line.71"></a>
+<FONT color="green">072</FONT>    import org.jdom.JDOMException;<a name="line.72"></a>
+<FONT color="green">073</FONT>    import org.jdom.Namespace;<a name="line.73"></a>
+<FONT color="green">074</FONT>    import org.xml.sax.SAXException;<a name="line.74"></a>
+<FONT color="green">075</FONT>    <a name="line.75"></a>
+<FONT color="green">076</FONT>    /**<a name="line.76"></a>
+<FONT color="green">077</FONT>     * This class provides the functionalities to resolve a coordinator job XML and write the job information into a DB<a name="line.77"></a>
+<FONT color="green">078</FONT>     * table. &lt;p/&gt; Specifically it performs the following functions: 1. Resolve all the variables or properties using job<a name="line.78"></a>
+<FONT color="green">079</FONT>     * configurations. 2. Insert all datasets definition as part of the &lt;data-in&gt; and &lt;data-out&gt; tags. 3. Validate the XML<a name="line.79"></a>
+<FONT color="green">080</FONT>     * at runtime.<a name="line.80"></a>
+<FONT color="green">081</FONT>     */<a name="line.81"></a>
+<FONT color="green">082</FONT>    public class CoordSubmitCommand extends CoordinatorCommand&lt;String&gt; {<a name="line.82"></a>
+<FONT color="green">083</FONT>    <a name="line.83"></a>
+<FONT color="green">084</FONT>        private Configuration conf;<a name="line.84"></a>
+<FONT color="green">085</FONT>        private String authToken;<a name="line.85"></a>
+<FONT color="green">086</FONT>        private boolean dryrun;<a name="line.86"></a>
+<FONT color="green">087</FONT>    <a name="line.87"></a>
+<FONT color="green">088</FONT>        public static final String CONFIG_DEFAULT = "coord-config-default.xml";<a name="line.88"></a>
+<FONT color="green">089</FONT>        public static final String COORDINATOR_XML_FILE = "coordinator.xml";<a name="line.89"></a>
+<FONT color="green">090</FONT>    <a name="line.90"></a>
+<FONT color="green">091</FONT>        private static final Set&lt;String&gt; DISALLOWED_USER_PROPERTIES = new HashSet&lt;String&gt;();<a name="line.91"></a>
+<FONT color="green">092</FONT>        private static final Set&lt;String&gt; DISALLOWED_DEFAULT_PROPERTIES = new HashSet&lt;String&gt;();<a name="line.92"></a>
+<FONT color="green">093</FONT>        /**<a name="line.93"></a>
+<FONT color="green">094</FONT>         * Default timeout for normal jobs, in minutes, after which coordinator input check will timeout<a name="line.94"></a>
+<FONT color="green">095</FONT>         */<a name="line.95"></a>
+<FONT color="green">096</FONT>        public static final String CONF_DEFAULT_TIMEOUT_NORMAL = Service.CONF_PREFIX + "coord.normal.default.timeout";<a name="line.96"></a>
+<FONT color="green">097</FONT>    <a name="line.97"></a>
+<FONT color="green">098</FONT>        private XLog log = XLog.getLog(getClass());<a name="line.98"></a>
+<FONT color="green">099</FONT>        private ELEvaluator evalFreq = null;<a name="line.99"></a>
+<FONT color="green">100</FONT>        private ELEvaluator evalNofuncs = null;<a name="line.100"></a>
+<FONT color="green">101</FONT>        private ELEvaluator evalData = null;<a name="line.101"></a>
+<FONT color="green">102</FONT>        private ELEvaluator evalInst = null;<a name="line.102"></a>
+<FONT color="green">103</FONT>        private ELEvaluator evalSla = null;<a name="line.103"></a>
+<FONT color="green">104</FONT>    <a name="line.104"></a>
+<FONT color="green">105</FONT>        static {<a name="line.105"></a>
+<FONT color="green">106</FONT>            String[] badUserProps = {PropertiesUtils.YEAR, PropertiesUtils.MONTH, PropertiesUtils.DAY,<a name="line.106"></a>
+<FONT color="green">107</FONT>                    PropertiesUtils.HOUR, PropertiesUtils.MINUTE, PropertiesUtils.DAYS, PropertiesUtils.HOURS,<a name="line.107"></a>
+<FONT color="green">108</FONT>                    PropertiesUtils.MINUTES, PropertiesUtils.KB, PropertiesUtils.MB, PropertiesUtils.GB,<a name="line.108"></a>
+<FONT color="green">109</FONT>                    PropertiesUtils.TB, PropertiesUtils.PB, PropertiesUtils.RECORDS, PropertiesUtils.MAP_IN,<a name="line.109"></a>
+<FONT color="green">110</FONT>                    PropertiesUtils.MAP_OUT, PropertiesUtils.REDUCE_IN, PropertiesUtils.REDUCE_OUT, PropertiesUtils.GROUPS};<a name="line.110"></a>
+<FONT color="green">111</FONT>            PropertiesUtils.createPropertySet(badUserProps, DISALLOWED_USER_PROPERTIES);<a name="line.111"></a>
+<FONT color="green">112</FONT>    <a name="line.112"></a>
+<FONT color="green">113</FONT>            String[] badDefaultProps = {PropertiesUtils.HADOOP_USER, PropertiesUtils.HADOOP_UGI,<a name="line.113"></a>
+<FONT color="green">114</FONT>                    WorkflowAppService.HADOOP_JT_KERBEROS_NAME, WorkflowAppService.HADOOP_NN_KERBEROS_NAME};<a name="line.114"></a>
+<FONT color="green">115</FONT>            PropertiesUtils.createPropertySet(badUserProps, DISALLOWED_DEFAULT_PROPERTIES);<a name="line.115"></a>
+<FONT color="green">116</FONT>            PropertiesUtils.createPropertySet(badDefaultProps, DISALLOWED_DEFAULT_PROPERTIES);<a name="line.116"></a>
+<FONT color="green">117</FONT>        }<a name="line.117"></a>
+<FONT color="green">118</FONT>    <a name="line.118"></a>
+<FONT color="green">119</FONT>        /**<a name="line.119"></a>
+<FONT color="green">120</FONT>         * Constructor to create the Coordinator Submit Command.<a name="line.120"></a>
+<FONT color="green">121</FONT>         *<a name="line.121"></a>
+<FONT color="green">122</FONT>         * @param conf : Configuration for Coordinator job<a name="line.122"></a>
+<FONT color="green">123</FONT>         * @param authToken : To be used for authentication<a name="line.123"></a>
+<FONT color="green">124</FONT>         */<a name="line.124"></a>
+<FONT color="green">125</FONT>        public CoordSubmitCommand(Configuration conf, String authToken) {<a name="line.125"></a>
+<FONT color="green">126</FONT>            super("coord_submit", "coord_submit", 1, XLog.STD);<a name="line.126"></a>
+<FONT color="green">127</FONT>            this.conf = ParamChecker.notNull(conf, "conf");<a name="line.127"></a>
+<FONT color="green">128</FONT>            this.authToken = ParamChecker.notEmpty(authToken, "authToken");<a name="line.128"></a>
+<FONT color="green">129</FONT>        }<a name="line.129"></a>
+<FONT color="green">130</FONT>    <a name="line.130"></a>
+<FONT color="green">131</FONT>        public CoordSubmitCommand(boolean dryrun, Configuration conf, String authToken) {<a name="line.131"></a>
+<FONT color="green">132</FONT>            super("coord_submit", "coord_submit", 1, XLog.STD, dryrun);<a name="line.132"></a>
+<FONT color="green">133</FONT>            this.conf = ParamChecker.notNull(conf, "conf");<a name="line.133"></a>
+<FONT color="green">134</FONT>            this.authToken = ParamChecker.notEmpty(authToken, "authToken");<a name="line.134"></a>
+<FONT color="green">135</FONT>            this.dryrun = dryrun;<a name="line.135"></a>
+<FONT color="green">136</FONT>            // TODO Auto-generated constructor stub<a name="line.136"></a>
+<FONT color="green">137</FONT>        }<a name="line.137"></a>
+<FONT color="green">138</FONT>    <a name="line.138"></a>
+<FONT color="green">139</FONT>        /*<a name="line.139"></a>
+<FONT color="green">140</FONT>         * (non-Javadoc)<a name="line.140"></a>
+<FONT color="green">141</FONT>         * <a name="line.141"></a>
+<FONT color="green">142</FONT>         * @see org.apache.oozie.command.Command#call(org.apache.oozie.store.Store)<a name="line.142"></a>
+<FONT color="green">143</FONT>         */<a name="line.143"></a>
+<FONT color="green">144</FONT>        @Override<a name="line.144"></a>
+<FONT color="green">145</FONT>        protected String call(CoordinatorStore store) throws StoreException, CommandException {<a name="line.145"></a>
+<FONT color="green">146</FONT>            String jobId = null;<a name="line.146"></a>
+<FONT color="green">147</FONT>            log.info("STARTED Coordinator Submit");<a name="line.147"></a>
+<FONT color="green">148</FONT>            incrJobCounter(1);<a name="line.148"></a>
+<FONT color="green">149</FONT>            CoordinatorJobBean coordJob = new CoordinatorJobBean();<a name="line.149"></a>
+<FONT color="green">150</FONT>            try {<a name="line.150"></a>
+<FONT color="green">151</FONT>                XLog.Info.get().setParameter(DagXLogInfoService.TOKEN, conf.get(OozieClient.LOG_TOKEN));<a name="line.151"></a>
+<FONT color="green">152</FONT>                mergeDefaultConfig();<a name="line.152"></a>
+<FONT color="green">153</FONT>    <a name="line.153"></a>
+<FONT color="green">154</FONT>                String appXml = readAndValidateXml();<a name="line.154"></a>
+<FONT color="green">155</FONT>                coordJob.setOrigJobXml(appXml);<a name="line.155"></a>
+<FONT color="green">156</FONT>                log.debug("jobXml after initial validation " + XmlUtils.prettyPrint(appXml).toString());<a name="line.156"></a>
+<FONT color="green">157</FONT>                appXml = XmlUtils.removeComments(appXml);<a name="line.157"></a>
+<FONT color="green">158</FONT>                initEvaluators();<a name="line.158"></a>
+<FONT color="green">159</FONT>                Element eJob = basicResolveAndIncludeDS(appXml, conf, coordJob);<a name="line.159"></a>
+<FONT color="green">160</FONT>                log.debug("jobXml after all validation " + XmlUtils.prettyPrint(eJob).toString());<a name="line.160"></a>
+<FONT color="green">161</FONT>    <a name="line.161"></a>
+<FONT color="green">162</FONT>                jobId = storeToDB(eJob, store, coordJob);<a name="line.162"></a>
+<FONT color="green">163</FONT>                // log JOB info for coordinator jobs<a name="line.163"></a>
+<FONT color="green">164</FONT>                setLogInfo(coordJob);<a name="line.164"></a>
+<FONT color="green">165</FONT>                log = XLog.getLog(getClass());<a name="line.165"></a>
+<FONT color="green">166</FONT>    <a name="line.166"></a>
+<FONT color="green">167</FONT>                if (!dryrun) {<a name="line.167"></a>
+<FONT color="green">168</FONT>                    // submit a command to materialize jobs for the next 1 hour (3600 secs)<a name="line.168"></a>
+<FONT color="green">169</FONT>                    // so we don't wait 10 mins for the Service to run.<a name="line.169"></a>
+<FONT color="green">170</FONT>                    queueCallable(new CoordJobMatLookupCommand(jobId, 3600), 100);<a name="line.170"></a>
+<FONT color="green">171</FONT>                }<a name="line.171"></a>
+<FONT color="green">172</FONT>                else {<a name="line.172"></a>
+<FONT color="green">173</FONT>                    Date startTime = coordJob.getStartTime();<a name="line.173"></a>
+<FONT color="green">174</FONT>                    long startTimeMilli = startTime.getTime();<a name="line.174"></a>
+<FONT color="green">175</FONT>                    long endTimeMilli = startTimeMilli + (3600 * 1000);<a name="line.175"></a>
+<FONT color="green">176</FONT>                    Date jobEndTime = coordJob.getEndTime();<a name="line.176"></a>
+<FONT color="green">177</FONT>                    Date endTime = new Date(endTimeMilli);<a name="line.177"></a>
+<FONT color="green">178</FONT>                    if (endTime.compareTo(jobEndTime) &gt; 0) {<a name="line.178"></a>
+<FONT color="green">179</FONT>                        endTime = jobEndTime;<a name="line.179"></a>
+<FONT color="green">180</FONT>                    }<a name="line.180"></a>
+<FONT color="green">181</FONT>                    jobId = coordJob.getId();<a name="line.181"></a>
+<FONT color="green">182</FONT>                    log.info("[" + jobId + "]: Update status to PREMATER");<a name="line.182"></a>
+<FONT color="green">183</FONT>                    coordJob.setStatus(CoordinatorJob.Status.PREMATER);<a name="line.183"></a>
+<FONT color="green">184</FONT>                    CoordActionMaterializeCommand coordActionMatCom = new CoordActionMaterializeCommand(jobId, startTime,<a name="line.184"></a>
+<FONT color="green">185</FONT>                                                                                                        endTime);<a name="line.185"></a>
+<FONT color="green">186</FONT>                    Configuration jobConf = null;<a name="line.186"></a>
+<FONT color="green">187</FONT>                    try {<a name="line.187"></a>
+<FONT color="green">188</FONT>                        jobConf = new XConfiguration(new StringReader(coordJob.getConf()));<a name="line.188"></a>
+<FONT color="green">189</FONT>                    }<a name="line.189"></a>
+<FONT color="green">190</FONT>                    catch (IOException e1) {<a name="line.190"></a>
+<FONT color="green">191</FONT>                        log.warn("Configuration parse error. read from DB :" + coordJob.getConf(), e1);<a name="line.191"></a>
+<FONT color="green">192</FONT>                    }<a name="line.192"></a>
+<FONT color="green">193</FONT>                    String action = coordActionMatCom.materializeJobs(true, coordJob, jobConf, null);<a name="line.193"></a>
+<FONT color="green">194</FONT>                    String output = coordJob.getJobXml() + System.getProperty("line.separator")<a name="line.194"></a>
+<FONT color="green">195</FONT>                            + "***actions for instance***" + action;<a name="line.195"></a>
+<FONT color="green">196</FONT>                    return output;<a name="line.196"></a>
+<FONT color="green">197</FONT>                }<a name="line.197"></a>
+<FONT color="green">198</FONT>            }<a name="line.198"></a>
+<FONT color="green">199</FONT>            catch (CoordinatorJobException ex) {<a name="line.199"></a>
+<FONT color="green">200</FONT>                log.warn("ERROR:  ", ex);<a name="line.200"></a>
+<FONT color="green">201</FONT>                throw new CommandException(ex);<a name="line.201"></a>
+<FONT color="green">202</FONT>            }<a name="line.202"></a>
+<FONT color="green">203</FONT>            catch (IllegalArgumentException iex) {<a name="line.203"></a>
+<FONT color="green">204</FONT>                log.warn("ERROR:  ", iex);<a name="line.204"></a>
+<FONT color="green">205</FONT>                throw new CommandException(ErrorCode.E1003, iex);<a name="line.205"></a>
+<FONT color="green">206</FONT>            }<a name="line.206"></a>
+<FONT color="green">207</FONT>            catch (Exception ex) {// TODO<a name="line.207"></a>
+<FONT color="green">208</FONT>                log.warn("ERROR:  ", ex);<a name="line.208"></a>
+<FONT color="green">209</FONT>                throw new CommandException(ErrorCode.E0803, ex);<a name="line.209"></a>
+<FONT color="green">210</FONT>            }<a name="line.210"></a>
+<FONT color="green">211</FONT>            log.info("ENDED Coordinator Submit jobId=" + jobId);<a name="line.211"></a>
+<FONT color="green">212</FONT>            return jobId;<a name="line.212"></a>
+<FONT color="green">213</FONT>        }<a name="line.213"></a>
+<FONT color="green">214</FONT>    <a name="line.214"></a>
+<FONT color="green">215</FONT>        /**<a name="line.215"></a>
+<FONT color="green">216</FONT>         * Read the application XML and validate against coordinator Schema<a name="line.216"></a>
+<FONT color="green">217</FONT>         *<a name="line.217"></a>
+<FONT color="green">218</FONT>         * @return validated coordinator XML<a name="line.218"></a>
+<FONT color="green">219</FONT>         * @throws CoordinatorJobException<a name="line.219"></a>
+<FONT color="green">220</FONT>         */<a name="line.220"></a>
+<FONT color="green">221</FONT>        private String readAndValidateXml() throws CoordinatorJobException {<a name="line.221"></a>
+<FONT color="green">222</FONT>            String appPath = ParamChecker.notEmpty(conf.get(OozieClient.COORDINATOR_APP_PATH),<a name="line.222"></a>
+<FONT color="green">223</FONT>                                                   OozieClient.COORDINATOR_APP_PATH);// TODO: COORDINATOR_APP_PATH<a name="line.223"></a>
+<FONT color="green">224</FONT>            String coordXml = readDefinition(appPath);<a name="line.224"></a>
+<FONT color="green">225</FONT>            validateXml(coordXml);<a name="line.225"></a>
+<FONT color="green">226</FONT>            return coordXml;<a name="line.226"></a>
+<FONT color="green">227</FONT>        }<a name="line.227"></a>
+<FONT color="green">228</FONT>    <a name="line.228"></a>
+<FONT color="green">229</FONT>        /**<a name="line.229"></a>
+<FONT color="green">230</FONT>         * Validate against Coordinator XSD file<a name="line.230"></a>
+<FONT color="green">231</FONT>         *<a name="line.231"></a>
+<FONT color="green">232</FONT>         * @param xmlContent : Input coordinator xml<a name="line.232"></a>
+<FONT color="green">233</FONT>         * @throws CoordinatorJobException<a name="line.233"></a>
+<FONT color="green">234</FONT>         */<a name="line.234"></a>
+<FONT color="green">235</FONT>        private void validateXml(String xmlContent) throws CoordinatorJobException {<a name="line.235"></a>
+<FONT color="green">236</FONT>            javax.xml.validation.Schema schema = Services.get().get(SchemaService.class).getSchema(SchemaName.COORDINATOR);<a name="line.236"></a>
+<FONT color="green">237</FONT>            Validator validator = schema.newValidator();<a name="line.237"></a>
+<FONT color="green">238</FONT>            // log.warn("XML " + xmlContent);<a name="line.238"></a>
+<FONT color="green">239</FONT>            try {<a name="line.239"></a>
+<FONT color="green">240</FONT>                validator.validate(new StreamSource(new StringReader(xmlContent)));<a name="line.240"></a>
+<FONT color="green">241</FONT>            }<a name="line.241"></a>
+<FONT color="green">242</FONT>            catch (SAXException ex) {<a name="line.242"></a>
+<FONT color="green">243</FONT>                log.warn("SAXException :", ex);<a name="line.243"></a>
+<FONT color="green">244</FONT>                throw new CoordinatorJobException(ErrorCode.E0701, ex.getMessage(), ex);<a name="line.244"></a>
+<FONT color="green">245</FONT>            }<a name="line.245"></a>
+<FONT color="green">246</FONT>            catch (IOException ex) {<a name="line.246"></a>
+<FONT color="green">247</FONT>                // ex.printStackTrace();<a name="line.247"></a>
+<FONT color="green">248</FONT>                log.warn("IOException :", ex);<a name="line.248"></a>
+<FONT color="green">249</FONT>                throw new CoordinatorJobException(ErrorCode.E0702, ex.getMessage(), ex);<a name="line.249"></a>
+<FONT color="green">250</FONT>            }<a name="line.250"></a>
+<FONT color="green">251</FONT>        }<a name="line.251"></a>
+<FONT color="green">252</FONT>    <a name="line.252"></a>
+<FONT color="green">253</FONT>        /**<a name="line.253"></a>
+<FONT color="green">254</FONT>         * Merge default configuration with user-defined configuration.<a name="line.254"></a>
+<FONT color="green">255</FONT>         *<a name="line.255"></a>
+<FONT color="green">256</FONT>         * @throws CommandException<a name="line.256"></a>
+<FONT color="green">257</FONT>         */<a name="line.257"></a>
+<FONT color="green">258</FONT>        protected void mergeDefaultConfig() throws CommandException {<a name="line.258"></a>
+<FONT color="green">259</FONT>            Path coordAppDir = new Path(conf.get(OozieClient.COORDINATOR_APP_PATH)).getParent();<a name="line.259"></a>
+<FONT color="green">260</FONT>            Path configDefault = new Path(coordAppDir, CONFIG_DEFAULT);<a name="line.260"></a>
+<FONT color="green">261</FONT>            // Configuration fsConfig = new Configuration();<a name="line.261"></a>
+<FONT color="green">262</FONT>            // log.warn("CONFIG :" + configDefault.toUri());<a name="line.262"></a>
+<FONT color="green">263</FONT>            Configuration fsConfig = CoordUtils.getHadoopConf(conf);<a name="line.263"></a>
+<FONT color="green">264</FONT>            FileSystem fs;<a name="line.264"></a>
+<FONT color="green">265</FONT>            // TODO: which conf?<a name="line.265"></a>
+<FONT color="green">266</FONT>            try {<a name="line.266"></a>
+<FONT color="green">267</FONT>                String user = ParamChecker.notEmpty(conf.get(OozieClient.USER_NAME), OozieClient.USER_NAME);<a name="line.267"></a>
+<FONT color="green">268</FONT>                String group = ParamChecker.notEmpty(conf.get(OozieClient.GROUP_NAME), OozieClient.GROUP_NAME);<a name="line.268"></a>
+<FONT color="green">269</FONT>                fs = Services.get().get(HadoopAccessorService.class).createFileSystem(user, group, configDefault.toUri(),<a name="line.269"></a>
+<FONT color="green">270</FONT>                                                                                      conf);<a name="line.270"></a>
+<FONT color="green">271</FONT>                if (fs.exists(configDefault)) {<a name="line.271"></a>
+<FONT color="green">272</FONT>                    Configuration defaultConf = new XConfiguration(fs.open(configDefault));<a name="line.272"></a>
+<FONT color="green">273</FONT>                    PropertiesUtils.checkDisallowedProperties(defaultConf, DISALLOWED_DEFAULT_PROPERTIES);<a name="line.273"></a>
+<FONT color="green">274</FONT>                    XConfiguration.injectDefaults(defaultConf, conf);<a name="line.274"></a>
+<FONT color="green">275</FONT>                }<a name="line.275"></a>
+<FONT color="green">276</FONT>                else {<a name="line.276"></a>
+<FONT color="green">277</FONT>                    log.info("configDefault Doesn't exist " + configDefault);<a name="line.277"></a>
+<FONT color="green">278</FONT>                }<a name="line.278"></a>
+<FONT color="green">279</FONT>                PropertiesUtils.checkDisallowedProperties(conf, DISALLOWED_USER_PROPERTIES);<a name="line.279"></a>
+<FONT color="green">280</FONT>            }<a name="line.280"></a>
+<FONT color="green">281</FONT>            catch (IOException e) {<a name="line.281"></a>
+<FONT color="green">282</FONT>                throw new CommandException(ErrorCode.E0702, e.getMessage() + " : Problem reading default config "<a name="line.282"></a>
+<FONT color="green">283</FONT>                        + configDefault, e);<a name="line.283"></a>
+<FONT color="green">284</FONT>            }<a name="line.284"></a>
+<FONT color="green">285</FONT>            catch (HadoopAccessorException e) {<a name="line.285"></a>
+<FONT color="green">286</FONT>                throw new CommandException(e);<a name="line.286"></a>
+<FONT color="green">287</FONT>            }<a name="line.287"></a>
+<FONT color="green">288</FONT>            log.debug("Merged CONF :" + XmlUtils.prettyPrint(conf).toString());<a name="line.288"></a>
+<FONT color="green">289</FONT>        }<a name="line.289"></a>
+<FONT color="green">290</FONT>    <a name="line.290"></a>
+<FONT color="green">291</FONT>        /**<a name="line.291"></a>
+<FONT color="green">292</FONT>         * The method resolve all the variables that are defined in configuration. It also include the data set definition<a name="line.292"></a>
+<FONT color="green">293</FONT>         * from dataset file into XML.<a name="line.293"></a>
+<FONT color="green">294</FONT>         *<a name="line.294"></a>
+<FONT color="green">295</FONT>         * @param appXml : Original job XML<a name="line.295"></a>
+<FONT color="green">296</FONT>         * @param conf : Configuration of the job<a name="line.296"></a>
+<FONT color="green">297</FONT>         * @param coordJob : Coordinator job bean to be populated.<a name="line.297"></a>
+<FONT color="green">298</FONT>         * @return : Resolved and modified job XML element.<a name="line.298"></a>
+<FONT color="green">299</FONT>         * @throws Exception<a name="line.299"></a>
+<FONT color="green">300</FONT>         */<a name="line.300"></a>
+<FONT color="green">301</FONT>        public Element basicResolveAndIncludeDS(String appXml, Configuration conf, CoordinatorJobBean coordJob)<a name="line.301"></a>
+<FONT color="green">302</FONT>                throws CoordinatorJobException, Exception {<a name="line.302"></a>
+<FONT color="green">303</FONT>            Element basicResolvedApp = resolveInitial(conf, appXml, coordJob);<a name="line.303"></a>
+<FONT color="green">304</FONT>            includeDataSets(basicResolvedApp, conf);<a name="line.304"></a>
+<FONT color="green">305</FONT>            return basicResolvedApp;<a name="line.305"></a>
+<FONT color="green">306</FONT>        }<a name="line.306"></a>
+<FONT color="green">307</FONT>    <a name="line.307"></a>
+<FONT color="green">308</FONT>        /**<a name="line.308"></a>
+<FONT color="green">309</FONT>         * Insert data set into data-in and data-out tags.<a name="line.309"></a>
+<FONT color="green">310</FONT>         *<a name="line.310"></a>
+<FONT color="green">311</FONT>         * @param eAppXml : coordinator application XML<a name="line.311"></a>
+<FONT color="green">312</FONT>         * @param eDatasets : DataSet XML<a name="line.312"></a>
+<FONT color="green">313</FONT>         * @return updated application<a name="line.313"></a>
+<FONT color="green">314</FONT>         */<a name="line.314"></a>
+<FONT color="green">315</FONT>        private void insertDataSet(Element eAppXml, Element eDatasets) {<a name="line.315"></a>
+<FONT color="green">316</FONT>            // Adding DS definition in the coordinator XML<a name="line.316"></a>
+<FONT color="green">317</FONT>            Element inputList = eAppXml.getChild("input-events", eAppXml.getNamespace());<a name="line.317"></a>
+<FONT color="green">318</FONT>            if (inputList != null) {<a name="line.318"></a>
+<FONT color="green">319</FONT>                for (Element dataIn : (List&lt;Element&gt;) inputList.getChildren("data-in", eAppXml.getNamespace())) {<a name="line.319"></a>
+<FONT color="green">320</FONT>                    Element eDataset = findDataSet(eDatasets, dataIn.getAttributeValue("dataset"));<a name="line.320"></a>
+<FONT color="green">321</FONT>                    dataIn.getContent().add(0, eDataset);<a name="line.321"></a>
+<FONT color="green">322</FONT>                }<a name="line.322"></a>
+<FONT color="green">323</FONT>            }<a name="line.323"></a>
+<FONT color="green">324</FONT>            Element outputList = eAppXml.getChild("output-events", eAppXml.getNamespace());<a name="line.324"></a>
+<FONT color="green">325</FONT>            if (outputList != null) {<a name="line.325"></a>
+<FONT color="green">326</FONT>                for (Element dataOut : (List&lt;Element&gt;) outputList.getChildren("data-out", eAppXml.getNamespace())) {<a name="line.326"></a>
+<FONT color="green">327</FONT>                    Element eDataset = findDataSet(eDatasets, dataOut.getAttributeValue("dataset"));<a name="line.327"></a>
+<FONT color="green">328</FONT>                    dataOut.getContent().add(0, eDataset);<a name="line.328"></a>
+<FONT color="green">329</FONT>                }<a name="line.329"></a>
+<FONT color="green">330</FONT>            }<a name="line.330"></a>
+<FONT color="green">331</FONT>        }<a name="line.331"></a>
+<FONT color="green">332</FONT>    <a name="line.332"></a>
+<FONT color="green">333</FONT>        /**<a name="line.333"></a>
+<FONT color="green">334</FONT>         * Find a specific dataset from a list of Datasets.<a name="line.334"></a>
+<FONT color="green">335</FONT>         *<a name="line.335"></a>
+<FONT color="green">336</FONT>         * @param eDatasets : List of data sets<a name="line.336"></a>
+<FONT color="green">337</FONT>         * @param name : queried data set name<a name="line.337"></a>
+<FONT color="green">338</FONT>         * @return one Dataset element. otherwise throw Exception<a name="line.338"></a>
+<FONT color="green">339</FONT>         */<a name="line.339"></a>
+<FONT color="green">340</FONT>        private static Element findDataSet(Element eDatasets, String name) {<a name="line.340"></a>
+<FONT color="green">341</FONT>            for (Element eDataset : (List&lt;Element&gt;) eDatasets.getChildren("dataset", eDatasets.getNamespace())) {<a name="line.341"></a>
+<FONT color="green">342</FONT>                if (eDataset.getAttributeValue("name").equals(name)) {<a name="line.342"></a>
+<FONT color="green">343</FONT>                    eDataset = (Element) eDataset.clone();<a name="line.343"></a>
+<FONT color="green">344</FONT>                    eDataset.detach();<a name="line.344"></a>
+<FONT color="green">345</FONT>                    return eDataset;<a name="line.345"></a>
+<FONT color="green">346</FONT>                }<a name="line.346"></a>
+<FONT color="green">347</FONT>            }<a name="line.347"></a>
+<FONT color="green">348</FONT>            throw new RuntimeException("undefined dataset: " + name);<a name="line.348"></a>
+<FONT color="green">349</FONT>        }<a name="line.349"></a>
+<FONT color="green">350</FONT>    <a name="line.350"></a>
+<FONT color="green">351</FONT>        /**<a name="line.351"></a>
+<FONT color="green">352</FONT>         * Initialize all the required EL Evaluators.<a name="line.352"></a>
+<FONT color="green">353</FONT>         */<a name="line.353"></a>
+<FONT color="green">354</FONT>        protected void initEvaluators() {<a name="line.354"></a>
+<FONT color="green">355</FONT>            evalFreq = CoordELEvaluator.createELEvaluatorForGroup(conf, "coord-job-submit-freq");<a name="line.355"></a>
+<FONT color="green">356</FONT>            evalNofuncs = CoordELEvaluator.createELEvaluatorForGroup(conf, "coord-job-submit-nofuncs");<a name="line.356"></a>
+<FONT color="green">357</FONT>            evalInst = CoordELEvaluator.createELEvaluatorForGroup(conf, "coord-job-submit-instances");<a name="line.357"></a>
+<FONT color="green">358</FONT>            evalSla = CoordELEvaluator.createELEvaluatorForGroup(conf, "coord-sla-submit");<a name="line.358"></a>
+<FONT color="green">359</FONT>        }<a name="line.359"></a>
+<FONT color="green">360</FONT>    <a name="line.360"></a>
+<FONT color="green">361</FONT>        /**<a name="line.361"></a>
+<FONT color="green">362</FONT>         * Resolve basic entities using job Configuration.<a name="line.362"></a>
+<FONT color="green">363</FONT>         *<a name="line.363"></a>
+<FONT color="green">364</FONT>         * @param conf :Job configuration<a name="line.364"></a>
+<FONT color="green">365</FONT>         * @param appXml : Original job XML<a name="line.365"></a>
+<FONT color="green">366</FONT>         * @param coordJob : Coordinator job bean to be populated.<a name="line.366"></a>
+<FONT color="green">367</FONT>         * @return Resolved job XML element.<a name="line.367"></a>
+<FONT color="green">368</FONT>         * @throws Exception<a name="line.368"></a>
+<FONT color="green">369</FONT>         */<a name="line.369"></a>
+<FONT color="green">370</FONT>        protected Element resolveInitial(Configuration conf, String appXml, CoordinatorJobBean coordJob)<a name="line.370"></a>
+<FONT color="green">371</FONT>                throws CoordinatorJobException, Exception {<a name="line.371"></a>
+<FONT color="green">372</FONT>            Element eAppXml = XmlUtils.parseXml(appXml);<a name="line.372"></a>
+<FONT color="green">373</FONT>            // job's main attributes<a name="line.373"></a>
+<FONT color="green">374</FONT>            // frequency<a name="line.374"></a>
+<FONT color="green">375</FONT>            String val = resolveAttribute("frequency", eAppXml, evalFreq);<a name="line.375"></a>
+<FONT color="green">376</FONT>            int ival = ParamChecker.checkInteger(val, "frequency");<a name="line.376"></a>
+<FONT color="green">377</FONT>            ParamChecker.checkGTZero(ival, "frequency");<a name="line.377"></a>
+<FONT color="green">378</FONT>            coordJob.setFrequency(ival);<a name="line.378"></a>
+<FONT color="green">379</FONT>            TimeUnit tmp = (evalFreq.getVariable("timeunit") == null) ? TimeUnit.MINUTE : ((TimeUnit) evalFreq<a name="line.379"></a>
+<FONT color="green">380</FONT>                    .getVariable("timeunit"));<a name="line.380"></a>
+<FONT color="green">381</FONT>            addAnAttribute("freq_timeunit", eAppXml, tmp.toString()); // TODO: Store<a name="line.381"></a>
+<FONT color="green">382</FONT>            // TimeUnit<a name="line.382"></a>
+<FONT color="green">383</FONT>            coordJob.setTimeUnit(CoordinatorJob.Timeunit.valueOf(tmp.toString()));<a name="line.383"></a>
+<FONT color="green">384</FONT>            // End Of Duration<a name="line.384"></a>
+<FONT color="green">385</FONT>            tmp = evalFreq.getVariable("endOfDuration") == null ? TimeUnit.NONE : ((TimeUnit) evalFreq<a name="line.385"></a>
+<FONT color="green">386</FONT>                    .getVariable("endOfDuration"));<a name="line.386"></a>
+<FONT color="green">387</FONT>            addAnAttribute("end_of_duration", eAppXml, tmp.toString());<a name="line.387"></a>
+<FONT color="green">388</FONT>            // coordJob.setEndOfDuration(tmp) // TODO: Add new attribute in Job bean<a name="line.388"></a>
+<FONT color="green">389</FONT>    <a name="line.389"></a>
+<FONT color="green">390</FONT>            // start time<a name="line.390"></a>
+<FONT color="green">391</FONT>            val = resolveAttribute("start", eAppXml, evalNofuncs);<a name="line.391"></a>
+<FONT color="green">392</FONT>            ParamChecker.checkUTC(val, "start");<a name="line.392"></a>
+<FONT color="green">393</FONT>            coordJob.setStartTime(DateUtils.parseDateUTC(val));<a name="line.393"></a>
+<FONT color="green">394</FONT>            // end time<a name="line.394"></a>
+<FONT color="green">395</FONT>            val = resolveAttribute("end", eAppXml, evalNofuncs);<a name="line.395"></a>
+<FONT color="green">396</FONT>            ParamChecker.checkUTC(val, "end");<a name="line.396"></a>
+<FONT color="green">397</FONT>            coordJob.setEndTime(DateUtils.parseDateUTC(val));<a name="line.397"></a>
+<FONT color="green">398</FONT>            // Time zone<a name="line.398"></a>
+<FONT color="green">399</FONT>            val = resolveAttribute("timezone", eAppXml, evalNofuncs);<a name="line.399"></a>
+<FONT color="green">400</FONT>            ParamChecker.checkTimeZone(val, "timezone");<a name="line.400"></a>
+<FONT color="green">401</FONT>            coordJob.setTimeZone(val);<a name="line.401"></a>
+<FONT color="green">402</FONT>    <a name="line.402"></a>
+<FONT color="green">403</FONT>            // controls<a name="line.403"></a>
+<FONT color="green">404</FONT>            val = resolveTagContents("timeout", eAppXml.getChild("controls", eAppXml.getNamespace()), evalNofuncs);<a name="line.404"></a>
+<FONT color="green">405</FONT>            if (val == "") {<a name="line.405"></a>
+<FONT color="green">406</FONT>                val = Services.get().getConf().get(CONF_DEFAULT_TIMEOUT_NORMAL);<a name="line.406"></a>
+<FONT color="green">407</FONT>            }<a name="line.407"></a>
+<FONT color="green">408</FONT>    <a name="line.408"></a>
+<FONT color="green">409</FONT>            ival = ParamChecker.checkInteger(val, "timeout");<a name="line.409"></a>
+<FONT color="green">410</FONT>            // ParamChecker.checkGEZero(ival, "timeout");<a name="line.410"></a>
+<FONT color="green">411</FONT>            coordJob.setTimeout(ival);<a name="line.411"></a>
+<FONT color="green">412</FONT>            val = resolveTagContents("concurrency", eAppXml.getChild("controls", eAppXml.getNamespace()), evalNofuncs);<a name="line.412"></a>
+<FONT color="green">413</FONT>            if (val == "") {<a name="line.413"></a>
+<FONT color="green">414</FONT>                val = "-1";<a name="line.414"></a>
+<FONT color="green">415</FONT>            }<a name="line.415"></a>
+<FONT color="green">416</FONT>            ival = ParamChecker.checkInteger(val, "concurrency");<a name="line.416"></a>
+<FONT color="green">417</FONT>            // ParamChecker.checkGEZero(ival, "concurrency");<a name="line.417"></a>
+<FONT color="green">418</FONT>            coordJob.setConcurrency(ival);<a name="line.418"></a>
+<FONT color="green">419</FONT>            val = resolveTagContents("execution", eAppXml.getChild("controls", eAppXml.getNamespace()), evalNofuncs);<a name="line.419"></a>
+<FONT color="green">420</FONT>            if (val == "") {<a name="line.420"></a>
+<FONT color="green">421</FONT>                val = Execution.FIFO.toString();<a name="line.421"></a>
+<FONT color="green">422</FONT>            }<a name="line.422"></a>
+<FONT color="green">423</FONT>            coordJob.setExecution(Execution.valueOf(val));<a name="line.423"></a>
+<FONT color="green">424</FONT>            String[] acceptedVals = {Execution.LIFO.toString(), Execution.FIFO.toString(), Execution.LAST_ONLY.toString()};<a name="line.424"></a>
+<FONT color="green">425</FONT>            ParamChecker.isMember(val, acceptedVals, "execution");<a name="line.425"></a>
+<FONT color="green">426</FONT>    <a name="line.426"></a>
+<FONT color="green">427</FONT>            // datasets<a name="line.427"></a>
+<FONT color="green">428</FONT>            resolveTagContents("include", eAppXml.getChild("datasets", eAppXml.getNamespace()), evalNofuncs);<a name="line.428"></a>
+<FONT color="green">429</FONT>            // for each data set<a name="line.429"></a>
+<FONT color="green">430</FONT>            resolveDataSets(eAppXml);<a name="line.430"></a>
+<FONT color="green">431</FONT>            HashMap&lt;String, String&gt; dataNameList = new HashMap&lt;String, String&gt;();<a name="line.431"></a>
+<FONT color="green">432</FONT>            resolveIOEvents(eAppXml, dataNameList);<a name="line.432"></a>
+<FONT color="green">433</FONT>    <a name="line.433"></a>
+<FONT color="green">434</FONT>            resolveTagContents("app-path", eAppXml.getChild("action", eAppXml.getNamespace()).getChild("workflow",<a name="line.434"></a>
+<FONT color="green">435</FONT>                                                                                                       eAppXml.getNamespace()), evalNofuncs);<a name="line.435"></a>
+<FONT color="green">436</FONT>            // TODO: If action or workflow tag is missing, NullPointerException will<a name="line.436"></a>
+<FONT color="green">437</FONT>            // occur<a name="line.437"></a>
+<FONT color="green">438</FONT>            Element configElem = eAppXml.getChild("action", eAppXml.getNamespace()).getChild("workflow",<a name="line.438"></a>
+<FONT color="green">439</FONT>                                                                                             eAppXml.getNamespace()).getChild("configuration", eAppXml.getNamespace());<a name="line.439"></a>
+<FONT color="green">440</FONT>            evalData = CoordELEvaluator.createELEvaluatorForDataEcho(conf, "coord-job-submit-data", dataNameList);<a name="line.440"></a>
+<FONT color="green">441</FONT>            if (configElem != null) {<a name="line.441"></a>
+<FONT color="green">442</FONT>                for (Element propElem : (List&lt;Element&gt;) configElem.getChildren("property", configElem.getNamespace())) {<a name="line.442"></a>
+<FONT color="green">443</FONT>                    resolveTagContents("name", propElem, evalData);<a name="line.443"></a>
+<FONT color="green">444</FONT>                    // log.warn("Value :");<a name="line.444"></a>
+<FONT color="green">445</FONT>                    // Want to check the data-integrity but don't want to modify the<a name="line.445"></a>
+<FONT color="green">446</FONT>                    // XML<a name="line.446"></a>
+<FONT color="green">447</FONT>                    // for properties only<a name="line.447"></a>
+<FONT color="green">448</FONT>                    Element tmpProp = (Element) propElem.clone();<a name="line.448"></a>
+<FONT color="green">449</FONT>                    resolveTagContents("value", tmpProp, evalData);<a name="line.449"></a>
+<FONT color="green">450</FONT>                    // val = resolveTagContents("value", propElem, evalData);<a name="line.450"></a>
+<FONT color="green">451</FONT>                    // log.warn("Value OK :" + val);<a name="line.451"></a>
+<FONT color="green">452</FONT>                }<a name="line.452"></a>
+<FONT color="green">453</FONT>            }<a name="line.453"></a>
+<FONT color="green">454</FONT>            resolveSLA(eAppXml, coordJob);<a name="line.454"></a>
+<FONT color="green">455</FONT>            return eAppXml;<a name="line.455"></a>
+<FONT color="green">456</FONT>        }<a name="line.456"></a>
+<FONT color="green">457</FONT>    <a name="line.457"></a>
+<FONT color="green">458</FONT>        private void resolveSLA(Element eAppXml, CoordinatorJobBean coordJob) throws CommandException {<a name="line.458"></a>
+<FONT color="green">459</FONT>            // String prefix = XmlUtils.getNamespacePrefix(eAppXml,<a name="line.459"></a>
+<FONT color="green">460</FONT>            // SchemaService.SLA_NAME_SPACE_URI);<a name="line.460"></a>
+<FONT color="green">461</FONT>            Element eSla = eAppXml.getChild("action", eAppXml.getNamespace()).getChild("info",<a name="line.461"></a>
+<FONT color="green">462</FONT>                                                                                       Namespace.getNamespace(SchemaService.SLA_NAME_SPACE_URI));<a name="line.462"></a>
+<FONT color="green">463</FONT>    <a name="line.463"></a>
+<FONT color="green">464</FONT>            if (eSla != null) {<a name="line.464"></a>
+<FONT color="green">465</FONT>                String slaXml = XmlUtils.prettyPrint(eSla).toString();<a name="line.465"></a>
+<FONT color="green">466</FONT>                try {<a name="line.466"></a>
+<FONT color="green">467</FONT>                    // EL evaluation<a name="line.467"></a>
+<FONT color="green">468</FONT>                    slaXml = evalSla.evaluate(slaXml, String.class);<a name="line.468"></a>
+<FONT color="green">469</FONT>                    // Validate against semantic SXD<a name="line.469"></a>
+<FONT color="green">470</FONT>                    XmlUtils.validateData(slaXml, SchemaName.SLA_ORIGINAL);<a name="line.470"></a>
+<FONT color="green">471</FONT>                }<a name="line.471"></a>
+<FONT color="green">472</FONT>                catch (Exception e) {<a name="line.472"></a>
+<FONT color="green">473</FONT>                    throw new CommandException(ErrorCode.E1004, "Validation ERROR :" + e.getMessage(), e);<a name="line.473"></a>
+<FONT color="green">474</FONT>                }<a name="line.474"></a>
+<FONT color="green">475</FONT>            }<a name="line.475"></a>
+<FONT color="green">476</FONT>        }<a name="line.476"></a>
+<FONT color="green">477</FONT>    <a name="line.477"></a>
+<FONT color="green">478</FONT>        /**<a name="line.478"></a>
+<FONT color="green">479</FONT>         * Resolve input-events/data-in and output-events/data-out tags.<a name="line.479"></a>
+<FONT color="green">480</FONT>         *<a name="line.480"></a>
+<FONT color="green">481</FONT>         * @param eJob : Job element<a name="line.481"></a>
+<FONT color="green">482</FONT>         * @throws CoordinatorJobException<a name="line.482"></a>
+<FONT color="green">483</FONT>         */<a name="line.483"></a>
+<FONT color="green">484</FONT>        private void resolveIOEvents(Element eJobOrg, HashMap&lt;String, String&gt; dataNameList) throws CoordinatorJobException {<a name="line.484"></a>
+<FONT color="green">485</FONT>            // Resolving input-events/data-in<a name="line.485"></a>
+<FONT color="green">486</FONT>            // Clone the job and don't update anything in the original<a name="line.486"></a>
+<FONT color="green">487</FONT>            Element eJob = (Element) eJobOrg.clone();<a name="line.487"></a>
+<FONT color="green">488</FONT>            Element inputList = eJob.getChild("input-events", eJob.getNamespace());<a name="line.488"></a>
+<FONT color="green">489</FONT>            if (inputList != null) {<a name="line.489"></a>
+<FONT color="green">490</FONT>                TreeSet&lt;String&gt; eventNameSet = new TreeSet&lt;String&gt;();<a name="line.490"></a>
+<FONT color="green">491</FONT>                for (Element dataIn : (List&lt;Element&gt;) inputList.getChildren("data-in", eJob.getNamespace())) {<a name="line.491"></a>
+<FONT color="green">492</FONT>                    String dataInName = dataIn.getAttributeValue("name");<a name="line.492"></a>
+<FONT color="green">493</FONT>                    dataNameList.put(dataInName, "data-in");<a name="line.493"></a>
+<FONT color="green">494</FONT>                    // check whether there is any duplicate data-in name<a name="line.494"></a>
+<FONT color="green">495</FONT>                    if (eventNameSet.contains(dataInName)) {<a name="line.495"></a>
+<FONT color="green">496</FONT>                        throw new RuntimeException("Duplicate dataIn name " + dataInName);<a name="line.496"></a>
+<FONT color="green">497</FONT>                    }<a name="line.497"></a>
+<FONT color="green">498</FONT>                    else {<a name="line.498"></a>
+<FONT color="green">499</FONT>                        eventNameSet.add(dataInName);<a name="line.499"></a>
+<FONT color="green">500</FONT>                    }<a name="line.500"></a>
+<FONT color="green">501</FONT>                    resolveTagContents("instance", dataIn, evalInst);<a name="line.501"></a>
+<FONT color="green">502</FONT>                    resolveTagContents("start-instance", dataIn, evalInst);<a name="line.502"></a>
+<FONT color="green">503</FONT>                    resolveTagContents("end-instance", dataIn, evalInst);<a name="line.503"></a>
+<FONT color="green">504</FONT>                }<a name="line.504"></a>
+<FONT color="green">505</FONT>            }<a name="line.505"></a>
+<FONT color="green">506</FONT>            // Resolving output-events/data-out<a name="line.506"></a>
+<FONT color="green">507</FONT>            Element outputList = eJob.getChild("output-events", eJob.getNamespace());<a name="line.507"></a>
+<FONT color="green">508</FONT>            if (outputList != null) {<a name="line.508"></a>
+<FONT color="green">509</FONT>                TreeSet&lt;String&gt; eventNameSet = new TreeSet&lt;String&gt;();<a name="line.509"></a>
+<FONT color="green">510</FONT>                for (Element dataOut : (List&lt;Element&gt;) outputList.getChildren("data-out", eJob.getNamespace())) {<a name="line.510"></a>
+<FONT color="green">511</FONT>                    String dataOutName = dataOut.getAttributeValue("name");<a name="line.511"></a>
+<FONT color="green">512</FONT>                    dataNameList.put(dataOutName, "data-out");<a name="line.512"></a>
+<FONT color="green">513</FONT>                    // check whether there is any duplicate data-out name<a name="line.513"></a>
+<FONT color="green">514</FONT>                    if (eventNameSet.contains(dataOutName)) {<a name="line.514"></a>
+<FONT color="green">515</FONT>                        throw new RuntimeException("Duplicate dataIn name " + dataOutName);<a name="line.515"></a>
+<FONT color="green">516</FONT>                    }<a name="line.516"></a>
+<FONT color="green">517</FONT>                    else {<a name="line.517"></a>
+<FONT color="green">518</FONT>                        eventNameSet.add(dataOutName);<a name="line.518"></a>
+<FONT color="green">519</FONT>                    }<a name="line.519"></a>
+<FONT color="green">520</FONT>                    resolveTagContents("instance", dataOut, evalInst);<a name="line.520"></a>
+<FONT color="green">521</FONT>                }<a name="line.521"></a>
+<FONT color="green">522</FONT>            }<a name="line.522"></a>
+<FONT color="green">523</FONT>    <a name="line.523"></a>
+<FONT color="green">524</FONT>        }<a name="line.524"></a>
+<FONT color="green">525</FONT>    <a name="line.525"></a>
+<FONT color="green">526</FONT>        /**<a name="line.526"></a>
+<FONT color="green">527</FONT>         * Add an attribute into XML element.<a name="line.527"></a>
+<FONT color="green">528</FONT>         *<a name="line.528"></a>
+<FONT color="green">529</FONT>         * @param attrName :attribute name<a name="line.529"></a>
+<FONT color="green">530</FONT>         * @param elem : Element to add attribute<a name="line.530"></a>
+<FONT color="green">531</FONT>         * @param value :Value of attribute<a name="line.531"></a>
+<FONT color="green">532</FONT>         */<a name="line.532"></a>
+<FONT color="green">533</FONT>        private void addAnAttribute(String attrName, Element elem, String value) {<a name="line.533"></a>
+<FONT color="green">534</FONT>            elem.setAttribute(attrName, value);<a name="line.534"></a>
+<FONT color="green">535</FONT>        }<a name="line.535"></a>
+<FONT color="green">536</FONT>    <a name="line.536"></a>
+<FONT color="green">537</FONT>        /**<a name="line.537"></a>
+<FONT color="green">538</FONT>         * Resolve Data set using job configuration.<a name="line.538"></a>
+<FONT color="green">539</FONT>         *<a name="line.539"></a>
+<FONT color="green">540</FONT>         * @param eAppXml : Job Element XML<a name="line.540"></a>
+<FONT color="green">541</FONT>         * @throws Exception<a name="line.541"></a>
+<FONT color="green">542</FONT>         */<a name="line.542"></a>
+<FONT color="green">543</FONT>        private void resolveDataSets(Element eAppXml) throws Exception {<a name="line.543"></a>
+<FONT color="green">544</FONT>            Element datasetList = eAppXml.getChild("datasets", eAppXml.getNamespace());<a name="line.544"></a>
+<FONT color="green">545</FONT>            if (datasetList != null) {<a name="line.545"></a>
+<FONT color="green">546</FONT>    <a name="line.546"></a>
+<FONT color="green">547</FONT>                List&lt;Element&gt; dsElems = datasetList.getChildren("dataset", eAppXml.getNamespace());<a name="line.547"></a>
+<FONT color="green">548</FONT>                resolveDataSets(dsElems);<a name="line.548"></a>
+<FONT color="green">549</FONT>                resolveTagContents("app-path", eAppXml.getChild("action", eAppXml.getNamespace()).getChild("workflow",<a name="line.549"></a>
+<FONT color="green">550</FONT>                                                                                                           eAppXml.getNamespace()), evalNofuncs);<a name="line.550"></a>
+<FONT color="green">551</FONT>            }<a name="line.551"></a>
+<FONT color="green">552</FONT>        }<a name="line.552"></a>
+<FONT color="green">553</FONT>    <a name="line.553"></a>
+<FONT color="green">554</FONT>        /**<a name="line.554"></a>
+<FONT color="green">555</FONT>         * Resolve Data set using job configuration.<a name="line.555"></a>
+<FONT color="green">556</FONT>         *<a name="line.556"></a>
+<FONT color="green">557</FONT>         * @param dsElems : Data set XML element.<a name="line.557"></a>
+<FONT color="green">558</FONT>         * @throws CoordinatorJobException<a name="line.558"></a>
+<FONT color="green">559</FONT>         * @throws Exception<a name="line.559"></a>
+<FONT color="green">560</FONT>         */<a name="line.560"></a>
+<FONT color="green">561</FONT>        private void resolveDataSets(List&lt;Element&gt; dsElems) throws CoordinatorJobException /*<a name="line.561"></a>
+<FONT color="green">562</FONT>                                                                                            * throws<a name="line.562"></a>
+<FONT color="green">563</FONT>                                                                                            * Exception<a name="line.563"></a>
+<FONT color="green">564</FONT>                                                                                            */ {<a name="line.564"></a>
+<FONT color="green">565</FONT>            for (Element dsElem : dsElems) {<a name="line.565"></a>
+<FONT color="green">566</FONT>                // Setting up default TimeUnit and EndOFDuraion<a name="line.566"></a>
+<FONT color="green">567</FONT>                evalFreq.setVariable("timeunit", TimeUnit.MINUTE);<a name="line.567"></a>
+<FONT color="green">568</FONT>                evalFreq.setVariable("endOfDuration", TimeUnit.NONE);<a name="line.568"></a>
+<FONT color="green">569</FONT>    <a name="line.569"></a>
+<FONT color="green">570</FONT>                String val = resolveAttribute("frequency", dsElem, evalFreq);<a name="line.570"></a>
+<FONT color="green">571</FONT>                int ival = ParamChecker.checkInteger(val, "frequency");<a name="line.571"></a>
+<FONT color="green">572</FONT>                ParamChecker.checkGTZero(ival, "frequency");<a name="line.572"></a>
+<FONT color="green">573</FONT>                addAnAttribute("freq_timeunit", dsElem, evalFreq.getVariable("timeunit") == null ? TimeUnit.MINUTE<a name="line.573"></a>
+<FONT color="green">574</FONT>                        .toString() : ((TimeUnit) evalFreq.getVariable("timeunit")).toString());<a name="line.574"></a>
+<FONT color="green">575</FONT>                addAnAttribute("end_of_duration", dsElem, evalFreq.getVariable("endOfDuration") == null ? TimeUnit.NONE<a name="line.575"></a>
+<FONT color="green">576</FONT>                        .toString() : ((TimeUnit) evalFreq.getVariable("endOfDuration")).toString());<a name="line.576"></a>
+<FONT color="green">577</FONT>                val = resolveAttribute("initial-instance", dsElem, evalNofuncs);<a name="line.577"></a>
+<FONT color="green">578</FONT>                ParamChecker.checkUTC(val, "initial-instance");<a name="line.578"></a>
+<FONT color="green">579</FONT>                val = resolveAttribute("timezone", dsElem, evalNofuncs);<a name="line.579"></a>
+<FONT color="green">580</FONT>                ParamChecker.checkTimeZone(val, "timezone");<a name="line.580"></a>
+<FONT color="green">581</FONT>                resolveTagContents("uri-template", dsElem, evalNofuncs);<a name="line.581"></a>
+<FONT color="green">582</FONT>                resolveTagContents("done-flag", dsElem, evalNofuncs);<a name="line.582"></a>
+<FONT color="green">583</FONT>            }<a name="line.583"></a>
+<FONT color="green">584</FONT>        }<a name="line.584"></a>
+<FONT color="green">585</FONT>    <a name="line.585"></a>
+<FONT color="green">586</FONT>        /**<a name="line.586"></a>
+<FONT color="green">587</FONT>         * Resolve the content of a tag.<a name="line.587"></a>
+<FONT color="green">588</FONT>         *<a name="line.588"></a>
+<FONT color="green">589</FONT>         * @param tagName : Tag name of job XML i.e. &lt;timeout&gt; 10 &lt;/timeout&gt;<a name="line.589"></a>
+<FONT color="green">590</FONT>         * @param elem : Element where the tag exists.<a name="line.590"></a>
+<FONT color="green">591</FONT>         * @param eval :<a name="line.591"></a>
+<FONT color="green">592</FONT>         * @return Resolved tag content.<a name="line.592"></a>
+<FONT color="green">593</FONT>         * @throws CoordinatorJobException<a name="line.593"></a>
+<FONT color="green">594</FONT>         */<a name="line.594"></a>
+<FONT color="green">595</FONT>        private String resolveTagContents(String tagName, Element elem, ELEvaluator eval) throws CoordinatorJobException {<a name="line.595"></a>
+<FONT color="green">596</FONT>            String ret = "";<a name="line.596"></a>
+<FONT color="green">597</FONT>            if (elem != null) {<a name="line.597"></a>
+<FONT color="green">598</FONT>                for (Element tagElem : (List&lt;Element&gt;) elem.getChildren(tagName, elem.getNamespace())) {<a name="line.598"></a>
+<FONT color="green">599</FONT>                    if (tagElem != null) {<a name="line.599"></a>
+<FONT color="green">600</FONT>                        String updated;<a name="line.600"></a>
+<FONT color="green">601</FONT>                        try {<a name="line.601"></a>
+<FONT color="green">602</FONT>                            updated = CoordELFunctions.evalAndWrap(eval, tagElem.getText().trim());<a name="line.602"></a>
+<FONT color="green">603</FONT>    <a name="line.603"></a>
+<FONT color="green">604</FONT>                        }<a name="line.604"></a>
+<FONT color="green">605</FONT>                        catch (Exception e) {<a name="line.605"></a>
+<FONT color="green">606</FONT>                            // e.printStackTrace();<a name="line.606"></a>
+<FONT color="green">607</FONT>                            throw new CoordinatorJobException(ErrorCode.E1004, e.getMessage(), e);<a name="line.607"></a>
+<FONT color="green">608</FONT>                        }<a name="line.608"></a>
+<FONT color="green">609</FONT>                        tagElem.removeContent();<a name="line.609"></a>
+<FONT color="green">610</FONT>                        tagElem.addContent(updated);<a name="line.610"></a>
+<FONT color="green">611</FONT>                        ret += updated;<a name="line.611"></a>
+<FONT color="green">612</FONT>                    }<a name="line.612"></a>
+<FONT color="green">613</FONT>                    /*<a name="line.613"></a>
+<FONT color="green">614</FONT>                     * else { //TODO: unlike event }<a name="line.614"></a>
+<FONT color="green">615</FONT>                     */<a name="line.615"></a>
+<FONT color="green">616</FONT>                }<a name="line.616"></a>
+<FONT color="green">617</FONT>            }<a name="line.617"></a>
+<FONT color="green">618</FONT>            return ret;<a name="line.618"></a>
+<FONT color="green">619</FONT>        }<a name="line.619"></a>
+<FONT color="green">620</FONT>    <a name="line.620"></a>
+<FONT color="green">621</FONT>        /**<a name="line.621"></a>
+<FONT color="green">622</FONT>         * Resolve an attribute value.<a name="line.622"></a>
+<FONT color="green">623</FONT>         *<a name="line.623"></a>
+<FONT color="green">624</FONT>         * @param attrName : Attribute name.<a name="line.624"></a>
+<FONT color="green">625</FONT>         * @param elem : XML Element where attribute is defiend<a name="line.625"></a>
+<FONT color="green">626</FONT>         * @param eval : ELEvaluator used to resolve<a name="line.626"></a>
+<FONT color="green">627</FONT>         * @return Resolved attribute value<a name="line.627"></a>
+<FONT color="green">628</FONT>         * @throws CoordinatorJobException<a name="line.628"></a>
+<FONT color="green">629</FONT>         */<a name="line.629"></a>
+<FONT color="green">630</FONT>        private String resolveAttribute(String attrName, Element elem, ELEvaluator eval) throws CoordinatorJobException {<a name="line.630"></a>
+<FONT color="green">631</FONT>            Attribute attr = elem.getAttribute(attrName);<a name="line.631"></a>
+<FONT color="green">632</FONT>            String val = null;<a name="line.632"></a>
+<FONT color="green">633</FONT>            if (attr != null) {<a name="line.633"></a>
+<FONT color="green">634</FONT>                try {<a name="line.634"></a>
+<FONT color="green">635</FONT>                    val = CoordELFunctions.evalAndWrap(eval, attr.getValue().trim());<a name="line.635"></a>
+<FONT color="green">636</FONT>    <a name="line.636"></a>
+<FONT color="green">637</FONT>                }<a name="line.637"></a>
+<FONT color="green">638</FONT>                catch (Exception e) {<a name="line.638"></a>
+<FONT color="green">639</FONT>                    // e.printStackTrace();<a name="line.639"></a>
+<FONT color="green">640</FONT>                    throw new CoordinatorJobException(ErrorCode.E1004, e.getMessage(), e);<a name="line.640"></a>
+<FONT color="green">641</FONT>                }<a name="line.641"></a>
+<FONT color="green">642</FONT>                attr.setValue(val);<a name="line.642"></a>
+<FONT color="green">643</FONT>            }<a name="line.643"></a>
+<FONT color="green">644</FONT>            return val;<a name="line.644"></a>
+<FONT color="green">645</FONT>        }<a name="line.645"></a>
+<FONT color="green">646</FONT>    <a name="line.646"></a>
+<FONT color="green">647</FONT>        /**<a name="line.647"></a>
+<FONT color="green">648</FONT>         * Include referred Datasets into XML.<a name="line.648"></a>
+<FONT color="green">649</FONT>         *<a name="line.649"></a>
+<FONT color="green">650</FONT>         * @param resolvedXml : Job XML element.<a name="line.650"></a>
+<FONT color="green">651</FONT>         * @param conf : Job configuration<a name="line.651"></a>
+<FONT color="green">652</FONT>         * @throws CoordinatorJobException<a name="line.652"></a>
+<FONT color="green">653</FONT>         */<a name="line.653"></a>
+<FONT color="green">654</FONT>        protected void includeDataSets(Element resolvedXml, Configuration conf) throws CoordinatorJobException<a name="line.654"></a>
+<FONT color="green">655</FONT>            /* throws Exception */ {<a name="line.655"></a>
+<FONT color="green">656</FONT>            Element datasets = resolvedXml.getChild("datasets", resolvedXml.getNamespace());<a name="line.656"></a>
+<FONT color="green">657</FONT>            Element allDataSets = new Element("all_datasets", resolvedXml.getNamespace());<a name="line.657"></a>
+<FONT color="green">658</FONT>            List&lt;String&gt; dsList = new ArrayList&lt;String&gt;();<a name="line.658"></a>
+<FONT color="green">659</FONT>            if (datasets != null) {<a name="line.659"></a>
+<FONT color="green">660</FONT>                for (Element includeElem : (List&lt;Element&gt;) datasets.getChildren("include", datasets.getNamespace())) {<a name="line.660"></a>
+<FONT color="green">661</FONT>                    String incDSFile = includeElem.getTextTrim();<a name="line.661"></a>
+<FONT color="green">662</FONT>                    // log.warn(" incDSFile " + incDSFile);<a name="line.662"></a>
+<FONT color="green">663</FONT>                    includeOneDSFile(incDSFile, dsList, allDataSets, datasets.getNamespace());<a name="line.663"></a>
+<FONT color="green">664</FONT>                }<a name="line.664"></a>
+<FONT color="green">665</FONT>                for (Element e : (List&lt;Element&gt;) datasets.getChildren("dataset", datasets.getNamespace())) {<a name="line.665"></a>
+<FONT color="green">666</FONT>                    String dsName = (String) e.getAttributeValue("name");<a name="line.666"></a>
+<FONT color="green">667</FONT>                    if (dsList.contains(dsName)) {// Override with this DS<a name="line.667"></a>
+<FONT color="green">668</FONT>                        // Remove old DS<a name="line.668"></a>
+<FONT color="green">669</FONT>                        removeDataSet(allDataSets, dsName);<a name="line.669"></a>
+<FONT color="green">670</FONT>                        // throw new RuntimeException("Duplicate Dataset " +<a name="line.670"></a>
+<FONT color="green">671</FONT>                        // dsName);<a name="line.671"></a>
+<FONT color="green">672</FONT>                    }<a name="line.672"></a>
+<FONT color="green">673</FONT>                    else {<a name="line.673"></a>
+<FONT color="green">674</FONT>                        dsList.add(dsName);<a name="line.674"></a>
+<FONT color="green">675</FONT>                    }<a name="line.675"></a>
+<FONT color="green">676</FONT>                    allDataSets.addContent((Element) e.clone());<a name="line.676"></a>
+<FONT color="green">677</FONT>                }<a name="line.677"></a>
+<FONT color="green">678</FONT>            }<a name="line.678"></a>
+<FONT color="green">679</FONT>            insertDataSet(resolvedXml, allDataSets);<a name="line.679"></a>
+<FONT color="green">680</FONT>            resolvedXml.removeChild("datasets", resolvedXml.getNamespace());<a name="line.680"></a>
+<FONT color="green">681</FONT>        }<a name="line.681"></a>
+<FONT color="green">682</FONT>    <a name="line.682"></a>
+<FONT color="green">683</FONT>        /**<a name="line.683"></a>
+<FONT color="green">684</FONT>         * Include One Dataset file.<a name="line.684"></a>
+<FONT color="green">685</FONT>         *<a name="line.685"></a>
+<FONT color="green">686</FONT>         * @param incDSFile : Include data set filename.<a name="line.686"></a>
+<FONT color="green">687</FONT>         * @param dsList :List of dataset names to verify the duplicate.<a name="line.687"></a>
+<FONT color="green">688</FONT>         * @param allDataSets : Element that includes all dataset definitions.<a name="line.688"></a>
+<FONT color="green">689</FONT>         * @param dsNameSpace : Data set name space<a name="line.689"></a>
+<FONT color="green">690</FONT>         * @throws CoordinatorJobException<a name="line.690"></a>
+<FONT color="green">691</FONT>         * @throws Exception<a name="line.691"></a>
+<FONT color="green">692</FONT>         */<a name="line.692"></a>
+<FONT color="green">693</FONT>        private void includeOneDSFile(String incDSFile, List&lt;String&gt; dsList, Element allDataSets, Namespace dsNameSpace)<a name="line.693"></a>
+<FONT color="green">694</FONT>                throws CoordinatorJobException {<a name="line.694"></a>
+<FONT color="green">695</FONT>            Element tmpDataSets = null;<a name="line.695"></a>
+<FONT color="green">696</FONT>            try {<a name="line.696"></a>
+<FONT color="green">697</FONT>                String dsXml = readDefinition(incDSFile);<a name="line.697"></a>
+<FONT color="green">698</FONT>                log.debug("DSFILE :" + incDSFile + "\n" + dsXml);<a name="line.698"></a>
+<FONT color="green">699</FONT>                tmpDataSets = XmlUtils.parseXml(dsXml);<a name="line.699"></a>
+<FONT color="green">700</FONT>            }<a name="line.700"></a>
+<FONT color="green">701</FONT>            /*<a name="line.701"></a>
+<FONT color="green">702</FONT>             * catch (IOException iex) {XLog.getLog(getClass()).warn(<a name="line.702"></a>
+<FONT color="green">703</FONT>             * "Error reading included dataset file [{0}].  Message [{1}]",<a name="line.703"></a>
+<FONT color="green">704</FONT>             * incDSFile, iex.getMessage()); throw new<a name="line.704"></a>
+<FONT color="green">705</FONT>             * CommandException(ErrorCode.E0803, iex.getMessage()); }<a name="line.705"></a>
+<FONT color="green">706</FONT>             */<a name="line.706"></a>
+<FONT color="green">707</FONT>            catch (JDOMException e) {<a name="line.707"></a>
+<FONT color="green">708</FONT>                log.warn("Error parsing included dataset [{0}].  Message [{1}]", incDSFile, e.getMessage());<a name="line.708"></a>
+<FONT color="green">709</FONT>                throw new CoordinatorJobException(ErrorCode.E0700, e.getMessage());<a name="line.709"></a>
+<FONT color="green">710</FONT>            }<a name="line.710"></a>
+<FONT color="green">711</FONT>            resolveDataSets((List&lt;Element&gt;) tmpDataSets.getChildren("dataset"));<a name="line.711"></a>
+<FONT color="green">712</FONT>            for (Element e : (List&lt;Element&gt;) tmpDataSets.getChildren("dataset")) {<a name="line.712"></a>
+<FONT color="green">713</FONT>                String dsName = (String) e.getAttributeValue("name");<a name="line.713"></a>
+<FONT color="green">714</FONT>                if (dsList.contains(dsName)) {<a name="line.714"></a>
+<FONT color="green">715</FONT>                    throw new RuntimeException("Duplicate Dataset " + dsName);<a name="line.715"></a>
+<FONT color="green">716</FONT>                }<a name="line.716"></a>
+<FONT color="green">717</FONT>                dsList.add(dsName);<a name="line.717"></a>
+<FONT color="green">718</FONT>                Element tmp = (Element) e.clone();<a name="line.718"></a>
+<FONT color="green">719</FONT>                // TODO: Don't like to over-write the external/include DS's<a name="line.719"></a>
+<FONT color="green">720</FONT>                // namespace<a name="line.720"></a>
+<FONT color="green">721</FONT>                tmp.setNamespace(dsNameSpace);// TODO:<a name="line.721"></a>
+<FONT color="green">722</FONT>                tmp.getChild("uri-template").setNamespace(dsNameSpace);<a name="line.722"></a>
+<FONT color="green">723</FONT>                if (e.getChild("done-flag") != null) {<a name="line.723"></a>
+<FONT color="green">724</FONT>                    tmp.getChild("done-flag").setNamespace(dsNameSpace);<a name="line.724"></a>
+<FONT color="green">725</FONT>                }<a name="line.725"></a>
+<FONT color="green">726</FONT>                allDataSets.addContent(tmp);<a name="line.726"></a>
+<FONT color="green">727</FONT>            }<a name="line.727"></a>
+<FONT color="green">728</FONT>            // nested include<a name="line.728"></a>
+<FONT color="green">729</FONT>            for (Element includeElem : (List&lt;Element&gt;) tmpDataSets.getChildren("include", tmpDataSets.getNamespace())) {<a name="line.729"></a>
+<FONT color="green">730</FONT>                String incFile = includeElem.getTextTrim();<a name="line.730"></a>
+<FONT color="green">731</FONT>                // log.warn("incDSFile "+ incDSFile);<a name="line.731"></a>
+<FONT color="green">732</FONT>                includeOneDSFile(incFile, dsList, allDataSets, dsNameSpace);<a name="line.732"></a>
+<FONT color="green">733</FONT>            }<a name="line.733"></a>
+<FONT color="green">734</FONT>        }<a name="line.734"></a>
+<FONT color="green">735</FONT>    <a name="line.735"></a>
+<FONT color="green">736</FONT>        /**<a name="line.736"></a>
+<FONT color="green">737</FONT>         * Remove a dataset from a list of dataset.<a name="line.737"></a>
+<FONT color="green">738</FONT>         *<a name="line.738"></a>
+<FONT color="green">739</FONT>         * @param eDatasets : List of dataset<a name="line.739"></a>
+<FONT color="green">740</FONT>         * @param name : Dataset name to be removed.<a name="line.740"></a>
+<FONT color="green">741</FONT>         */<a name="line.741"></a>
+<FONT color="green">742</FONT>        private static void removeDataSet(Element eDatasets, String name) {<a name="line.742"></a>
+<FONT color="green">743</FONT>            for (Element eDataset : (List&lt;Element&gt;) eDatasets.getChildren("dataset", eDatasets.getNamespace())) {<a name="line.743"></a>
+<FONT color="green">744</FONT>                if (eDataset.getAttributeValue("name").equals(name)) {<a name="line.744"></a>
+<FONT color="green">745</FONT>                    eDataset.detach();<a name="line.745"></a>
+<FONT color="green">746</FONT>                }<a name="line.746"></a>
+<FONT color="green">747</FONT>            }<a name="line.747"></a>
+<FONT color="green">748</FONT>            throw new RuntimeException("undefined dataset: " + name);<a name="line.748"></a>
+<FONT color="green">749</FONT>        }<a name="line.749"></a>
+<FONT color="green">750</FONT>    <a name="line.750"></a>
+<FONT color="green">751</FONT>        /**<a name="line.751"></a>
+<FONT color="green">752</FONT>         * Read workflow definition.<a name="line.752"></a>
+<FONT color="green">753</FONT>         *<a name="line.753"></a>
+<FONT color="green">754</FONT>         * @param appPath application path.<a name="line.754"></a>
+<FONT color="green">755</FONT>         * @param user user name.<a name="line.755"></a>
+<FONT color="green">756</FONT>         * @param group group name.<a name="line.756"></a>
+<FONT color="green">757</FONT>         * @param autToken authentication token.<a name="line.757"></a>
+<FONT color="green">758</FONT>         * @return workflow definition.<a name="line.758"></a>
+<FONT color="green">759</FONT>         * @throws WorkflowException thrown if the definition could not be read.<a name="line.759"></a>
+<FONT color="green">760</FONT>         */<a name="line.760"></a>
+<FONT color="green">761</FONT>        protected String readDefinition(String appPath) throws CoordinatorJobException {<a name="line.761"></a>
+<FONT color="green">762</FONT>            String user = ParamChecker.notEmpty(conf.get(OozieClient.USER_NAME), OozieClient.USER_NAME);<a name="line.762"></a>
+<FONT color="green">763</FONT>            String group = ParamChecker.notEmpty(conf.get(OozieClient.GROUP_NAME), OozieClient.GROUP_NAME);<a name="line.763"></a>
+<FONT color="green">764</FONT>            Configuration confHadoop = CoordUtils.getHadoopConf(conf);<a name="line.764"></a>
+<FONT color="green">765</FONT>            try {<a name="line.765"></a>
+<FONT color="green">766</FONT>                URI uri = new URI(appPath);<a name="line.766"></a>
+<FONT color="green">767</FONT>                log.debug("user =" + user + " group =" + group);<a name="line.767"></a>
+<FONT color="green">768</FONT>                FileSystem fs = Services.get().get(HadoopAccessorService.class).createFileSystem(user, group, uri, conf);<a name="line.768"></a>
+<FONT color="green">769</FONT>                Path p = new Path(uri.getPath());<a name="line.769"></a>
+<FONT color="green">770</FONT>    <a name="line.770"></a>
+<FONT color="green">771</FONT>                // Reader reader = new InputStreamReader(fs.open(new Path(uri<a name="line.771"></a>
+<FONT color="green">772</FONT>                // .getPath(), fileName)));<a name="line.772"></a>
+<FONT color="green">773</FONT>                Reader reader = new InputStreamReader(fs.open(p));// TODO<a name="line.773"></a>
+<FONT color="green">774</FONT>                StringWriter writer = new StringWriter();<a name="line.774"></a>
+<FONT color="green">775</FONT>                IOUtils.copyCharStream(reader, writer);<a name="line.775"></a>
+<FONT color="green">776</FONT>                return writer.toString();<a name="line.776"></a>
+<FONT color="green">777</FONT>            }<a name="line.777"></a>
+<FONT color="green">778</FONT>            catch (IOException ex) {<a name="line.778"></a>
+<FONT color="green">779</FONT>                log.warn("IOException :" + XmlUtils.prettyPrint(confHadoop), ex);<a name="line.779"></a>
+<FONT color="green">780</FONT>                throw new CoordinatorJobException(ErrorCode.E1001, ex.getMessage(), ex); // TODO:<a name="line.780"></a>
+<FONT color="green">781</FONT>            }<a name="line.781"></a>
+<FONT color="green">782</FONT>            catch (URISyntaxException ex) {<a name="line.782"></a>
+<FONT color="green">783</FONT>                log.warn("URISyException :" + ex.getMessage());<a name="line.783"></a>
+<FONT color="green">784</FONT>                throw new CoordinatorJobException(ErrorCode.E1002, appPath, ex.getMessage(), ex);// TODO:<a name="line.784"></a>
+<FONT color="green">785</FONT>            }<a name="line.785"></a>
+<FONT color="green">786</FONT>            catch (HadoopAccessorException ex) {<a name="line.786"></a>
+<FONT color="green">787</FONT>                throw new CoordinatorJobException(ex);<a name="line.787"></a>
+<FONT color="green">788</FONT>            }<a name="line.788"></a>
+<FONT color="green">789</FONT>            catch (Exception ex) {<a name="line.789"></a>
+<FONT color="green">790</FONT>                log.warn("Exception :", ex);<a name="line.790"></a>
+<FONT color="green">791</FONT>                throw new CoordinatorJobException(ErrorCode.E1001, ex.getMessage(), ex);// TODO:<a name="line.791"></a>
+<FONT color="green">792</FONT>            }<a name="line.792"></a>
+<FONT color="green">793</FONT>        }<a name="line.793"></a>
+<FONT color="green">794</FONT>    <a name="line.794"></a>
+<FONT color="green">795</FONT>        /**<a name="line.795"></a>
+<FONT color="green">796</FONT>         * Write a Coordinator Job into database<a name="line.796"></a>
+<FONT color="green">797</FONT>         *<a name="line.797"></a>
+<FONT color="green">798</FONT>         * @param eJob : XML element of job<a name="line.798"></a>
+<FONT color="green">799</FONT>         * @param store : Coordinator Store to write.<a name="line.799"></a>
+<FONT color="green">800</FONT>         * @param coordJob : Coordinator job bean<a name="line.800"></a>
+<FONT color="green">801</FONT>         * @return Job if.<a name="line.801"></a>
+<FONT color="green">802</FONT>         * @throws StoreException<a name="line.802"></a>
+<FONT color="green">803</FONT>         */<a name="line.803"></a>
+<FONT color="green">804</FONT>        private String storeToDB(Element eJob, CoordinatorStore store, CoordinatorJobBean coordJob) throws StoreException {<a name="line.804"></a>
+<FONT color="green">805</FONT>            String jobId = Services.get().get(UUIDService.class).generateId(ApplicationType.COORDINATOR);<a name="line.805"></a>
+<FONT color="green">806</FONT>            coordJob.setId(jobId);<a name="line.806"></a>
+<FONT color="green">807</FONT>            coordJob.setAuthToken(this.authToken);<a name="line.807"></a>
+<FONT color="green">808</FONT>            coordJob.setAppName(eJob.getAttributeValue("name"));<a name="line.808"></a>
+<FONT color="green">809</FONT>            coordJob.setAppPath(conf.get(OozieClient.COORDINATOR_APP_PATH));<a name="line.809"></a>
+<FONT color="green">810</FONT>            coordJob.setStatus(CoordinatorJob.Status.PREP);<a name="line.810"></a>
+<FONT color="green">811</FONT>            coordJob.setCreatedTime(new Date()); // TODO: Do we need that?<a name="line.811"></a>
+<FONT color="green">812</FONT>            coordJob.setUser(conf.get(OozieClient.USER_NAME));<a name="line.812"></a>
+<FONT color="green">813</FONT>            coordJob.setGroup(conf.get(OozieClient.GROUP_NAME));<a name="line.813"></a>
+<FONT color="green">814</FONT>            coordJob.setConf(XmlUtils.prettyPrint(conf).toString());<a name="line.814"></a>
+<FONT color="green">815</FONT>            coordJob.setJobXml(XmlUtils.prettyPrint(eJob).toString());<a name="line.815"></a>
+<FONT color="green">816</FONT>            coordJob.setLastActionNumber(0);<a name="line.816"></a>
+<FONT color="green">817</FONT>            coordJob.setLastModifiedTime(new Date());<a name="line.817"></a>
+<FONT color="green">818</FONT>    <a name="line.818"></a>
+<FONT color="green">819</FONT>            if (!dryrun) {<a name="line.819"></a>
+<FONT color="green">820</FONT>                store.insertCoordinatorJob(coordJob);<a name="line.820"></a>
+<FONT color="green">821</FONT>            }<a name="line.821"></a>
+<FONT color="green">822</FONT>            return jobId;<a name="line.822"></a>
+<FONT color="green">823</FONT>        }<a name="line.823"></a>
+<FONT color="green">824</FONT>    <a name="line.824"></a>
+<FONT color="green">825</FONT>        /**<a name="line.825"></a>
+<FONT color="green">826</FONT>         * For unit-testing only. Will ultimately go away<a name="line.826"></a>
+<FONT color="green">827</FONT>         *<a name="line.827"></a>
+<FONT color="green">828</FONT>         * @param args<a name="line.828"></a>
+<FONT color="green">829</FONT>         * @throws Exception<a name="line.829"></a>
+<FONT color="green">830</FONT>         * @throws JDOMException<a name="line.830"></a>
+<FONT color="green">831</FONT>         */<a name="line.831"></a>
+<FONT color="green">832</FONT>        public static void main(String[] args) throws Exception {<a name="line.832"></a>
+<FONT color="green">833</FONT>            // TODO Auto-generated method stub<a name="line.833"></a>
+<FONT color="green">834</FONT>            // Configuration conf = new XConfiguration(IOUtils.getResourceAsReader(<a name="line.834"></a>
+<FONT color="green">835</FONT>            // "org/apache/oozie/coord/conf.xml", -1));<a name="line.835"></a>
+<FONT color="green">836</FONT>    <a name="line.836"></a>
+<FONT color="green">837</FONT>            Configuration conf = new XConfiguration();<a name="line.837"></a>
+<FONT color="green">838</FONT>    <a name="line.838"></a>
+<FONT color="green">839</FONT>            // base case<a name="line.839"></a>
+<FONT color="green">840</FONT>            // conf.set(OozieClient.COORDINATOR_APP_PATH,<a name="line.840"></a>
+<FONT color="green">841</FONT>            // "file:///Users/danielwo/oozie/workflows/coord/test1/");<a name="line.841"></a>
+<FONT color="green">842</FONT>    <a name="line.842"></a>
+<FONT color="green">843</FONT>            // no input datasets<a name="line.843"></a>
+<FONT color="green">844</FONT>            // conf.set(OozieClient.COORDINATOR_APP_PATH,<a name="line.844"></a>
+<FONT color="green">845</FONT>            // "file:///Users/danielwo/oozie/workflows/coord/coord_noinput/");<a name="line.845"></a>
+<FONT color="green">846</FONT>            // conf.set(OozieClient.COORDINATOR_APP_PATH,<a name="line.846"></a>
+<FONT color="green">847</FONT>            // "file:///Users/danielwo/oozie/workflows/coord/coord_use_apppath/");<a name="line.847"></a>
+<FONT color="green">848</FONT>    <a name="line.848"></a>
+<FONT color="green">849</FONT>            // only 1 instance<a name="line.849"></a>
+<FONT color="green">850</FONT>            // conf.set(OozieClient.COORDINATOR_APP_PATH,<a name="line.850"></a>
+<FONT color="green">851</FONT>            // "file:///Users/danielwo/oozie/workflows/coord/coord_oneinstance/");<a name="line.851"></a>
+<FONT color="green">852</FONT>    <a name="line.852"></a>
+<FONT color="green">853</FONT>            // no local props in xml<a name="line.853"></a>
+<FONT color="green">854</FONT>            // conf.set(OozieClient.COORDINATOR_APP_PATH,<a name="line.854"></a>
+<FONT color="green">855</FONT>            // "file:///Users/danielwo/oozie/workflows/coord/coord_noprops/");<a name="line.855"></a>
+<FONT color="green">856</FONT>    <a name="line.856"></a>
+<FONT color="green">857</FONT>            conf.set(OozieClient.COORDINATOR_APP_PATH,<a name="line.857"></a>
+<FONT color="green">858</FONT>                     "file:///homes/test/workspace/sandbox_krishna/oozie-main/core/src/main/java/org/apache/oozie/coord/");<a name="line.858"></a>
+<FONT color="green">859</FONT>            conf.set(OozieClient.USER_NAME, "test");<a name="line.859"></a>
+<FONT color="green">860</FONT>            // conf.set(OozieClient.USER_NAME, "danielwo");<a name="line.860"></a>
+<FONT color="green">861</FONT>            conf.set(OozieClient.GROUP_NAME, "other");<a name="line.861"></a>
+<FONT color="green">862</FONT>            // System.out.println("appXml :"+ appXml + "\n conf :"+ conf);<a name="line.862"></a>
+<FONT color="green">863</FONT>            new Services().init();<a name="line.863"></a>
+<FONT color="green">864</FONT>            try {<a name="line.864"></a>
+<FONT color="green">865</FONT>                CoordSubmitCommand sc = new CoordSubmitCommand(conf, "TESTING");<a name="line.865"></a>
+<FONT color="green">866</FONT>                String jobId = sc.call();<a name="line.866"></a>
+<FONT color="green">867</FONT>                System.out.println("Job Id " + jobId);<a name="line.867"></a>
+<FONT color="green">868</FONT>                Thread.sleep(80000);<a name="line.868"></a>
+<FONT color="green">869</FONT>            }<a name="line.869"></a>
+<FONT color="green">870</FONT>            finally {<a name="line.870"></a>
+<FONT color="green">871</FONT>                Services.get().destroy();<a name="line.871"></a>
+<FONT color="green">872</FONT>            }<a name="line.872"></a>
+<FONT color="green">873</FONT>        }<a name="line.873"></a>
+<FONT color="green">874</FONT>    }<a name="line.874"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

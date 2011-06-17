@@ -1,0 +1,226 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright (c) 2010 Yahoo! Inc. All rights reserved.<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Licensed under the Apache License, Version 2.0 (the "License");<a name="line.3"></a>
+<FONT color="green">004</FONT>     * you may not use this file except in compliance with the License.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * You may obtain a copy of the License at<a name="line.5"></a>
+<FONT color="green">006</FONT>     *<a name="line.6"></a>
+<FONT color="green">007</FONT>     *   http://www.apache.org/licenses/LICENSE-2.0<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *  Unless required by applicable law or agreed to in writing, software<a name="line.9"></a>
+<FONT color="green">010</FONT>     *  distributed under the License is distributed on an "AS IS" BASIS,<a name="line.10"></a>
+<FONT color="green">011</FONT>     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.11"></a>
+<FONT color="green">012</FONT>     *  See the License for the specific language governing permissions and<a name="line.12"></a>
+<FONT color="green">013</FONT>     *  limitations under the License. See accompanying LICENSE file.<a name="line.13"></a>
+<FONT color="green">014</FONT>     */<a name="line.14"></a>
+<FONT color="green">015</FONT>    package org.apache.oozie.command.coord;<a name="line.15"></a>
+<FONT color="green">016</FONT>    <a name="line.16"></a>
+<FONT color="green">017</FONT>    import java.sql.Timestamp;<a name="line.17"></a>
+<FONT color="green">018</FONT>    import java.util.Date;<a name="line.18"></a>
+<FONT color="green">019</FONT>    <a name="line.19"></a>
+<FONT color="green">020</FONT>    import org.apache.oozie.CoordinatorActionBean;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import org.apache.oozie.ErrorCode;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import org.apache.oozie.WorkflowJobBean;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import org.apache.oozie.XException;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import org.apache.oozie.service.JPAService;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import org.apache.oozie.service.Services;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import org.apache.oozie.util.InstrumentUtils;<a name="line.26"></a>
+<FONT color="green">027</FONT>    import org.apache.oozie.util.LogUtils;<a name="line.27"></a>
+<FONT color="green">028</FONT>    import org.apache.oozie.util.ParamChecker;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import org.apache.oozie.util.db.SLADbOperations;<a name="line.29"></a>
+<FONT color="green">030</FONT>    import org.apache.oozie.client.CoordinatorAction;<a name="line.30"></a>
+<FONT color="green">031</FONT>    import org.apache.oozie.client.WorkflowJob;<a name="line.31"></a>
+<FONT color="green">032</FONT>    import org.apache.oozie.client.SLAEvent.SlaAppType;<a name="line.32"></a>
+<FONT color="green">033</FONT>    import org.apache.oozie.client.SLAEvent.Status;<a name="line.33"></a>
+<FONT color="green">034</FONT>    import org.apache.oozie.command.CommandException;<a name="line.34"></a>
+<FONT color="green">035</FONT>    import org.apache.oozie.command.PreconditionException;<a name="line.35"></a>
+<FONT color="green">036</FONT>    import org.apache.oozie.executor.jpa.CoordActionGetJPAExecutor;<a name="line.36"></a>
+<FONT color="green">037</FONT>    import org.apache.oozie.executor.jpa.WorkflowJobGetJPAExecutor;<a name="line.37"></a>
+<FONT color="green">038</FONT>    <a name="line.38"></a>
+<FONT color="green">039</FONT>    /**<a name="line.39"></a>
+<FONT color="green">040</FONT>     * The command checks workflow status for coordinator action.<a name="line.40"></a>
+<FONT color="green">041</FONT>     */<a name="line.41"></a>
+<FONT color="green">042</FONT>    public class CoordActionCheckXCommand extends CoordinatorXCommand&lt;Void&gt; {<a name="line.42"></a>
+<FONT color="green">043</FONT>        private String actionId;<a name="line.43"></a>
+<FONT color="green">044</FONT>        private int actionCheckDelay;<a name="line.44"></a>
+<FONT color="green">045</FONT>        private CoordinatorActionBean coordAction = null;<a name="line.45"></a>
+<FONT color="green">046</FONT>        private JPAService jpaService = null;<a name="line.46"></a>
+<FONT color="green">047</FONT>    <a name="line.47"></a>
+<FONT color="green">048</FONT>        public CoordActionCheckXCommand(String actionId, int actionCheckDelay) {<a name="line.48"></a>
+<FONT color="green">049</FONT>            super("coord_action_check", "coord_action_check", 0);<a name="line.49"></a>
+<FONT color="green">050</FONT>            this.actionId = ParamChecker.notEmpty(actionId, "actionId");<a name="line.50"></a>
+<FONT color="green">051</FONT>            this.actionCheckDelay = actionCheckDelay;<a name="line.51"></a>
+<FONT color="green">052</FONT>        }<a name="line.52"></a>
+<FONT color="green">053</FONT>    <a name="line.53"></a>
+<FONT color="green">054</FONT>        /* (non-Javadoc)<a name="line.54"></a>
+<FONT color="green">055</FONT>         * @see org.apache.oozie.command.XCommand#execute()<a name="line.55"></a>
+<FONT color="green">056</FONT>         */<a name="line.56"></a>
+<FONT color="green">057</FONT>        @Override<a name="line.57"></a>
+<FONT color="green">058</FONT>        protected Void execute() throws CommandException {<a name="line.58"></a>
+<FONT color="green">059</FONT>            try {<a name="line.59"></a>
+<FONT color="green">060</FONT>                InstrumentUtils.incrJobCounter(getName(), 1, getInstrumentation());<a name="line.60"></a>
+<FONT color="green">061</FONT>                WorkflowJobBean wf = jpaService.execute(new WorkflowJobGetJPAExecutor(coordAction.getExternalId()));<a name="line.61"></a>
+<FONT color="green">062</FONT>    <a name="line.62"></a>
+<FONT color="green">063</FONT>                Status slaStatus = null;<a name="line.63"></a>
+<FONT color="green">064</FONT>    <a name="line.64"></a>
+<FONT color="green">065</FONT>                if (wf.getStatus() == WorkflowJob.Status.SUCCEEDED) {<a name="line.65"></a>
+<FONT color="green">066</FONT>                    coordAction.setStatus(CoordinatorAction.Status.SUCCEEDED);<a name="line.66"></a>
+<FONT color="green">067</FONT>                    slaStatus = Status.SUCCEEDED;<a name="line.67"></a>
+<FONT color="green">068</FONT>                }<a name="line.68"></a>
+<FONT color="green">069</FONT>                else {<a name="line.69"></a>
+<FONT color="green">070</FONT>                    if (wf.getStatus() == WorkflowJob.Status.FAILED) {<a name="line.70"></a>
+<FONT color="green">071</FONT>                        coordAction.setStatus(CoordinatorAction.Status.FAILED);<a name="line.71"></a>
+<FONT color="green">072</FONT>                        slaStatus = Status.FAILED;<a name="line.72"></a>
+<FONT color="green">073</FONT>                    }<a name="line.73"></a>
+<FONT color="green">074</FONT>                    else {<a name="line.74"></a>
+<FONT color="green">075</FONT>                        if (wf.getStatus() == WorkflowJob.Status.KILLED) {<a name="line.75"></a>
+<FONT color="green">076</FONT>                            coordAction.setStatus(CoordinatorAction.Status.KILLED);<a name="line.76"></a>
+<FONT color="green">077</FONT>                            slaStatus = Status.KILLED;<a name="line.77"></a>
+<FONT color="green">078</FONT>                        }<a name="line.78"></a>
+<FONT color="green">079</FONT>                        else {<a name="line.79"></a>
+<FONT color="green">080</FONT>                            LOG.warn("Unexpected workflow " + wf.getId() + " STATUS " + wf.getStatus());<a name="line.80"></a>
+<FONT color="green">081</FONT>                            coordAction.setLastModifiedTime(new Date());<a name="line.81"></a>
+<FONT color="green">082</FONT>                            jpaService.execute(new org.apache.oozie.executor.jpa.CoordActionUpdateJPAExecutor(coordAction));<a name="line.82"></a>
+<FONT color="green">083</FONT>                            return null;<a name="line.83"></a>
+<FONT color="green">084</FONT>                        }<a name="line.84"></a>
+<FONT color="green">085</FONT>                    }<a name="line.85"></a>
+<FONT color="green">086</FONT>                }<a name="line.86"></a>
+<FONT color="green">087</FONT>    <a name="line.87"></a>
+<FONT color="green">088</FONT>                LOG.debug("Updating Coordintaor actionId :" + coordAction.getId() + "status to ="<a name="line.88"></a>
+<FONT color="green">089</FONT>                                + coordAction.getStatus());<a name="line.89"></a>
+<FONT color="green">090</FONT>                coordAction.setLastModifiedTime(new Date());<a name="line.90"></a>
+<FONT color="green">091</FONT>                jpaService.execute(new org.apache.oozie.executor.jpa.CoordActionUpdateJPAExecutor(coordAction));<a name="line.91"></a>
+<FONT color="green">092</FONT>    <a name="line.92"></a>
+<FONT color="green">093</FONT>                if (slaStatus != null) {<a name="line.93"></a>
+<FONT color="green">094</FONT>                    SLADbOperations.writeStausEvent(coordAction.getSlaXml(), coordAction.getId(), slaStatus,<a name="line.94"></a>
+<FONT color="green">095</FONT>                            SlaAppType.COORDINATOR_ACTION, LOG);<a name="line.95"></a>
+<FONT color="green">096</FONT>                }<a name="line.96"></a>
+<FONT color="green">097</FONT>            }<a name="line.97"></a>
+<FONT color="green">098</FONT>            catch (XException ex) {<a name="line.98"></a>
+<FONT color="green">099</FONT>                LOG.warn("CoordActionCheckCommand Failed ", ex);<a name="line.99"></a>
+<FONT color="green">100</FONT>                throw new CommandException(ex);<a name="line.100"></a>
+<FONT color="green">101</FONT>            }<a name="line.101"></a>
+<FONT color="green">102</FONT>            return null;<a name="line.102"></a>
+<FONT color="green">103</FONT>        }<a name="line.103"></a>
+<FONT color="green">104</FONT>    <a name="line.104"></a>
+<FONT color="green">105</FONT>        /* (non-Javadoc)<a name="line.105"></a>
+<FONT color="green">106</FONT>         * @see org.apache.oozie.command.XCommand#getEntityKey()<a name="line.106"></a>
+<FONT color="green">107</FONT>         */<a name="line.107"></a>
+<FONT color="green">108</FONT>        @Override<a name="line.108"></a>
+<FONT color="green">109</FONT>        protected String getEntityKey() {<a name="line.109"></a>
+<FONT color="green">110</FONT>            return actionId;<a name="line.110"></a>
+<FONT color="green">111</FONT>        }<a name="line.111"></a>
+<FONT color="green">112</FONT>    <a name="line.112"></a>
+<FONT color="green">113</FONT>        /* (non-Javadoc)<a name="line.113"></a>
+<FONT color="green">114</FONT>         * @see org.apache.oozie.command.XCommand#isLockRequired()<a name="line.114"></a>
+<FONT color="green">115</FONT>         */<a name="line.115"></a>
+<FONT color="green">116</FONT>        @Override<a name="line.116"></a>
+<FONT color="green">117</FONT>        protected boolean isLockRequired() {<a name="line.117"></a>
+<FONT color="green">118</FONT>            return true;<a name="line.118"></a>
+<FONT color="green">119</FONT>        }<a name="line.119"></a>
+<FONT color="green">120</FONT>    <a name="line.120"></a>
+<FONT color="green">121</FONT>        /* (non-Javadoc)<a name="line.121"></a>
+<FONT color="green">122</FONT>         * @see org.apache.oozie.command.XCommand#loadState()<a name="line.122"></a>
+<FONT color="green">123</FONT>         */<a name="line.123"></a>
+<FONT color="green">124</FONT>        @Override<a name="line.124"></a>
+<FONT color="green">125</FONT>        protected void loadState() throws CommandException {<a name="line.125"></a>
+<FONT color="green">126</FONT>            try {<a name="line.126"></a>
+<FONT color="green">127</FONT>                jpaService = Services.get().get(JPAService.class);<a name="line.127"></a>
+<FONT color="green">128</FONT>    <a name="line.128"></a>
+<FONT color="green">129</FONT>                if (jpaService != null) {<a name="line.129"></a>
+<FONT color="green">130</FONT>                    coordAction = jpaService.execute(new CoordActionGetJPAExecutor(actionId));<a name="line.130"></a>
+<FONT color="green">131</FONT>                    LogUtils.setLogInfo(coordAction, logInfo);<a name="line.131"></a>
+<FONT color="green">132</FONT>                }<a name="line.132"></a>
+<FONT color="green">133</FONT>                else {<a name="line.133"></a>
+<FONT color="green">134</FONT>                    throw new CommandException(ErrorCode.E0610);<a name="line.134"></a>
+<FONT color="green">135</FONT>                }<a name="line.135"></a>
+<FONT color="green">136</FONT>            }<a name="line.136"></a>
+<FONT color="green">137</FONT>            catch (XException ex) {<a name="line.137"></a>
+<FONT color="green">138</FONT>                throw new CommandException(ex);<a name="line.138"></a>
+<FONT color="green">139</FONT>            }<a name="line.139"></a>
+<FONT color="green">140</FONT>        }<a name="line.140"></a>
+<FONT color="green">141</FONT>    <a name="line.141"></a>
+<FONT color="green">142</FONT>        /* (non-Javadoc)<a name="line.142"></a>
+<FONT color="green">143</FONT>         * @see org.apache.oozie.command.XCommand#verifyPrecondition()<a name="line.143"></a>
+<FONT color="green">144</FONT>         */<a name="line.144"></a>
+<FONT color="green">145</FONT>        @Override<a name="line.145"></a>
+<FONT color="green">146</FONT>        protected void verifyPrecondition() throws CommandException, PreconditionException {<a name="line.146"></a>
+<FONT color="green">147</FONT>            // if the action has been updated, quit this command<a name="line.147"></a>
+<FONT color="green">148</FONT>            Timestamp actionCheckTs = new Timestamp(System.currentTimeMillis() - actionCheckDelay * 1000);<a name="line.148"></a>
+<FONT color="green">149</FONT>            Timestamp cactionLmt = coordAction.getLastModifiedTimestamp();<a name="line.149"></a>
+<FONT color="green">150</FONT>            if (cactionLmt.after(actionCheckTs)) {<a name="line.150"></a>
+<FONT color="green">151</FONT>                throw new PreconditionException(ErrorCode.E1100, "The coord action :" + actionId<a name="line.151"></a>
+<FONT color="green">152</FONT>                        + " has been udated. Ignore CoordActionCheckCommand!");<a name="line.152"></a>
+<FONT color="green">153</FONT>            }<a name="line.153"></a>
+<FONT color="green">154</FONT>            if (coordAction.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)<a name="line.154"></a>
+<FONT color="green">155</FONT>                    || coordAction.getStatus().equals(CoordinatorAction.Status.FAILED)<a name="line.155"></a>
+<FONT color="green">156</FONT>                    || coordAction.getStatus().equals(CoordinatorAction.Status.KILLED)) {<a name="line.156"></a>
+<FONT color="green">157</FONT>                throw new PreconditionException(ErrorCode.E1100);<a name="line.157"></a>
+<FONT color="green">158</FONT>            }<a name="line.158"></a>
+<FONT color="green">159</FONT>        }<a name="line.159"></a>
+<FONT color="green">160</FONT>    }<a name="line.160"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>
