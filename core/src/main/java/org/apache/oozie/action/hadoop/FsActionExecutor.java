@@ -60,10 +60,32 @@ public class FsActionExecutor extends ActionExecutor {
                 }
             }
         }
-        else {
+        else { 
             if (scheme != null) {
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS003",
                                                   "Scheme [{0}] not allowed in path [{1}]", scheme, path);
+            }
+        }
+    }
+    
+    void validatePath1(Path path, boolean withScheme) throws ActionExecutorException {
+        String scheme = path.toUri().getScheme();
+        if (withScheme) {
+            if (scheme == null) {
+                throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS001",
+                                                  "Missing scheme in path [{0}]", path);
+            }
+            else {
+                if (!scheme.equals("hdfs")) {
+                    throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS002",
+                                                      "Scheme [{0}] not support in path [{1}]", scheme, path);
+                }
+            }
+        }
+        else { //withScheme = false
+            if (scheme != null && !scheme.equals("hdfs")) {
+                throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS003",
+                                                  "Scheme [{0}] not support in path [{1}]", scheme, path);
             }
         }
     }
@@ -211,7 +233,7 @@ public class FsActionExecutor extends ActionExecutor {
      * @param recovery
      * @throws ActionExecutorException
      */
-    public void move(Context context, Path source, Path target, boolean recovery) throws ActionExecutorException {
+    /*public void move(Context context, Path source, Path target, boolean recovery) throws ActionExecutorException {
         try {
             validatePath(source, true);
             validatePath(target, false);
@@ -226,6 +248,44 @@ public class FsActionExecutor extends ActionExecutor {
             if (fs.exists(path) && !recovery) {
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS007",
                                                   "move, target path [{0}] already exists", target);
+            }
+
+            if (!fs.rename(source, target) && !recovery) {
+                throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS008",
+                                                  "move, could not move [{0}] to [{1}]", source, target);
+            }
+        }
+        catch (Exception ex) {
+            throw convertException(ex);
+        }
+    }*/
+    
+    public void move(Context context, Path source, Path target, boolean recovery) throws ActionExecutorException {
+        try {
+            validatePath1(source, true);
+            validatePath1(target, false);
+            //allow for dual functionality i.e. with or w/o NN URI prefixed. - adjusted for in validatePath1
+            FileSystem fs = getFileSystemFor(source, context);
+
+            if (!fs.exists(source) && !recovery) {
+                throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS006",
+                                                  "move, source path [{0}] does not exist", source);
+            }
+
+            Path path = new Path(source, target);	// prefixes source scheme to target path. does nothing if target already has scheme
+            if (fs.exists(path) && !recovery) {
+            	//target directory exists. put file or dir INSIDE this target dir
+            	//get only lowermost file or dir name of source
+            	String srcPath = source.getName(); // \m/
+            	Path newpath = new Path(target.toString()+"/"+srcPath);
+            	
+            	//if(fs.getFileStatus(source).isDir())
+            	//fs.mkdirs(newpath);
+            	
+            	//call rename. but final path is now prefixed with this target dir
+            	target = newpath;
+                //throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS007",
+                                                  //"move, target path [{0}] already exists", target);
             }
 
             if (!fs.rename(source, target) && !recovery) {
