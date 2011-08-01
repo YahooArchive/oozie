@@ -65,5 +65,19 @@ public class JsonUtils {
         }
         return null;
     }
+    
+    /**
+     * Return a float value from a JSONObject.
+     * This is used only for getting job's progress value.
+     *
+     * @param map JSON object.
+     * @param name name of the property.
+     * @return the float value associated with it, or -1.0 if not defined.
+     */
+    public static float getFloatValue(JSONObject map, String name) {
+    	Double d = (Double) map.get(name);
+
+    	return (d != null) ? d.floatValue() : -1.0f;
+    }
 
 }

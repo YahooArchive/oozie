@@ -94,6 +94,7 @@ public class JsonToBean {
         WF_JOB.put("getRun", new Property(JsonTags.WORKFLOW_RUN, Integer.TYPE));
         WF_JOB.put("getConsoleUrl", new Property(JsonTags.WORKFLOW_CONSOLE_URL, String.class));
         WF_JOB.put("getActions", new Property(JsonTags.WORKFLOW_ACTIONS, WorkflowAction.class, true));
+        WF_JOB.put("getProgress", new Property(JsonTags.WORKFLOW_PROGRESS, Float.TYPE));
         WF_JOB.put("getParentId", new Property(JsonTags.WORKFLOW_PARENT_ID, String.class));
         WF_JOB.put("toString", new Property(JsonTags.TO_STRING, String.class));
 
@@ -215,6 +216,9 @@ public class JsonToBean {
             }
             else if (type == Long.TYPE) {
                 return (obj != null) ? obj : new Long(0);
+            }
+            else if (type == Float.TYPE) {
+                return (obj != null) ? new Float(((Double) obj).floatValue()) : new Float(-1);
             }
             else if (type == Date.class) {
                 return JsonUtils.parseDateRfc822((String) obj);

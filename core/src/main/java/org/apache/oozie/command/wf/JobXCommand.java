@@ -14,8 +14,11 @@
  */
 package org.apache.oozie.command.wf;
 
+import java.util.List;
+
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.WorkflowJobBean;
+import org.apache.oozie.action.decision.DecisionActionExecutor;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.PreconditionException;
 import org.apache.oozie.executor.jpa.JPAExecutorException;
@@ -23,6 +26,10 @@ import org.apache.oozie.executor.jpa.WorkflowInfoWithActionsSubsetGetJPAExecutor
 import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.util.ParamChecker;
+import org.apache.oozie.workflow.lite.LiteWorkflowApp;
+import org.apache.oozie.workflow.lite.LiteWorkflowInstance;
+import org.apache.oozie.client.WorkflowAction;
+import org.apache.oozie.client.WorkflowJob;
 
 /**
  * This Xcommand is returning the workflow with action within the range.
@@ -63,6 +70,17 @@ public class JobXCommand extends WorkflowXCommand<WorkflowJobBean> {
                 throw new CommandException(ErrorCode.E0610, this.id);
             }
             this.workflow.setConsoleUrl(getJobConsoleUrl(id));
+        
+            // Estimate job progress
+            if (workflow.getStatus() == WorkflowJob.Status.PREP) {
+                workflow.setProgress(0.0f);
+            }
+            else if (workflow.getStatus() == WorkflowJob.Status.SUCCEEDED) {
+                workflow.setProgress(1.0f);
+            }
+            else {
+                workflow.setProgress(getJobProgress(workflow));
+            }
         }
         catch (JPAExecutorException ex) {
             throw new CommandException(ex);
@@ -111,5 +129,34 @@ public class JobXCommand extends WorkflowXCommand<WorkflowJobBean> {
      */
     @Override
     protected void verifyPrecondition() throws CommandException, PreconditionException {
+    }
+
+    /**
+     * Compute job progress that is defined as fraction of done actions. 
+     * 
+     * @param wf workflow job bean
+     * @return job progress
+     */
+    static float getJobProgress(WorkflowJobBean wf) {
+        LiteWorkflowInstance wfInstance = (LiteWorkflowInstance) wf.getWorkflowInstance();
+        LiteWorkflowApp wfApp = (LiteWorkflowApp) wfInstance.getApp();
+
+        int executionPathLengthEstimate = wfApp.getExecutionPathLengthEstimate();
+        if (executionPathLengthEstimate == 0) { // noop wf
+            return 1.0f;
+        }
+        List<WorkflowAction> actions = wf.getActions();
+        int doneActions = 0;
+        for (WorkflowAction action : actions) {
+            // Skip decision nodes, note start, kill, end, fork/join will not have action entry.
+            if (action.getType().equals(DecisionActionExecutor.ACTION_TYPE)) {
+                continue;
+            }
+            if (action.getStatus() == WorkflowAction.Status.OK || action.getStatus() == WorkflowAction.Status.DONE) {
+                doneActions++;
+            }
+        }
+
+        return (doneActions * 1.0f) / executionPathLengthEstimate;
     }
 }

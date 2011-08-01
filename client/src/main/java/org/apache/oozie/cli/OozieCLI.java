@@ -878,6 +878,10 @@ public class OozieCLI {
         System.out.println("Last Modified : " + maskDate(job.getLastModifiedTime(), localtime));
         System.out.println("Ended         : " + maskDate(job.getEndTime(), localtime));
         System.out.println("CoordAction ID: " + maskIfNull(job.getParentId()));
+        if (job.getProgress() >= 0) { // -1.0f means no progress is available, therefore do not display.
+            System.out.printf("%% Complete    : %.2f%%\n", job.getProgress() * 100f);
+        }
+
 
         List<WorkflowAction> actions = job.getActions();
 
