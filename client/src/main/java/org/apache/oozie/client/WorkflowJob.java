@@ -128,5 +128,10 @@ public interface WorkflowJob {
      * @return the workflow nodes that already executed and are executing.
      */
     List<WorkflowAction> getActions();
-
+    
+    /**
+     * Return the workflow job progress in %.
+     */
+    float getProgress();
+    
 }

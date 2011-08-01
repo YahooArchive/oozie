@@ -92,6 +92,7 @@ public class JsonToBean {
         WF_JOB.put("getRun", new Property(JsonTags.WORKFLOW_RUN, Integer.TYPE));
         WF_JOB.put("getConsoleUrl", new Property(JsonTags.WORKFLOW_CONSOLE_URL, String.class));
         WF_JOB.put("getActions", new Property(JsonTags.WORKFLOW_ACTIONS, WorkflowAction.class, true));
+        WF_JOB.put("getProgress", new Property(JsonTags.WORKFLOW_PROGRESS, Float.TYPE));
         WF_JOB.put("toString", new Property(JsonTags.TO_STRING, String.class));
 
         COORD_ACTION.put("getId", new Property(JsonTags.COORDINATOR_ACTION_ID, String.class));
@@ -170,6 +171,9 @@ public class JsonToBean {
                 else if (prop.type == CoordinatorAction.class) {
                     return createCoordinatorActionList((JSONArray) json.get(prop.label));
                 }
+                else if (prop.type == CoordinatorJob.class) {
+                    return createCoordinatorJobList((JSONArray) json.get(prop.label));
+                }
                 else {
                     throw new RuntimeException("Unsupported list type : " + prop.type.getSimpleName());
                 }
@@ -189,6 +193,10 @@ public class JsonToBean {
             }
             else if (type == Long.TYPE) {
                 return (obj != null) ? obj : new Long(0);
+            }
+            else if (type == Float.TYPE) { // This is used for getting job's progress value;
+                                           // get the float progress value, or -1.0 if not defined (progress info not available).
+                return (obj != null) ? new Float(((Double) obj).floatValue()) : new Float(-1);
             }
             else if (type == Date.class) {
                 return JsonUtils.parseDateRfc822((String) obj);

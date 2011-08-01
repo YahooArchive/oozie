@@ -480,5 +480,156 @@ public class TestLiteWorkflowAppService extends XTestCase {
             services.destroy();
         }
     }
+    
+    // test a simple normal wf
+    public void testExecutionPathEstimate1() throws Exception {
+        Services services = new Services();
+        try {
+            services.init();
+            WorkflowAppService wps = services.get(WorkflowAppService.class);
 
+            Reader reader = IOUtils.getResourceAsReader("wf-progress-test1.xml", -1);
+            Writer writer = new FileWriter(getTestCaseDir() + "/workflow.xml");
+            IOUtils.copyCharStream(reader, writer);
+
+            Configuration jobConf = new XConfiguration();
+            jobConf.set(OozieClient.APP_PATH, "file://" + getTestCaseDir() + File.separator + "workflow.xml");
+            jobConf.set(OozieClient.USER_NAME, getTestUser());
+            jobConf.set(OozieClient.GROUP_NAME, "group");
+            injectKerberosInfo(jobConf);
+
+            LiteWorkflowApp app = (LiteWorkflowApp) wps.parseDef(jobConf, "authToken");
+            
+            int length = app.getExecutionPathLengthEstimate();
+            assertEquals(2, length);
+        }
+        finally {
+            services.destroy();
+        }
+    }
+    
+    // test orphan nodes
+    public void testExecutionPathEstimate2() throws Exception {
+        Services services = new Services();
+        try {
+            services.init();
+            WorkflowAppService wps = services.get(WorkflowAppService.class);
+
+            Reader reader = IOUtils.getResourceAsReader("wf-progress-test2.xml", -1);
+            Writer writer = new FileWriter(getTestCaseDir() + "/workflow.xml");
+            IOUtils.copyCharStream(reader, writer);
+
+            Configuration jobConf = new XConfiguration();
+            jobConf.set(OozieClient.APP_PATH, "file://" + getTestCaseDir() + File.separator + "workflow.xml");
+            jobConf.set(OozieClient.USER_NAME, getTestUser());
+            jobConf.set(OozieClient.GROUP_NAME, "group");
+
+            LiteWorkflowApp app = (LiteWorkflowApp) wps.parseDef(jobConf, "authToken");
+            int length = app.getExecutionPathLengthEstimate();
+            assertEquals(5, length);
+        }
+        finally {
+            services.destroy();
+        }
+    }
+    
+    // test orphan nodes
+    public void testExecutionPathEstimate3() throws Exception {
+        Services services = new Services();
+        try {
+            services.init();
+            WorkflowAppService wps = services.get(WorkflowAppService.class);
+
+            Reader reader = IOUtils.getResourceAsReader("wf-progress-test3.xml", -1);
+            Writer writer = new FileWriter(getTestCaseDir() + "/workflow.xml");
+            IOUtils.copyCharStream(reader, writer);
+
+            Configuration jobConf = new XConfiguration();
+            jobConf.set(OozieClient.APP_PATH, "file://" + getTestCaseDir() + File.separator + "workflow.xml");
+            jobConf.set(OozieClient.USER_NAME, getTestUser());
+            jobConf.set(OozieClient.GROUP_NAME, "group");
+
+            LiteWorkflowApp app = (LiteWorkflowApp) wps.parseDef(jobConf, "authToken");
+            int length = app.getExecutionPathLengthEstimate();
+            assertEquals(5, length);
+        }
+        finally {
+            services.destroy();
+        }
+    }
+    
+    // test recursive decision
+    public void testExecutionPathEstimate4() throws Exception {
+        Services services = new Services();
+        try {
+            services.init();
+            WorkflowAppService wps = services.get(WorkflowAppService.class);
+
+            Reader reader = IOUtils.getResourceAsReader("wf-progress-test4.xml", -1);
+            Writer writer = new FileWriter(getTestCaseDir() + "/workflow.xml");
+            IOUtils.copyCharStream(reader, writer);
+
+            Configuration jobConf = new XConfiguration();
+            jobConf.set(OozieClient.APP_PATH, "file://" + getTestCaseDir() + File.separator + "workflow.xml");
+            jobConf.set(OozieClient.USER_NAME, getTestUser());
+            jobConf.set(OozieClient.GROUP_NAME, "group");
+
+            LiteWorkflowApp app = (LiteWorkflowApp) wps.parseDef(jobConf, "authToken");
+            int length = app.getExecutionPathLengthEstimate();
+            assertEquals(6, length);
+        }
+        finally {
+            services.destroy();
+        }
+    }
+    
+    // test longest execution path via <error>
+    public void testExecutionPathEstimate5() throws Exception {
+        Services services = new Services();
+        try {
+            services.init();
+            WorkflowAppService wps = services.get(WorkflowAppService.class);
+
+            Reader reader = IOUtils.getResourceAsReader("wf-progress-test5.xml", -1);
+            Writer writer = new FileWriter(getTestCaseDir() + "/workflow.xml");
+            IOUtils.copyCharStream(reader, writer);
+
+            Configuration jobConf = new XConfiguration();
+            jobConf.set(OozieClient.APP_PATH, "file://" + getTestCaseDir() + File.separator + "workflow.xml");
+            jobConf.set(OozieClient.USER_NAME, getTestUser());
+            jobConf.set(OozieClient.GROUP_NAME, "group");
+
+            LiteWorkflowApp app = (LiteWorkflowApp) wps.parseDef(jobConf, "authToken");
+            int length = app.getExecutionPathLengthEstimate();
+            assertEquals(6, length);
+        }
+        finally {
+            services.destroy();
+        }
+    }
+
+    // test fork
+    public void testExecutionPathEstimate6() throws Exception {
+        Services services = new Services();
+        try {
+            services.init();
+            WorkflowAppService wps = services.get(WorkflowAppService.class);
+
+            Reader reader = IOUtils.getResourceAsReader("wf-progress-test6.xml", -1);
+            Writer writer = new FileWriter(getTestCaseDir() + "/workflow.xml");
+            IOUtils.copyCharStream(reader, writer);
+
+            Configuration jobConf = new XConfiguration();
+            jobConf.set(OozieClient.APP_PATH, "file://" + getTestCaseDir() + File.separator + "workflow.xml");
+            jobConf.set(OozieClient.USER_NAME, getTestUser());
+            jobConf.set(OozieClient.GROUP_NAME, "group");
+
+            LiteWorkflowApp app = (LiteWorkflowApp) wps.parseDef(jobConf, "authToken");
+            int length = app.getExecutionPathLengthEstimate();
+            assertEquals(7, length);
+        }
+        finally {
+            services.destroy();
+        }
+    }
 }
