@@ -26,7 +26,6 @@ import org.apache.oozie.service.WorkflowAppService;
 import org.apache.oozie.util.XConfiguration;
 import org.apache.oozie.util.XmlUtils;
 import org.jdom.Element;
-
 import java.text.MessageFormat;
 
 public class TestFsActionExecutor extends ActionExecutorTestCase {
@@ -194,26 +193,26 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
 
         Path source = new Path(getFsTestCaseDir(), "source");	// gets fsTestCaseDir from XFsTestCase (parent class)
         Path target = new Path(getFsTestCaseDir(), "target");
-
         Context context = createContext("<fs/>");
 
         fs.mkdirs(source);
-        fs.createNewFile(new Path(source+"/newfile"));
+        fs.createNewFile(new Path(source+"/newfile1"));
+        fs.mkdirs(target);
                 
         String dest = target.toUri().getPath();
         Path destPath = new Path(dest);
-        ae.move(context, source, destPath, false);
+        ae.move(context, new Path(source+"/newfile1"), destPath, false);
         FileStatus[] stat = fs.listStatus(destPath);
-        /*if(stat.length > 0) 
+        if(stat.length > 0) 
         	for(int i=0;i<stat.length;i++) 
-        		System.out.println("### "+stat[i].getPath().toString()); */
+        		System.out.println("###1 "+stat[i].getPath().toString()); 
         
         // check that move is successful
-        assertTrue(!fs.exists(source));
+        assertTrue(!fs.exists(new Path(source+"/newfile1")));
         assertTrue(fs.exists(target));
 
         try {
-            ae.move(context, source, new Path(target.toUri().getPath()), false);
+            ae.move(context, new Path(source+"/newfile1"), new Path(target.toUri().getPath()), false);
             fail();	//HAS to throw exception if move successful, so fail() not reached.
         }
         catch (ActionExecutorException ex) {
@@ -222,22 +221,22 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
 
         fs.mkdirs(source); fs.createNewFile(new Path(source+"/newfile"));
         //testcase with heirarchy of target dir
-        Path complexTarget = new Path(target+"/a/b");
+        Path complexTarget = new Path(target+"/a");
         fs.mkdirs(complexTarget);
         try {
             //ae.move(context, source, new Path(target.toUri().getPath()), false);
         	ae.move(context, source, new Path(complexTarget+"/sourceMoved"), false);
-            /*stat = fs.listStatus(complexTarget);
+            stat = fs.listStatus(destPath);
             if(stat.length > 0) 
             	for(int i=0;i<stat.length;i++) {
             		FileStatus[] stat1 = fs.listStatus(stat[i].getPath());
     				if(stat1.length > 0)
     					for(int j=0;j<stat1.length;j++)
-    						System.out.println("### "+stat1[j].getPath().toString()); }*/
+    						System.out.println("###2"+stat1[j].getPath().toString()); }
             //fail(); now that move() is fixed, the above does NOT throw exceptn
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS007", ex.getErrorCode());
+            assertEquals("FS008", ex.getErrorCode());
             System.out.println("TARGET EXISTS ERROR");
         }
         

@@ -233,34 +233,34 @@ public class FsActionExecutor extends ActionExecutor {
      * @param recovery
      * @throws ActionExecutorException
      */
-    /*public void move(Context context, Path source, Path target, boolean recovery) throws ActionExecutorException {
+    public void move(Context context, Path source, Path target, boolean recovery) throws ActionExecutorException {
         try {
-            validatePath(source, true);
-            validatePath(target, false);
+            validatePath1(source, true);
+            validatePath1(target, false);
             FileSystem fs = getFileSystemFor(source, context);
-
             if (!fs.exists(source) && !recovery) {
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS006",
                                                   "move, source path [{0}] does not exist", source);
             }
 
-            Path path = new Path(source, target);
+            /*Path path = new Path(source, target);
             if (fs.exists(path) && !recovery) {
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS007",
                                                   "move, target path [{0}] already exists", target);
-            }
+            }*/
 
             if (!fs.rename(source, target) && !recovery) {
+                System.out.println("move gives exception");
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS008",
                                                   "move, could not move [{0}] to [{1}]", source, target);
             }
-        }
+        } 
         catch (Exception ex) {
             throw convertException(ex);
         }
-    }*/
+    }
     
-    public void move(Context context, Path source, Path target, boolean recovery) throws ActionExecutorException {
+    /*public void move(Context context, Path source, Path target, boolean recovery) throws ActionExecutorException {
         try {
             validatePath1(source, true);
             validatePath1(target, false);
@@ -277,10 +277,8 @@ public class FsActionExecutor extends ActionExecutor {
             	//target directory exists. put file or dir INSIDE this target dir
             	//get only lowermost file or dir name of source
             	String srcPath = source.getName(); // \m/
+            	System.out.println(srcPath);
             	Path newpath = new Path(target.toString()+"/"+srcPath);
-            	
-            	//if(fs.getFileStatus(source).isDir())
-            	//fs.mkdirs(newpath);
             	
             	//call rename. but final path is now prefixed with this target dir
             	target = newpath;
@@ -296,7 +294,7 @@ public class FsActionExecutor extends ActionExecutor {
         catch (Exception ex) {
             throw convertException(ex);
         }
-    }
+    }*/
 
     void chmod(Context context, Path path, String permissions, boolean dirFiles) throws ActionExecutorException {
         try {
