@@ -243,11 +243,18 @@ public class FsActionExecutor extends ActionExecutor {
                                                   "move, source path [{0}] does not exist", source);
             }
 
-            /*Path path = new Path(source, target);
-            if (fs.exists(path) && !recovery) {
+            Path tpath = new Path(source, target);
+            String t = tpath.toUri().getScheme()+tpath.toUri().getAuthority();
+            String s = source.toUri().getScheme()+source.toUri().getAuthority();
+            /*if (fs.exists(path) && !recovery) {
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS007",
                                                   "move, target path [{0}] already exists", target);
             }*/
+            //checking whether NN prefix of source and target is same. can modify this to adjust for a set of multiple whitelisted NN
+            if(!t.equals(s)) {
+                throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS007",
+                        "move, target NN URI different from that of source", target);
+            }
 
             if (!fs.rename(source, target) && !recovery) {
                 System.out.println("move gives exception");

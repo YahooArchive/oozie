@@ -202,10 +202,10 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
         String dest = target.toUri().getPath();
         Path destPath = new Path(dest);
         ae.move(context, new Path(source+"/newfile1"), destPath, false);
-        FileStatus[] stat = fs.listStatus(destPath);
+        /*FileStatus[] stat = fs.listStatus(destPath);
         if(stat.length > 0) 
         	for(int i=0;i<stat.length;i++) 
-        		System.out.println("###1 "+stat[i].getPath().toString()); 
+        		System.out.println("###1 "+stat[i].getPath().toString()); */
         
         // check that move is successful
         assertTrue(!fs.exists(new Path(source+"/newfile1")));
@@ -221,18 +221,18 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
 
         fs.mkdirs(source); fs.createNewFile(new Path(source+"/newfile"));
         //testcase with heirarchy of target dir
-        Path complexTarget = new Path(target+"/a");
+        Path complexTarget = new Path(target+"/a/b");
         fs.mkdirs(complexTarget);
         try {
             //ae.move(context, source, new Path(target.toUri().getPath()), false);
         	ae.move(context, source, new Path(complexTarget+"/sourceMoved"), false);
-            stat = fs.listStatus(destPath);
+            /*stat = fs.listStatus(destPath);
             if(stat.length > 0) 
             	for(int i=0;i<stat.length;i++) {
             		FileStatus[] stat1 = fs.listStatus(stat[i].getPath());
     				if(stat1.length > 0)
     					for(int j=0;j<stat1.length;j++)
-    						System.out.println("###2"+stat1[j].getPath().toString()); }
+    						System.out.println("###2"+stat1[j].getPath().toString()); }*/
             //fail(); now that move() is fixed, the above does NOT throw exceptn
         }
         catch (ActionExecutorException ex) {
