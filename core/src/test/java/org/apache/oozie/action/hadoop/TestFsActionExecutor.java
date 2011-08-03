@@ -55,7 +55,7 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
 
         return new Context(wf, action);
     }
-
+    
     public void testValidatePath() throws Exception {
         FsActionExecutor ae = new FsActionExecutor();
         ae.validatePath(new Path("hdfs://x/bla"), true);
@@ -65,7 +65,7 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
             ae.validatePath(new Path("hdfs://x/bla"), false);
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS003", ex.getErrorCode());	//false, so scheme should NOT be given
+            assertEquals("FS003", ex.getErrorCode());	//false, so scheme should NOT be given. but in v_1 its fine
         }
 
         try {
@@ -77,33 +77,6 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
 
         try {
             ae.validatePath(new Path("file://bla"), true);
-        }
-        catch (ActionExecutorException ex) {
-            assertEquals("FS002", ex.getErrorCode());	//true, but scheme should be only hdfs
-        }
-    }
-    
-    public void testValidatePath1() throws Exception {
-        FsActionExecutor ae = new FsActionExecutor();
-        ae.validatePath1(new Path("hdfs://x/bla"), true);
-        ae.validatePath1(new Path("bla"), false);
-
-        try {
-            ae.validatePath1(new Path("hdfs://x/bla"), false);
-        }
-        catch (ActionExecutorException ex) {
-            assertEquals("FS003", ex.getErrorCode());	//false, so scheme should NOT be given. but in v_1 its fine
-        }
-
-        try {
-            ae.validatePath1(new Path("bla"), true);
-        }
-        catch (ActionExecutorException ex) {
-            assertEquals("FS001", ex.getErrorCode());	//true, so scheme is needed, and is missing
-        }
-
-        try {
-            ae.validatePath1(new Path("file://bla"), true);
         }
         catch (ActionExecutorException ex) {
             assertEquals("FS002", ex.getErrorCode());	//true, but scheme should be only hdfs
@@ -143,50 +116,6 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
         ae.delete(context, path);
     }
 
-    /*public void testMove() throws Exception {
-        FsActionExecutor ae = new FsActionExecutor();
-        FileSystem fs = getFileSystem();
-
-        Path source = new Path(getFsTestCaseDir(), "source");
-        Path target = new Path(getFsTestCaseDir(), "target");
-
-        Context context = createContext("<fs/>");
-
-        fs.mkdirs(source);
-
-        ae.move(context, source, new Path(target.toUri().getPath()), false);
-
-        assertTrue(!fs.exists(source));
-        assertTrue(fs.exists(target));
-
-        try {
-            ae.move(context, source, new Path(target.toUri().getPath()), false);
-            fail();
-        }
-        catch (ActionExecutorException ex) {
-            assertEquals("FS006", ex.getErrorCode());
-        }
-
-        fs.mkdirs(source);
-        try {
-            ae.move(context, source, new Path(target.toUri().getPath()), false);
-            fail();
-        }
-        catch (ActionExecutorException ex) {
-            assertEquals("FS007", ex.getErrorCode());
-            System.out.println("TARGET EXISTS ERROR");
-        }
-
-        fs.delete(source, true);
-        ae.move(context, source, new Path(target.toUri().getPath()), true);
-
-        fs.mkdirs(source);
-        fs.delete(target, true);
-        ae.move(context, source, new Path(target.toUri().getPath()), true);
-        assertTrue(!fs.exists(source));
-        assertTrue(fs.exists(target));
-    }*/
-    
     public void testMove() throws Exception {
         FsActionExecutor ae = new FsActionExecutor();
         FileSystem fs = getFileSystem();
@@ -202,45 +131,29 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
         String dest = target.toUri().getPath();
         Path destPath = new Path(dest);
         ae.move(context, new Path(source+"/newfile1"), destPath, false);
-        /*FileStatus[] stat = fs.listStatus(destPath);
-        if(stat.length > 0) 
-        	for(int i=0;i<stat.length;i++) 
-        		System.out.println("###1 "+stat[i].getPath().toString()); */
         
-        // check that move is successful
         assertTrue(!fs.exists(new Path(source+"/newfile1")));
         assertTrue(fs.exists(target));
 
         try {
-            ae.move(context, new Path(source+"/newfile1"), new Path(target.toUri().getPath()), false);
-            fail();	//HAS to throw exception if move successful, so fail() not reached.
+            ae.move(context, new Path(source+"/newfile1"), destPath, false);
+            fail();	
         }
         catch (ActionExecutorException ex) {
             assertEquals("FS006", ex.getErrorCode());
         }
 
-        fs.mkdirs(source); fs.createNewFile(new Path(source+"/newfile"));
-        //testcase with heirarchy of target dir
+        fs.mkdirs(source); 
+        fs.createNewFile(new Path(source+"/newfile"));
         Path complexTarget = new Path(target+"/a/b");
         fs.mkdirs(complexTarget);
         try {
-            //ae.move(context, source, new Path(target.toUri().getPath()), false);
         	ae.move(context, source, new Path(complexTarget+"/sourceMoved"), false);
-            /*stat = fs.listStatus(destPath);
-            if(stat.length > 0) 
-            	for(int i=0;i<stat.length;i++) {
-            		FileStatus[] stat1 = fs.listStatus(stat[i].getPath());
-    				if(stat1.length > 0)
-    					for(int j=0;j<stat1.length;j++)
-    						System.out.println("###2"+stat1[j].getPath().toString()); }*/
-            //fail(); now that move() is fixed, the above does NOT throw exceptn
         }
         catch (ActionExecutorException ex) {
             assertEquals("FS008", ex.getErrorCode());
-            System.out.println("TARGET EXISTS ERROR");
         }
         
-        // boolean recovery set as true now (?)
         fs.delete(source, true);
         ae.move(context, source, new Path(target.toUri().getPath()), true);
 
