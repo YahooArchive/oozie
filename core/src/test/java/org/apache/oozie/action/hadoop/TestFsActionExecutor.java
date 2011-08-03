@@ -14,6 +14,7 @@
  */
 package org.apache.oozie.action.hadoop;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -25,7 +26,6 @@ import org.apache.oozie.service.WorkflowAppService;
 import org.apache.oozie.util.XConfiguration;
 import org.apache.oozie.util.XmlUtils;
 import org.jdom.Element;
-
 import java.text.MessageFormat;
 
 public class TestFsActionExecutor extends ActionExecutorTestCase {
@@ -55,7 +55,7 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
 
         return new Context(wf, action);
     }
-
+    
     public void testValidatePath() throws Exception {
         FsActionExecutor ae = new FsActionExecutor();
         ae.validatePath(new Path("hdfs://x/bla"), true);
@@ -65,21 +65,21 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
             ae.validatePath(new Path("hdfs://x/bla"), false);
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS003", ex.getErrorCode());
+            assertEquals("FS003", ex.getErrorCode());	//false, so scheme should NOT be given. but in v_1 its fine
         }
 
         try {
             ae.validatePath(new Path("bla"), true);
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS001", ex.getErrorCode());
+            assertEquals("FS001", ex.getErrorCode());	//true, so scheme is needed, and is missing
         }
 
         try {
             ae.validatePath(new Path("file://bla"), true);
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS002", ex.getErrorCode());
+            assertEquals("FS002", ex.getErrorCode());	//true, but scheme should be only hdfs
         }
     }
 
@@ -120,35 +120,40 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
         FsActionExecutor ae = new FsActionExecutor();
         FileSystem fs = getFileSystem();
 
-        Path source = new Path(getFsTestCaseDir(), "source");
+        Path source = new Path(getFsTestCaseDir(), "source");	// gets fsTestCaseDir from XFsTestCase (parent class)
         Path target = new Path(getFsTestCaseDir(), "target");
-
         Context context = createContext("<fs/>");
 
         fs.mkdirs(source);
-
-        ae.move(context, source, new Path(target.toUri().getPath()), false);
-
-        assertTrue(!fs.exists(source));
+        fs.createNewFile(new Path(source+"/newfile1"));
+        fs.mkdirs(target);
+                
+        String dest = target.toUri().getPath();
+        Path destPath = new Path(dest);
+        ae.move(context, new Path(source+"/newfile1"), destPath, false);
+        
+        assertTrue(!fs.exists(new Path(source+"/newfile1")));
         assertTrue(fs.exists(target));
 
         try {
-            ae.move(context, source, new Path(target.toUri().getPath()), false);
-            fail();
+            ae.move(context, new Path(source+"/newfile1"), destPath, false);
+            fail();	
         }
         catch (ActionExecutorException ex) {
             assertEquals("FS006", ex.getErrorCode());
         }
 
-        fs.mkdirs(source);
+        fs.mkdirs(source); 
+        fs.createNewFile(new Path(source+"/newfile"));
+        Path complexTarget = new Path(target+"/a/b");
+        fs.mkdirs(complexTarget);
         try {
-            ae.move(context, source, new Path(target.toUri().getPath()), false);
-            fail();
+        	ae.move(context, source, new Path(complexTarget+"/sourceMoved"), false);
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS007", ex.getErrorCode());
+            assertEquals("FS008", ex.getErrorCode());
         }
-
+        
         fs.delete(source, true);
         ae.move(context, source, new Path(target.toUri().getPath()), true);
 
