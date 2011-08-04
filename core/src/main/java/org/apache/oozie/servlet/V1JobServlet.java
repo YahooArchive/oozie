@@ -29,6 +29,7 @@ import org.apache.oozie.CoordinatorActionBean;
 import org.apache.oozie.CoordinatorActionInfo;
 import org.apache.oozie.CoordinatorEngine;
 import org.apache.oozie.CoordinatorEngineException;
+import org.apache.oozie.command.CommandException;
 import org.apache.oozie.DagEngine;
 import org.apache.oozie.DagEngineException;
 import org.apache.oozie.ErrorCode;
@@ -47,7 +48,7 @@ import org.json.simple.JSONObject;
 public class V1JobServlet extends BaseJobServlet {
 
     private static final String INSTRUMENTATION_NAME = "v1job";
-
+    
     public V1JobServlet() {
         super(INSTRUMENTATION_NAME);
     }
@@ -886,12 +887,16 @@ public class V1JobServlet extends BaseJobServlet {
                 getUser(request), getAuthToken(request));
 
         String jobId = getResourceName(request);
-
+        String logRetrievalScope = request.getParameter(RestConstants.JOB_LOG_SCOPE_PARAM);
+        String logRetrievalType = request.getParameter(RestConstants.JOB_LOG_TYPE_PARAM);
         try {
-            coordEngine.streamLog(jobId, response.getWriter());
+            coordEngine.streamLog(jobId,logRetrievalScope,logRetrievalType,response.getWriter());
         }
         catch (BaseEngineException ex) {
             throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ex);
+        }
+        catch (CommandException ex) {
+        	throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ex);
         }
     }
 }

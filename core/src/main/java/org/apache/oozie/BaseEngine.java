@@ -193,7 +193,7 @@ public abstract class BaseEngine {
      * jobId.
      */
     public abstract void streamLog(String jobId, Writer writer) throws IOException, BaseEngineException;
-
+    
     /**
      * Return the workflow Job ID for an external ID. <p/> This is reverse lookup for recovery purposes.
      *

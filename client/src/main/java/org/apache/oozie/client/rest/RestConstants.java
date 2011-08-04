@@ -87,6 +87,14 @@ public interface RestConstants {
     public static final String JOB_COORD_RERUN_REFRESH_PARAM = "refresh";
 
     public static final String JOB_COORD_RERUN_NOCLEANUP_PARAM = "nocleanup";
+    
+    public static final String JOB_LOG_DATE = "date";
+
+    public static final String JOB_LOG_ACTION = "action";
+    
+    public static final String JOB_LOG_SCOPE_PARAM = "scope";
+    
+    public static final String JOB_LOG_TYPE_PARAM = "type";
 
     public static final String JOBS_FILTER_PARAM = "filter";
 
