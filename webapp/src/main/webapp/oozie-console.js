@@ -1723,15 +1723,10 @@ function initConsole() {
             handler: function() {
                 coord_jobs_store.reload();
             }
-        }, refreshCoordAllJobsAction, refreshCoordActiveJobsAction, refreshCoordDoneJobsAction,
-
-
-{
+        }, refreshCoordAllJobsAction, refreshCoordActiveJobsAction, refreshCoordDoneJobsAction,{
             text: 'Custom Filter',
             menu: [refreshCoordCustomJobsAction, changeCoordFilterAction, helpFilterAction ]
-        },
-
-            {
+        },  {
                 xtype: 'tbfill'
             }, checkStatus, serverVersion],
         title: 'Coordinator Jobs',
