@@ -133,7 +133,7 @@ public class TestMapReduceActionExecutor extends ActionExecutorTestCase {
         assertEquals("IF", conf.get("oozie.pipes.inputformat"));
         assertEquals("P", conf.get("oozie.pipes.partitioner"));
         assertEquals("W", conf.get("oozie.pipes.writer"));
-        assertEquals("PP", conf.get("oozie.pipes.program"));
+        assertEquals(getFsTestCaseDir()+"/PP", conf.get("oozie.pipes.program"));
     }
 
     protected Context createContext(String name, String actionXml) throws Exception {
@@ -193,7 +193,7 @@ public class TestMapReduceActionExecutor extends ActionExecutorTestCase {
         WorkflowAction action = context.getAction();
 
         ae.prepareActionDir(getFileSystem(), context);
-        ae.submitLauncher(context, action);
+        ae.submitLauncher(getFileSystem(), context, action);
 
         String jobId = action.getExternalId();
         String jobTracker = action.getTrackerUri();
