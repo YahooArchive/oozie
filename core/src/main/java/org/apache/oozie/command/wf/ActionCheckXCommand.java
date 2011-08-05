@@ -151,7 +151,8 @@ public class ActionCheckXCommand extends ActionXCommand<Void> {
         ActionExecutorContext context = null;
         try {
             boolean isRetry = false;
-            context = new ActionXCommand.ActionExecutorContext(wfJob, wfAction, isRetry);
+            boolean isUserRetry = false;
+            context = new ActionXCommand.ActionExecutorContext(wfJob, wfAction, isRetry, isUserRetry);
             incrActionCounter(wfAction.getType(), 1);
 
             Instrumentation.Cron cron = new Instrumentation.Cron();
