@@ -51,18 +51,15 @@ public class DistcpActionExecutor extends JavaActionExecutor{
      * @return Name of the class from the configuration
      */
     public static String getClassNamebyType(String type){
-        Configuration conf;
+        Configuration conf = Services.get().getConf();
         String classname = null;
-        String typefromconf;
-        conf = Services.get().getConf();
         if (conf.get(CLASS_NAMES, "").trim().length() > 0) {
             for (String function : conf.getStrings(CLASS_NAMES)) {
                 function = DistcpActionExecutor.Trim(function);
-                LOG.debug("Creating Credential class for : " + function);
+                LOG.debug("class for Distcp Action: " + function);
                 String[] str = function.split("=");
                 if (str.length > 0) {
-                    typefromconf = str[0];
-                    if(type.equalsIgnoreCase(typefromconf)){
+                    if(type.equalsIgnoreCase(str[0])){
                         classname = new String(str[1]);
                     }
                 }

@@ -22,11 +22,11 @@
     <xs:complexType name="ACTION">
         <xs:sequence>
                 <xs:element name="job-tracker" type="xs:string" minOccurs="1" maxOccurs="1"/>
-            	<xs:element name="name-node" type="xs:string" minOccurs="1" maxOccurs="1"/>
-            	<xs:element name="prepare" type="distcp:PREPARE" minOccurs="0" maxOccurs="1"/>
-            	<xs:element name="configuration" type="distcp:CONFIGURATION" minOccurs="0" maxOccurs="1"/>
-            	<xs:element name="java-opts" type="xs:string" minOccurs="0" maxOccurs="1"/>
-            	<xs:element name="arg" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="name-node" type="xs:string" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="prepare" type="distcp:PREPARE" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="configuration" type="distcp:CONFIGURATION" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="java-opts" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="arg" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
     
