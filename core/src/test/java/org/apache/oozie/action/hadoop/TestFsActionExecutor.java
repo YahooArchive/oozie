@@ -65,21 +65,40 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
             ae.validatePath(new Path("hdfs://x/bla"), false);
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS003", ex.getErrorCode());	//false, so scheme should NOT be given. but in v_1 its fine
+            assertEquals("FS003", ex.getErrorCode());	
         }
 
         try {
             ae.validatePath(new Path("bla"), true);
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS001", ex.getErrorCode());	//true, so scheme is needed, and is missing
+            assertEquals("FS001", ex.getErrorCode());	
         }
 
         try {
             ae.validatePath(new Path("file://bla"), true);
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS002", ex.getErrorCode());	//true, but scheme should be only hdfs
+            assertEquals("FS002", ex.getErrorCode());	
+        }
+    }
+    
+    public void testValidateNamespace() throws Exception {
+        FsActionExecutor ae = new FsActionExecutor();
+        ae.validateNamespace(new Path("hdfs://x/bla"), new Path("hdfs://x/foo"));
+
+        try {
+            ae.validateNamespace(new Path("hdfs://x/bla"), new Path("viefs://x/bla"));
+        }
+        catch (ActionExecutorException ex) {
+            assertEquals("FS007", ex.getErrorCode());   
+        }
+
+        try {
+            ae.validateNamespace(new Path("hdfs://x/bla"), new Path("hdfs://y/bla"));
+        }
+        catch (ActionExecutorException ex) {
+            assertEquals("FS007", ex.getErrorCode());   
         }
     }
 
@@ -120,18 +139,18 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
         FsActionExecutor ae = new FsActionExecutor();
         FileSystem fs = getFileSystem();
 
-        Path source = new Path(getFsTestCaseDir(), "source");	// gets fsTestCaseDir from XFsTestCase (parent class)
+        Path source = new Path(getFsTestCaseDir(), "source");	
         Path target = new Path(getFsTestCaseDir(), "target");
         Context context = createContext("<fs/>");
 
         fs.mkdirs(source);
         fs.createNewFile(new Path(source+"/newfile1"));
         fs.mkdirs(target);
-                
+
         String dest = target.toUri().getPath();
         Path destPath = new Path(dest);
         ae.move(context, new Path(source+"/newfile1"), destPath, false);
-        
+
         assertTrue(!fs.exists(new Path(source+"/newfile1")));
         assertTrue(fs.exists(target));
 
@@ -147,13 +166,18 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
         fs.createNewFile(new Path(source+"/newfile"));
         Path complexTarget = new Path(target+"/a/b");
         fs.mkdirs(complexTarget);
+
+        ae.move(context, source, complexTarget, false);
+        assertTrue(fs.exists(new Path(complexTarget+"/"+source.getName())));
+
+        fs.mkdirs(source);
         try {
-        	ae.move(context, source, new Path(complexTarget+"/sourceMoved"), false);
+            ae.move(context, source, new Path(target.toUri().getScheme()+"://foo/"+destPath), false);
+        	fail();
         }
         catch (ActionExecutorException ex) {
-            assertEquals("FS008", ex.getErrorCode());
+            assertEquals("FS007", ex.getErrorCode());
         }
-        
         fs.delete(source, true);
         ae.move(context, source, new Path(target.toUri().getPath()), true);
 

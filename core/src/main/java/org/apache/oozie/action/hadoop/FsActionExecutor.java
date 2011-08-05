@@ -45,7 +45,7 @@ public class FsActionExecutor extends ActionExecutor {
         String str = element.getAttributeValue(attribute).trim();
         return new Path(str);
     }
-    
+
     void validatePath(Path path, boolean withScheme) throws ActionExecutorException {
         String scheme = path.toUri().getScheme();
         if (withScheme) {
@@ -56,15 +56,27 @@ public class FsActionExecutor extends ActionExecutor {
             else {
                 if (!scheme.equals("hdfs")) {
                     throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS002",
-                                                      "Scheme [{0}] not support in path [{1}]", scheme, path);
+                                                      "Scheme [{0}] not supported in path [{1}]", scheme, path);
                 }
             }
         }
         else { 
-            if (scheme != null && !scheme.equals("hdfs")) {
+            if (scheme != null) {
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS003",
-                                                  "Scheme [{0}] not support in path [{1}]", scheme, path);
+                                                  "Scheme [{0}] not allowed in path [{1}]", scheme, path);
             }
+        }
+    }
+
+    void validateNamespace(Path source, Path dest) throws ActionExecutorException {
+        Path destPath = new Path(source, dest);
+        String t = destPath.toUri().getScheme()+destPath.toUri().getAuthority();
+        String s = source.toUri().getScheme()+source.toUri().getAuthority();
+
+        //checking whether NN prefix of source and target is same. can modify this to adjust for a set of multiple whitelisted NN
+        if(!t.equals(s)) {
+            throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS007",
+                    "move, target NN URI different from that of source", dest);
         }
     }
 
@@ -214,34 +226,23 @@ public class FsActionExecutor extends ActionExecutor {
     public void move(Context context, Path source, Path target, boolean recovery) throws ActionExecutorException {
         try {
             validatePath(source, true);
-            validatePath(target, false);
+            validateNamespace(source, target);
             FileSystem fs = getFileSystemFor(source, context);
+
             if (!fs.exists(source) && !recovery) {
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS006",
                                                   "move, source path [{0}] does not exist", source);
             }
 
-            Path tpath = new Path(source, target);
-            String t = tpath.toUri().getScheme()+tpath.toUri().getAuthority();
-            String s = source.toUri().getScheme()+source.toUri().getAuthority();
-           
-            //checking whether NN prefix of source and target is same. can modify this to adjust for a set of multiple whitelisted NN
-            if(!t.equals(s)) {
-                throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS007",
-                        "move, target NN URI different from that of source", target);
-            }
-
             if (!fs.rename(source, target) && !recovery) {
-                System.out.println("move gives exception");
                 throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, "FS008",
                                                   "move, could not move [{0}] to [{1}]", source, target);
             }
-        } 
+        }
         catch (Exception ex) {
             throw convertException(ex);
         }
     }
-    
 
     void chmod(Context context, Path path, String permissions, boolean dirFiles) throws ActionExecutorException {
         try {
