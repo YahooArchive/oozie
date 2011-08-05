@@ -16,6 +16,7 @@ package org.apache.oozie.command.wf;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Set;
 
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.WorkflowActionBean;
@@ -23,6 +24,7 @@ import org.apache.oozie.WorkflowJobBean;
 import org.apache.oozie.XException;
 import org.apache.oozie.action.ActionExecutor;
 import org.apache.oozie.action.ActionExecutorException;
+import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.client.WorkflowAction.Status;
 import org.apache.oozie.command.CommandException;
@@ -34,6 +36,7 @@ import org.apache.oozie.executor.jpa.WorkflowJobGetJPAExecutor;
 import org.apache.oozie.executor.jpa.WorkflowJobUpdateJPAExecutor;
 import org.apache.oozie.service.ActionService;
 import org.apache.oozie.service.JPAService;
+import org.apache.oozie.service.LiteWorkflowStoreService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.service.UUIDService;
 import org.apache.oozie.util.InstrumentUtils;
@@ -151,7 +154,8 @@ public class ActionCheckXCommand extends ActionXCommand<Void> {
         ActionExecutorContext context = null;
         try {
             boolean isRetry = false;
-            context = new ActionXCommand.ActionExecutorContext(wfJob, wfAction, isRetry);
+            boolean isUserRetry = false;
+            context = new ActionXCommand.ActionExecutorContext(wfJob, wfAction, isRetry, isUserRetry);
             incrActionCounter(wfAction.getType(), 1);
 
             Instrumentation.Cron cron = new Instrumentation.Cron();
@@ -207,10 +211,25 @@ public class ActionCheckXCommand extends ActionXCommand<Void> {
     }
 
     private void failAction(WorkflowJobBean workflow, WorkflowActionBean action) throws CommandException {
-        LOG.warn("Failing Job [{0}] due to failed action [{1}]", workflow.getId(), action.getId());
-        action.resetPending();
-        action.setStatus(Status.FAILED);
-        workflow.setStatus(WorkflowJob.Status.FAILED);
-        InstrumentUtils.incrJobCounter(INSTR_FAILED_JOBS_COUNTER, 1, getInstrumentation());
+        String errorCode = action.getErrorCode();
+        Set<String> allowedRetryCode = LiteWorkflowStoreService.getUserRetryErrorCode();
+
+        if (allowedRetryCode.contains(errorCode) && action.getUserRetryCount() < action.getUserRetryMax()) {
+            LOG.info("Preparing retry this action [{0}], errorCode [{1}], userRetryCount [{2}], "
+                    + "userRetryMax [{3}], userRetryInterval [{4}]", action.getId(), errorCode, action
+                    .getUserRetryCount(), action.getUserRetryMax(), action.getUserRetryInterval());
+            int interval = action.getUserRetryInterval() * 60 * 1000;
+            action.setStatus(WorkflowAction.Status.USER_RETRY);
+            action.incrmentUserRetryCount();
+            action.setPending();
+            queue(new ActionStartXCommand(action.getId(), action.getType()), interval);
+        }
+        else {
+            LOG.warn("Failing Job [{0}] due to failed action [{1}]", workflow.getId(), action.getId());
+            action.resetPending();
+            action.setStatus(Status.FAILED);
+            workflow.setStatus(WorkflowJob.Status.FAILED);
+            InstrumentUtils.incrJobCounter(INSTR_FAILED_JOBS_COUNTER, 1, getInstrumentation());
+        }
     }
 }

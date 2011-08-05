@@ -133,7 +133,8 @@ public class ActionEndXCommand extends ActionXCommand<Void> {
                 || wfAction.getStatus() == WorkflowActionBean.Status.END_MANUAL) {
             isRetry = true;
         }
-        ActionExecutorContext context = new ActionXCommand.ActionExecutorContext(wfJob, wfAction, isRetry);
+        boolean isUserRetry = false;
+        ActionExecutorContext context = new ActionXCommand.ActionExecutorContext(wfJob, wfAction, isRetry, isUserRetry);
         try {
 
             LOG.debug(

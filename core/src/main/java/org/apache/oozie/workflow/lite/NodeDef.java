@@ -16,8 +16,6 @@ package org.apache.oozie.workflow.lite;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.oozie.util.ParamChecker;
-import org.apache.oozie.util.XLog;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -25,13 +23,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-//TODO javadoc
+/**
+ * This node definition is serialized object and should provide readFields() and write() for read and write of fields in
+ * this class.
+ */
 public class NodeDef implements Writable {
-    private String name;
+    private String name = null;
     private Class<? extends NodeHandler> handlerClass;
-    private String conf;
+    private String conf = null;
     private List<String> transitions = new ArrayList<String>();
-    private String cred;
+    private String cred = "null";
+    private String userRetryMax = "null";
+    private String userRetryInterval = "null";
 
     NodeDef() {
     }
@@ -41,26 +44,40 @@ public class NodeDef implements Writable {
         this.conf = conf;
         this.handlerClass = ParamChecker.notNull(handlerClass, "handlerClass");
         this.transitions = Collections.unmodifiableList(ParamChecker.notEmptyElements(transitions, "transitions"));
-        this.cred = "null";
     }
 
-    NodeDef(String name, String conf, Class<? extends NodeHandler> handlerClass, List<String> transitions,String cred) {
+    NodeDef(String name, String conf, Class<? extends NodeHandler> handlerClass, List<String> transitions, String cred) {
         this.name = ParamChecker.notEmpty(name, "name");
         this.conf = conf;
         this.handlerClass = ParamChecker.notNull(handlerClass, "handlerClass");
         this.transitions = Collections.unmodifiableList(ParamChecker.notEmptyElements(transitions, "transitions"));
-        if(cred != null){
+        if (cred != null) {
             this.cred = cred;
         }
-        else{
-            this.cred = "null";
+    }
+
+    NodeDef(String name, String conf, Class<? extends NodeHandler> handlerClass, List<String> transitions, String cred,
+            String userRetryMax, String userRetryInterval) {
+        this.name = ParamChecker.notEmpty(name, "name");
+        this.conf = conf;
+        this.handlerClass = ParamChecker.notNull(handlerClass, "handlerClass");
+        this.transitions = Collections.unmodifiableList(ParamChecker.notEmptyElements(transitions, "transitions"));
+        if (cred != null) {
+            this.cred = cred;
+        }
+        if (userRetryMax != null) {
+            this.userRetryMax = userRetryMax;
+        }
+        if (userRetryInterval != null) {
+            this.userRetryInterval = userRetryInterval;
         }
     }
-    
+
     public boolean equals(NodeDef other) {
         return !(other == null || getClass() != other.getClass() || !getName().equals(other.getName()));
     }
 
+    @Override
     public int hashCode() {
         return name.hashCode();
     }
@@ -69,9 +86,6 @@ public class NodeDef implements Writable {
         return name;
     }
 
-    /**
-     * @return the auth
-     */
     public String getCred() {
         return cred;
     }
@@ -88,8 +102,15 @@ public class NodeDef implements Writable {
         return conf;
     }
 
+    public String getUserRetryMax() {
+        return userRetryMax;
+    }
+
+    public String getUserRetryInterval() {
+        return userRetryInterval;
+    }
+
     @Override
-    @SuppressWarnings("unchecked")
     public void readFields(DataInput dataInput) throws IOException {
         name = dataInput.readUTF();
         cred = dataInput.readUTF();
@@ -111,17 +132,19 @@ public class NodeDef implements Writable {
         for (int i = 0; i < numTrans; i++) {
             transitions.add(dataInput.readUTF());
         }
+        userRetryMax = dataInput.readUTF();
+        userRetryInterval = dataInput.readUTF();
     }
 
     @Override
     public void write(DataOutput dataOutput) throws IOException {
         dataOutput.writeUTF(name);
-        if(cred != null){
+        if (cred != null) {
             dataOutput.writeUTF(cred);
-        }else{
+        }
+        else {
             dataOutput.writeUTF("null");
         }
-        XLog.getLog(getClass()).debug("write: Name:" + name +" Cred: "+ cred);
         dataOutput.writeUTF(handlerClass.getName());
         if (conf != null) {
             dataOutput.writeUTF(conf);
@@ -132,6 +155,18 @@ public class NodeDef implements Writable {
         dataOutput.writeInt(transitions.size());
         for (String transition : transitions) {
             dataOutput.writeUTF(transition);
+        }
+        if (userRetryMax != null) {
+            dataOutput.writeUTF(userRetryMax);
+        }
+        else {
+            dataOutput.writeUTF("null");
+        }
+        if (userRetryInterval != null) {
+            dataOutput.writeUTF(userRetryInterval);
+        }
+        else {
+            dataOutput.writeUTF("null");
         }
     }
 
