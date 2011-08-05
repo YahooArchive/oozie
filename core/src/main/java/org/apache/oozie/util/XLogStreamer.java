@@ -20,13 +20,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.*;
+import org.apache.oozie.service.XLogService;
+import org.mortbay.log.Log;
 
 /**
  * XLogStreamer streams the given log file to logWriter after applying the given filter.
@@ -143,7 +148,7 @@ public class XLogStreamer {
          * Constructs the regular expression according to the filter and assigns it to fileterPattarn. ".*" will be
          * assigned if no filters are set.
          */
-        public void constructPattern() {
+        public void constructPattern() { 
             if (noFilter && logLevels == null) {
                 filterPattern = Pattern.compile(ALLOW_ALL_REGEX);
                 return;
@@ -155,6 +160,22 @@ public class XLogStreamer {
             else {
                 sb.append("(.* - ");
                 for (int i = 0; i < parameters.size(); i++) {
+                    if(parameters.get(i).equals("ACTION"))
+                    {
+                    	String[] actionsList = filterParams.get(parameters.get(i)).split(",");
+                        sb.append("(");
+                    	
+                        for(int counter=0 ; counter<actionsList.length ; counter++)
+                    	{
+                    		if(counter!=0)
+                    			sb.append("|");
+                            sb.append("ACTION" + "\\[");
+                            sb.append(actionsList[counter] + "\\]");
+                    	}
+                    	
+                    	sb.append(") ");
+                    	continue;
+                    }
                     sb.append(parameters.get(i) + "\\[");
                     sb.append(filterParams.get(parameters.get(i)) + "\\] ");
                 }
@@ -162,7 +183,7 @@ public class XLogStreamer {
             }
             filterPattern = Pattern.compile(sb.toString());
         }
-
+        
         public static void reset() {
             parameters.clear();
         }
@@ -196,6 +217,10 @@ public class XLogStreamer {
     public void streamLog(Date startTime, Date endTime) throws IOException {
         long startTimeMillis = 0;
         long endTimeMillis;
+        String fileName;
+        InputStream ifs;
+        XLogReader logReader;
+        
         if (startTime != null) {
             startTimeMillis = startTime.getTime();
         }
@@ -208,9 +233,9 @@ public class XLogStreamer {
         File dir = new File(logPath);
         ArrayList<FileInfo> fileList = getFileList(dir, startTimeMillis, endTimeMillis, logRotation, logFile);
         for (int i = 0; i < fileList.size(); i++) {
-            InputStream ifs;
+        	fileName = fileList.get(i).getFileName();
             ifs = new FileInputStream(fileList.get(i).getFileName());
-            XLogReader logReader = new XLogReader(ifs, logFilter, logWriter);
+            logReader = new XLogReader(ifs, logFilter, logWriter);
             logReader.processLog();
         }
     }
@@ -260,17 +285,22 @@ public class XLogStreamer {
     private ArrayList<FileInfo> getFileList(File dir, long startTime, long endTime, long logRotationTime,
                                             String logFile) {
         String[] children = dir.list();
+        String fileName;
+        File file;
         ArrayList<FileInfo> fileList = new ArrayList<FileInfo>();
+        
         if (children == null) {
             return fileList;
         }
         else {
-            for (int i = 0; i < children.length; i++) {
-                String filename = children[i];
-                if (!filename.startsWith(logFile) && !filename.equals(logFile)) {
+        	for (int i = 0; i < children.length; i++) {
+        		fileName = children[i];
+        		file = new File(dir.getAbsolutePath(), fileName);
+                	
+                if (!fileName.startsWith(logFile) && !fileName.equals(logFile)) {
                     continue;
                 }
-                File file = new File(dir.getAbsolutePath(), filename);
+                file = new File(dir.getAbsolutePath(), fileName);
                 long modTime = file.lastModified();
                 if (modTime < startTime) {
                     continue;

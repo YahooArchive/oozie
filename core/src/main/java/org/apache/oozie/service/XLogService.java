@@ -23,7 +23,9 @@ import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.XLogStreamer;
 import org.apache.oozie.util.XConfiguration;
 import org.apache.oozie.BuildInfo;
+import org.apache.oozie.CoordinatorEngine;
 import org.apache.oozie.ErrorCode;
+import org.apache.openjpa.lib.log.Log;
 import org.apache.hadoop.conf.Configuration;
 
 import java.io.File;

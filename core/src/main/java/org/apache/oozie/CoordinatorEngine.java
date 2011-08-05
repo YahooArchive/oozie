@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.WorkflowJob;
+import org.apache.oozie.client.rest.RestConstants;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.command.coord.CoordActionInfoCommand;
 import org.apache.oozie.command.coord.CoordActionInfoXCommand;
@@ -48,16 +50,23 @@ import org.apache.oozie.command.coord.CoordSubmitCommand;
 import org.apache.oozie.command.coord.CoordSubmitXCommand;
 import org.apache.oozie.command.coord.CoordSuspendCommand;
 import org.apache.oozie.command.coord.CoordSuspendXCommand;
+import org.apache.oozie.executor.jpa.CoordJobGetActionForNominalTimeJPAExecutor;
+import org.apache.oozie.executor.jpa.CoordJobGetActionsForDatesJPAExecutor;
+import org.apache.oozie.executor.jpa.JPAExecutorException;
 import org.apache.oozie.service.DagXLogInfoService;
+import org.apache.oozie.service.JPAService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.service.XLogService;
+import org.apache.oozie.util.DateUtils;
 import org.apache.oozie.util.ParamChecker;
 import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.XLogStreamer;
+import org.apache.oozie.util.XLogStreamer.Filter;
 
 public class CoordinatorEngine extends BaseEngine {
     private static boolean useXCommand = true;
     private static XLog LOG = XLog.getLog(CoordinatorEngine.class);
+    private JPAService jpaService = null;
 
     /**
      * Create a system Coordinator engine, with no user and no group.
@@ -293,6 +302,106 @@ public class CoordinatorEngine extends BaseEngine {
 
         CoordinatorJobBean job = getCoordJobWithNoActionInfo(jobId);
         Services.get().get(XLogService.class).streamLog(filter, job.getCreatedTime(), new Date(), writer);
+    }
+    
+    /**
+     * Add list of actions to the filter based on conditions
+     *
+     * @param jobId Job Id
+     * @param logRetrievalScope	Value for the retrieval type
+     * @param logRetrievalType Based on whether action/date log is retrieved
+     * @param writer writer to stream the log to
+     * @throws IOException
+     * @throws BaseEngineException
+     * @throws CommandException
+     */
+    public void streamLog(String jobId, String logRetrievalScope, String logRetrievalType, Writer writer) throws IOException, BaseEngineException, CommandException {
+        XLogStreamer.Filter filter = new XLogStreamer.Filter();
+        filter.setParameter(DagXLogInfoService.JOB, jobId);
+        
+        if(logRetrievalScope!=null && logRetrievalType!=null) {
+        
+        	if(logRetrievalType.equals(RestConstants.JOB_LOG_ACTION)) {
+            
+        		Set<String> actions = new HashSet<String>();
+                String[] list = logRetrievalScope.split(",");
+                for (String s : list) {
+                    s = s.trim();
+                    if (s.contains("-")) {
+                        String[] range = s.split("-");
+                        if (range.length != 2) {
+                            throw new CommandException(ErrorCode.E0302, "format is wrong for action's range '" + s + "'");
+                        }
+                        int start;
+                        int end;
+                        try {
+                            start = Integer.parseInt(range[0].trim());
+                            end = Integer.parseInt(range[1].trim());
+                            if (start > end) {
+                                throw new CommandException(ErrorCode.E0302, "format is wrong for action's range '" + s + "'");
+                            }
+                        }
+                        catch (NumberFormatException ne) {
+                            throw new CommandException(ErrorCode.E0302, ne);
+                        }
+                        for (int i = start; i <= end; i++) {
+                            actions.add(jobId + "@" + i);
+                        }
+                    }
+                    else {
+                        try {
+                            Integer.parseInt(s);
+                        }
+                        catch (NumberFormatException ne) {
+                            throw new CommandException(ErrorCode.E0302, "format is wrong for action id'" + s
+                                    + "'. Integer only.");
+                        }
+                        actions.add(jobId + "@" + s);
+                    }
+                }
+                
+                Iterator<String> actionsIterator = actions.iterator();
+                StringBuilder commaSeparatedActions = new StringBuilder("");
+                int commaRequired = 0;
+                
+                while(actionsIterator.hasNext()) {
+                	if(commaRequired == 1)
+                		commaSeparatedActions.append(",");
+                	commaSeparatedActions.append(actionsIterator.next().toString());
+                	commaRequired = 1;	
+                	}
+                filter.setParameter(DagXLogInfoService.ACTION,commaSeparatedActions.toString());
+            }
+        	
+        	CoordinatorJobBean job = getCoordJobWithNoActionInfo(jobId);
+        	Services.get().get(XLogService.class).streamLog(filter, job.getCreatedTime(), new Date(), writer);
+        }
+        
+        else {
+            CoordinatorJobBean job = getCoordJobWithNoActionInfo(jobId);
+            Services.get().get(XLogService.class).streamLog(filter, job.getCreatedTime(), new Date(), writer);
+        }
+    }
+    
+    /**
+     * Get coordinator action ids between given start and end time
+     *
+     * @param jobId coordinator job id
+     * @param start start time
+     * @param end end time
+     * @return a list of coordinator actions belong to the range of start and end time
+     * @throws CommandException thrown if failed to get coordinator actions
+     */
+    private List<CoordinatorActionBean> getActionIdsFromDateRange(String jobId, Date start, Date end)
+            throws CommandException {
+        List<CoordinatorActionBean> list;
+        try {
+            list = jpaService.execute(new CoordJobGetActionsForDatesJPAExecutor(jobId, start, end));
+        }
+        catch (JPAExecutorException je) {
+            throw new CommandException(je);
+        }
+        return list;
     }
 
     /*
