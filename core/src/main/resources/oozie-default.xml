@@ -1295,10 +1295,10 @@
     </property>
 
 	<property>
-        <name>oozie.actions.classnames</name>
+        <name>oozie.actions.main.classnames</name>
         <value>distcp=org.apache.hadoop.tools.DistCp</value>
         <description>
-            A list of credential class name mapping for Action classes
+            A list of class name mapping for Action classes
         </description>
     </property>
 	
