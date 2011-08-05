@@ -38,6 +38,7 @@ public class LiteWorkflowApp implements Writable, WorkflowApp {
     private String definition;
     private Map<String, NodeDef> nodesMap = new LinkedHashMap<String, NodeDef>();
     private boolean complete = false;
+    private int executionPathLengthEstimate = -1;
 
     LiteWorkflowApp() {
     }
@@ -122,6 +123,7 @@ public class LiteWorkflowApp implements Writable, WorkflowApp {
             dataOutput.writeUTF(n.getClass().getName());
             n.write(dataOutput);
         }
+        dataOutput.writeInt(executionPathLengthEstimate);
     }
 
     /**
@@ -176,6 +178,16 @@ public class LiteWorkflowApp implements Writable, WorkflowApp {
                 throw new IOException(e);
             }
         }
+
+        executionPathLengthEstimate = dataInput.readInt();
+    }
+    
+    public int getExecutionPathLengthEstimate() {
+        return executionPathLengthEstimate;
+    }
+
+    public void setExecutionPathLengthEstimate(int length) {
+        executionPathLengthEstimate = length;
     }
 
 }

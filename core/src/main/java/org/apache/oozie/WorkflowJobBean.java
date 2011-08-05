@@ -146,6 +146,7 @@ public class WorkflowJobBean extends JsonWorkflowJob implements Writable {
         WritableUtils.writeStr(dataOutput, authToken);
         WritableUtils.writeStr(dataOutput, logToken);
         WritableUtils.writeStr(dataOutput, protoActionConf);
+        dataOutput.writeFloat(getProgress());
     }
 
     /**
@@ -186,6 +187,7 @@ public class WorkflowJobBean extends JsonWorkflowJob implements Writable {
         protoActionConf = WritableUtils.readStr(dataInput);
         setExternalId(getExternalId());
         setProtoActionConf(protoActionConf);
+        setProgress(dataInput.readFloat());
     }
 
     public String getAuthToken() {
