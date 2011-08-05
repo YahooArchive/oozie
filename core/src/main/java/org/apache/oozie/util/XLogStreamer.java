@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.*;
-
 import org.apache.oozie.service.XLogService;
 import org.mortbay.log.Log;
 
@@ -39,7 +38,7 @@ import org.mortbay.log.Log;
  */
 public class XLogStreamer {
 
-	/**
+    /**
      * Filter that will construct the regular expression that will be used to filter the log statement. And also checks
      * if the given log message go through the filter. Filters that can be used are logLevel(Multi values separated by
      * "|") jobId appName actionId token

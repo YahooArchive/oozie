@@ -16,9 +16,6 @@ package org.apache.oozie.cli;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
-
-
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -465,7 +462,6 @@ public class OozieCLI {
         }
         else {
             File file = new File(configFile);
-            System.out.println(file.getCanonicalPath());
             if (!file.exists()) {
                 throw new IOException("configuration file [" + configFile + "] not found");
             }
@@ -569,11 +565,9 @@ public class OozieCLI {
         }
 
         try {
-        	
             if (options.contains(SUBMIT_OPTION)) {
                 System.out.println(JOB_ID_PREFIX + wc.submit(getConfiguration(commandLine)));
             }
-            
             else if (options.contains(START_OPTION)) {
                 wc.start(commandLine.getOptionValue(START_OPTION));
             }
@@ -709,7 +703,6 @@ public class OozieCLI {
                             .contains(LOCAL_TIME_OPTION), options.contains(VERBOSE_OPTION));
                 }
             }
-            
             else if (options.contains(LOG_OPTION)) {            	
             	if (commandLine.getOptionValue(LOG_OPTION).contains("-C")) {
             		String logRetrievalScope = null;
@@ -729,7 +722,6 @@ public class OozieCLI {
                    	wc.getJobLog(commandLine.getOptionValue(LOG_OPTION),logRetrievalType,logRetrievalScope,System.out);
             	}
             }
-            
             else if (options.contains(DEFINITION_OPTION)) {
                 System.out.println(wc.getJobDefinition(commandLine.getOptionValue(DEFINITION_OPTION)));
             }
@@ -749,7 +741,6 @@ public class OozieCLI {
                             + "] doesn't end with either C or W or B");
                 }
             }
-        
         }
         catch (OozieClientException ex) {
             throw new OozieCLIException(ex.toString(), ex);
