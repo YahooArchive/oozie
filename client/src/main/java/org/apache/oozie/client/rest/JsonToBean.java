@@ -218,7 +218,7 @@ public class JsonToBean {
                 return (obj != null) ? obj : new Long(0);
             }
             else if (type == Float.TYPE) {
-                return (obj != null) ? new Float(((Double) obj).floatValue()) : new Float(-1);
+                return new Float(((Double) obj).floatValue());
             }
             else if (type == Date.class) {
                 return JsonUtils.parseDateRfc822((String) obj);
