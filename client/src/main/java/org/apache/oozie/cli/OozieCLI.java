@@ -721,6 +721,9 @@ public class OozieCLI {
                     }
                    	wc.getJobLog(commandLine.getOptionValue(LOG_OPTION),logRetrievalType,logRetrievalScope,System.out);
             	}
+		else {
+                    System.out.println(wc.getJobLog(commandLine.getOptionValue(LOG_OPTION)));			
+		}
             }
             else if (options.contains(DEFINITION_OPTION)) {
                 System.out.println(wc.getJobDefinition(commandLine.getOptionValue(DEFINITION_OPTION)));
