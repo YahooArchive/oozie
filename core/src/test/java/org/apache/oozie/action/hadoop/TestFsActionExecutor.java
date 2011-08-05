@@ -83,19 +83,19 @@ public class TestFsActionExecutor extends ActionExecutorTestCase {
         }
     }
     
-    public void testValidateNamespace() throws Exception {
+    public void testvalidateSameNN() throws Exception {
         FsActionExecutor ae = new FsActionExecutor();
-        ae.validateNamespace(new Path("hdfs://x/bla"), new Path("hdfs://x/foo"));
+        ae.validateSameNN(new Path("hdfs://x/bla"), new Path("hdfs://x/foo"));
 
         try {
-            ae.validateNamespace(new Path("hdfs://x/bla"), new Path("viefs://x/bla"));
+            ae.validateSameNN(new Path("hdfs://x/bla"), new Path("viefs://x/bla"));
         }
         catch (ActionExecutorException ex) {
             assertEquals("FS007", ex.getErrorCode());   
         }
 
         try {
-            ae.validateNamespace(new Path("hdfs://x/bla"), new Path("hdfs://y/bla"));
+            ae.validateSameNN(new Path("hdfs://x/bla"), new Path("hdfs://y/bla"));
         }
         catch (ActionExecutorException ex) {
             assertEquals("FS007", ex.getErrorCode());   

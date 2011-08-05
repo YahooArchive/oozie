@@ -68,10 +68,10 @@ public class FsActionExecutor extends ActionExecutor {
         }
     }
 
-    void validateNamespace(Path source, Path dest) throws ActionExecutorException {
+    void validateSameNN(Path source, Path dest) throws ActionExecutorException {
         Path destPath = new Path(source, dest);
-        String t = destPath.toUri().getScheme()+destPath.toUri().getAuthority();
-        String s = source.toUri().getScheme()+source.toUri().getAuthority();
+        String t = destPath.toUri().getScheme() + destPath.toUri().getAuthority();
+        String s = source.toUri().getScheme() + source.toUri().getAuthority();
 
         //checking whether NN prefix of source and target is same. can modify this to adjust for a set of multiple whitelisted NN
         if(!t.equals(s)) {
@@ -226,7 +226,7 @@ public class FsActionExecutor extends ActionExecutor {
     public void move(Context context, Path source, Path target, boolean recovery) throws ActionExecutorException {
         try {
             validatePath(source, true);
-            validateNamespace(source, target);
+            validateSameNN(source, target);
             FileSystem fs = getFileSystemFor(source, context);
 
             if (!fs.exists(source) && !recovery) {
