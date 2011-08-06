@@ -16,15 +16,9 @@ package org.apache.oozie.client.rest;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
 
 /**
  * Json utils methods.
@@ -65,5 +59,4 @@ public class JsonUtils {
         }
         return null;
     }
-
 }

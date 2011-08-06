@@ -86,6 +86,9 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
 
     @Transient
     private List<? extends JsonWorkflowAction> actions;
+    
+    @Transient
+    private float progress;
 
     public JsonWorkflowJob() {
         actions = new ArrayList<JsonWorkflowAction>();
@@ -109,6 +112,7 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
         json.put(JsonTags.WORKFLOW_RUN, (long) run);
         json.put(JsonTags.WORKFLOW_CONSOLE_URL, consoleUrl);
         json.put(JsonTags.WORKFLOW_ACTIONS, JsonWorkflowAction.toJSONArray(actions));
+        json.put(JsonTags.WORKFLOW_PROGRESS, progress);
         json.put(JsonTags.TO_STRING, toString());
         return json;
     }
@@ -238,6 +242,14 @@ public class JsonWorkflowJob implements WorkflowJob, JsonBean {
     @SuppressWarnings("unchecked")
     public List<WorkflowAction> getActions() {
         return (List) actions;
+    }
+
+    public void setProgress(float p) {
+    	progress = p;
+    }
+
+    public float getProgress() {
+    	return progress;
     }
 
     public void setActions(List<? extends JsonWorkflowAction> nodes) {

@@ -34,9 +34,13 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Class to parse and validate workflow xml
@@ -109,6 +113,9 @@ public class LiteWorkflowAppParser {
             Map<String, VisitStatus> traversed = new HashMap<String, VisitStatus>();
             traversed.put(app.getNode(StartNodeDef.START).getName(), VisitStatus.VISITING);
             validate(app, app.getNode(StartNodeDef.START), traversed);
+            
+            Set<String> reachableNodes = traversed.keySet();
+            setExecutionPathLengthEstimate(app, reachableNodes);
             return app;
         }
         catch (JDOMException ex) {
@@ -273,5 +280,163 @@ public class LiteWorkflowAppParser {
             validate(app, app.getNode(transition), traversed);
         }
         traversed.put(node.getName(), VisitStatus.VISITED);
+    }
+
+    /*
+     * Get source nodes (with no edges pointing to them) from a DAG;
+     */
+    List<String> getSourceNodes(Map<String, List<String>> DAG) {
+        Set<String> cloneNodes = new HashSet<String>();
+        for (String node : DAG.keySet()) {
+            cloneNodes.add(node);
+        }
+        
+        Iterator<String> iter = cloneNodes.iterator();
+        
+        Set<String> nonSourceNodes = new HashSet<String>();
+        while (iter.hasNext()) {
+            String name = iter.next();
+            List<String> edges = DAG.get(name);
+            for (String e : edges) {
+                nonSourceNodes.add(e);
+            }
+        }
+        
+        cloneNodes.removeAll(nonSourceNodes);
+        
+        return new ArrayList<String>(cloneNodes);
+    }
+    
+    /*
+     * Perform topological sort on a DAG;
+     */
+    @SuppressWarnings("unchecked")
+    private List<String> topologicalSort(Map<String, List<String>> DAG) {
+        Map<String, List<String>> clonedDAG = (Map<String, List<String>>)((HashMap<String, List<String>>)DAG).clone();
+        List<String> R = new ArrayList<String>();
+        clonedDAG.remove(StartNodeDef.START);
+        R.add(StartNodeDef.START);
+
+        while (clonedDAG.size() > 0) {
+            List<String> sourceNodes = getSourceNodes(clonedDAG);
+            R.addAll(sourceNodes);
+
+            for (String node : sourceNodes) {
+                clonedDAG.remove(node);
+            }
+        }
+
+        return R;
+    }
+
+    /*
+     * Check if a node is control node or dummy node.
+     */
+    private boolean isControlNode(NodeDef node) {
+        if (node instanceof StartNodeDef 
+                || node instanceof EndNodeDef
+                || node instanceof DecisionNodeDef
+                || node instanceof ForkNodeDef
+                || node instanceof JoinNodeDef
+                || node instanceof KillNodeDef) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /*
+     * Using dynamic programming to compute longest execution path of a DAG;
+     */
+    private int getLongestExecutionPathLength(LiteWorkflowApp app, Set<String> reachableNodes) {
+        Map<String, List<String>> DAG = new HashMap<String, List<String>>();
+        Collection<NodeDef> C = app.getNodeDefs();
+        Iterator<NodeDef> iterator = C.iterator();
+        while (iterator.hasNext()) {
+            NodeDef node = iterator.next();
+            if (reachableNodes.contains(node.getName())) { // only add reachable nodes from "start"
+                DAG.put(node.getName(), node.getTransitions());
+            }
+        }
+
+        List<String> topoSort = topologicalSort(DAG);
+        Map<String, Integer> length_to = new HashMap<String, Integer>();
+        // initialize
+        for (String node : topoSort) {
+            length_to.put(node, 0);
+        }
+
+        for (String node_v : topoSort) { 
+            List<String> nodes = DAG.get(node_v);
+            
+            for (String node_w : nodes) { // v -> w is an edge
+                int weight = isControlNode(app.getNode(node_w))? 0 : 1; 
+                if (length_to.get(node_w) <= length_to.get(node_v) + weight) {
+                    length_to.put(node_w, length_to.get(node_v) + weight);
+                }
+            }
+        }
+
+        int maxLength = -1;
+        Set<String> nodes = length_to.keySet();
+        for (String node : nodes) {
+            if (length_to.get(node) > maxLength) {
+                maxLength = length_to.get(node);
+            }
+        }
+
+        return maxLength;
+    }
+
+    /*
+     * Check if a wf app contains fork/join actions.
+     */
+    private boolean containFork(LiteWorkflowApp app, Set<String> reachableNodeNames) {
+        for (String nodeName : reachableNodeNames) {
+            if (app.getNode(nodeName) instanceof ForkNodeDef) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /*
+     * Evaluate total count of work actions in a wf app.
+     */
+    private int getTotalActionCount(LiteWorkflowApp app, Set<String> reachableNodeNames) {
+        int cnt = 0;
+        for (String nodeName : reachableNodeNames) {
+            if (!isControlNode(app.getNode(nodeName))) {
+                cnt ++;
+            }
+        }
+
+        return cnt;
+    }
+
+    /*
+     * Estimate a wf app's execution path length. This is for estimating the app's progress.
+     * 
+     * @param app wf app
+     * @param reachableNodeNames names of nodes that are reachable from "start". 
+     *        This is to save one extra traversal of the DAG since we already traversed it previously,
+     *        so reuse that result.
+     */
+    private void setExecutionPathLengthEstimate(LiteWorkflowApp app, Set<String> reachableNodeNames) {
+        int length = -1;
+
+        // TODO
+        // if DAG contain fork/join, we simply check total number of work actions.
+        // This can be improved in future.
+        if (containFork(app, reachableNodeNames) == true) {
+            length = getTotalActionCount(app, reachableNodeNames);
+        }
+        // Otherwise (it can contain decision node), we use longest possible execution path.
+        else {
+            length = getLongestExecutionPathLength(app, reachableNodeNames);
+        }
+
+        app.setExecutionPathLengthEstimate(length);
     }
 }

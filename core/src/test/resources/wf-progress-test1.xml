@@ -1,0 +1,183 @@
+<!--
+  Copyright (c) 2010 Yahoo! Inc. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+<workflow-app xmlns="uri:oozie:workflow:0.1" name="test-wf">
+    <start to="decision_1"/>
+    <decision name="decision_1">
+        <switch>
+            <case to="mr1">true</case>
+            <case to="mr2">false</case>
+            <default to="mr3"/>
+        </switch>
+    </decision>
+    <kill name="kill">
+        <message>kill</message>
+    </kill>
+
+    <action name="mr1">
+        <map-reduce>
+            <job-tracker>foo</job-tracker>
+            <name-node>bar</name-node>
+            <prepare>
+                <delete path="/tmp"/>
+                <mkdir path="/tmp"/>
+            </prepare>
+            <streaming>
+                <mapper>/mycat.sh</mapper>
+                <reducer>/mywc.sh</reducer>
+            </streaming>
+            <job-xml>/tmp</job-xml>
+            <configuration>
+                <property>
+                    <name>a</name>
+                    <value>A</value>
+                </property>
+                <property>
+                    <name>b</name>
+                    <value>B</value>
+                </property>
+            </configuration>
+            <file>/tmp</file>
+            <archive>/tmp</archive>
+        </map-reduce>
+        <ok to="end"/>
+        <error to="kill"/>
+    </action>
+    
+    <action name="mr2">
+        <map-reduce>
+            <job-tracker>foo</job-tracker>
+            <name-node>bar</name-node>
+            <prepare>
+                <delete path="/tmp"/>
+                <mkdir path="/tmp"/>
+            </prepare>
+            <streaming>
+                <mapper>/mycat.sh</mapper>
+                <reducer>/mywc.sh</reducer>
+            </streaming>
+            <job-xml>/tmp</job-xml>
+            <configuration>
+                <property>
+                    <name>a</name>
+                    <value>A</value>
+                </property>
+                <property>
+                    <name>b</name>
+                    <value>B</value>
+                </property>
+            </configuration>
+            <file>/tmp</file>
+            <archive>/tmp</archive>
+        </map-reduce>
+        <ok to="end"/>
+        <error to="kill"/>
+    </action>
+    
+    <action name="mr3">
+        <map-reduce>
+            <job-tracker>foo</job-tracker>
+            <name-node>bar</name-node>
+            <prepare>
+                <delete path="/tmp"/>
+                <mkdir path="/tmp"/>
+            </prepare>
+            <streaming>
+                <mapper>/mycat.sh</mapper>
+                <reducer>/mywc.sh</reducer>
+            </streaming>
+            <job-xml>/tmp</job-xml>
+            <configuration>
+                <property>
+                    <name>a</name>
+                    <value>A</value>
+                </property>
+                <property>
+                    <name>b</name>
+                    <value>B</value>
+                </property>
+            </configuration>
+            <file>/tmp</file>
+            <archive>/tmp</archive>
+        </map-reduce>
+        <ok to="pig1"/>
+        <error to="kill"/>
+    </action>
+
+    <action name="pig1">
+        <pig>
+            <job-tracker>foo</job-tracker>
+            <name-node>bar</name-node>
+            <prepare>
+                <delete path="/tmp"/>
+                <mkdir path="/tmp"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>a</name>
+                    <value>A</value>
+                </property>
+                <property>
+                    <name>b</name>
+                    <value>B</value>
+                </property>
+            </configuration>
+            <script>/tmp</script>
+            <param>x</param>
+            <file>/tmp</file>
+            <file>/tmp</file>
+        </pig>
+        <ok to="end"/>
+        <error to="kill"/>
+    </action>
+
+    <action name="fs1">
+    	<fs>
+			<delete path="/tmp/1"/>
+		</fs>
+		<ok to="fs2"/>
+		<error to="kill"/>
+    </action>
+    
+    <action name="fs2">
+    	<fs>
+			<delete path="/tmp/1"/>
+		</fs>
+		<ok to="fs3"/>
+		<error to="kill"/>
+    </action>
+    
+    <action name="fs3">
+    	<fs>
+			<delete path="/tmp/1"/>
+		</fs>
+		<ok to="fs4"/>
+		<error to="kill"/>
+    </action>
+    
+    <action name="fs4">
+    	<fs>
+			<delete path="/tmp/1"/>
+		</fs>
+		<ok to="end"/>
+		<error to="kill"/>
+    </action>    
+
+    <end name="end"/>
+    
+
+    
+    
+    
+</workflow-app>
