@@ -100,7 +100,12 @@ public class JobCommand extends WorkflowCommand<WorkflowJobBean> {
             if (action.getType().equals(DecisionActionExecutor.ACTION_TYPE)) {
                 continue;
             }
-            if (action.getStatus() == WorkflowAction.Status.OK || action.getStatus() == WorkflowAction.Status.DONE) {
+            // Make progress if an action is in terminal state
+            if (action.getStatus() == WorkflowAction.Status.OK 
+                    || action.getStatus() == WorkflowAction.Status.DONE
+                    || action.getStatus() == WorkflowAction.Status.ERROR
+                    || action.getStatus() == WorkflowAction.Status.FAILED
+                    || action.getStatus() == WorkflowAction.Status.KILLED) {
                 doneActions++;
             }
         }

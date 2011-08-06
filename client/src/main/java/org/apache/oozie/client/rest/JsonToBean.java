@@ -194,9 +194,8 @@ public class JsonToBean {
             else if (type == Long.TYPE) {
                 return (obj != null) ? obj : new Long(0);
             }
-            else if (type == Float.TYPE) { // This is used for getting job's progress value;
-                                           // get the float progress value, or -1.0 if not defined (progress info not available).
-                return (obj != null) ? new Float(((Double) obj).floatValue()) : new Float(-1);
+            else if (type == Float.TYPE) {
+                return new Float(((Double) obj).floatValue());
             }
             else if (type == Date.class) {
                 return JsonUtils.parseDateRfc822((String) obj);
