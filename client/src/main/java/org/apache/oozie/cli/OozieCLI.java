@@ -14,11 +14,14 @@
  */
 package org.apache.oozie.cli;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -94,6 +97,7 @@ public class OozieCLI {
     public static final String RERUN_OPTION = "rerun";
     public static final String INFO_OPTION = "info";
     public static final String LOG_OPTION = "log";
+    public static final String LOG_ACTION_OPTION = "action";
     public static final String DEFINITION_OPTION = "definition";
     public static final String CONFIG_CONTENT_OPTION = "configcontent";
 
@@ -140,7 +144,7 @@ public class OozieCLI {
      *
      * @param args options and arguments for the Oozie CLI.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         System.exit(new OozieCLI().run(args));
     }
 
@@ -199,6 +203,8 @@ public class OozieCLI {
         Option len = new Option(LEN_OPTION, true, "number of actions (default TOTAL ACTIONS, requires -info)");
         Option localtime = new Option(LOCAL_TIME_OPTION, false, "use local time (default GMT)");
         Option log = new Option(LOG_OPTION, true, "job log");
+        Option log_action = new Option(LOG_ACTION_OPTION, true,
+                "coordinator log retrieval on action ids (requires -log)");
         Option definition = new Option(DEFINITION_OPTION, true, "job definition");
         Option config_content = new Option(CONFIG_CONTENT_OPTION, true, "job configuration");
         Option verbose = new Option(VERBOSE_OPTION, false, "verbose mode");
@@ -242,6 +248,7 @@ public class OozieCLI {
         jobOptions.addOption(rerun_coord);
         jobOptions.addOption(rerun_refresh);
         jobOptions.addOption(rerun_nocleanup);
+        jobOptions.addOption(log_action);
         jobOptions.addOptionGroup(actions);
         return jobOptions;
     }
@@ -453,6 +460,7 @@ public class OozieCLI {
         }
         else {
             File file = new File(configFile);
+            System.out.println(file.getCanonicalPath());
             if (!file.exists()) {
                 throw new IOException("configuration file [" + configFile + "] not found");
             }
@@ -694,8 +702,26 @@ public class OozieCLI {
                             .contains(LOCAL_TIME_OPTION), options.contains(VERBOSE_OPTION));
                 }
             }
+
             else if (options.contains(LOG_OPTION)) {
-                System.out.println(wc.getJobLog(commandLine.getOptionValue(LOG_OPTION)));
+                if (commandLine.getOptionValue(LOG_OPTION).contains("-C")) {
+                    String logRetrievalScope = null;
+                    String logRetrievalType = null;
+                    if (options.contains(LOG_ACTION_OPTION)) {
+                        logRetrievalType = RestConstants.JOB_LOG_ACTION;
+                        logRetrievalScope = commandLine.getOptionValue(LOG_ACTION_OPTION);
+                    }
+                    PrintStream ps = System.out;
+                    try {
+                        wc.getJobLog(commandLine.getOptionValue(LOG_OPTION), logRetrievalType, logRetrievalScope, ps);
+                    }
+                    finally {
+                        ps.close();
+                    }
+                }
+                else {
+                    System.out.println(wc.getJobLog(commandLine.getOptionValue(LOG_OPTION)));
+                }
             }
             else if (options.contains(DEFINITION_OPTION)) {
                 System.out.println(wc.getJobDefinition(commandLine.getOptionValue(DEFINITION_OPTION)));
@@ -1035,8 +1061,8 @@ public class OozieCLI {
 
                 for (BundleJob job : jobs) {
                     System.out.println(String.format(BUNDLE_JOBS_FORMATTER, maskIfNull(job.getId()), maskIfNull(job
-                            .getAppName()), job.getStatus(), maskDate(job.getKickoffTime(), localtime),
-                            maskDate(job.getCreatedTime(), localtime), maskIfNull(job.getUser()), maskIfNull(job.getGroup())));
+                            .getAppName()), job.getStatus(), maskDate(job.getKickoffTime(), localtime), maskDate(job
+                            .getCreatedTime(), localtime), maskIfNull(job.getUser()), maskIfNull(job.getGroup())));
                     System.out.println(RULER);
                 }
             }
