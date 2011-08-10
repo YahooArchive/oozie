@@ -1,6 +1,7 @@
 -- Oozie 2.3.2 release
 
 OOZIE-9 (Apache) Launcher job should be able to run in different queue than job itself
+OOZIE-135 support multiple shared lib path in oozie
 OOZIE-81 Add an email action to Oozie
 OOZIE-101 ${wf:lastErrorNode()} is not set when an action ends in error
 OOZIE-99 action errorMessage is not being set
