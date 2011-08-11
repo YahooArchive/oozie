@@ -14,7 +14,6 @@
  */
 package org.apache.oozie.util;
 
-import org.apache.oozie.service.XLogService; 
 import org.apache.oozie.util.XLogStreamer;
 
 import java.util.ArrayList;

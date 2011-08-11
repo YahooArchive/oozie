@@ -311,11 +311,8 @@ public class CoordinatorEngine extends BaseEngine {
             throws IOException, BaseEngineException, CommandException {
         XLogStreamer.Filter filter = new XLogStreamer.Filter();
         filter.setParameter(DagXLogInfoService.JOB, jobId);
-
         if (logRetrievalScope != null && logRetrievalType != null) {
-
             if (logRetrievalType.equals(RestConstants.JOB_LOG_ACTION)) {
-
                 Set<String> actions = new HashSet<String>();
                 String[] list = logRetrievalScope.split(",");
                 for (String s : list) {
@@ -360,18 +357,17 @@ public class CoordinatorEngine extends BaseEngine {
                 int commaRequired = 0;
 
                 while (actionsIterator.hasNext()) {
-                    if (commaRequired == 1)
+                    if (commaRequired == 1) {
                         commaSeparatedActions.append(",");
+                    }
                     commaSeparatedActions.append(actionsIterator.next().toString());
                     commaRequired = 1;
                 }
                 filter.setParameter(DagXLogInfoService.ACTION, commaSeparatedActions.toString());
             }
-
             CoordinatorJobBean job = getCoordJobWithNoActionInfo(jobId);
             Services.get().get(XLogService.class).streamLog(filter, job.getCreatedTime(), new Date(), writer);
         }
-
         else {
             CoordinatorJobBean job = getCoordJobWithNoActionInfo(jobId);
             Services.get().get(XLogService.class).streamLog(filter, job.getCreatedTime(), new Date(), writer);

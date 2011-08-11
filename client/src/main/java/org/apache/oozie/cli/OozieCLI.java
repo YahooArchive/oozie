@@ -14,8 +14,6 @@
  */
 package org.apache.oozie.cli;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -98,6 +96,7 @@ public class OozieCLI {
     public static final String INFO_OPTION = "info";
     public static final String LOG_OPTION = "log";
     public static final String LOG_ACTION_OPTION = "action";
+    public static final String LOG_DATE_OPTION = "date";
     public static final String DEFINITION_OPTION = "definition";
     public static final String CONFIG_CONTENT_OPTION = "configcontent";
 
@@ -144,7 +143,7 @@ public class OozieCLI {
      *
      * @param args options and arguments for the Oozie CLI.
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         System.exit(new OozieCLI().run(args));
     }
 
@@ -205,6 +204,7 @@ public class OozieCLI {
         Option log = new Option(LOG_OPTION, true, "job log");
         Option log_action = new Option(LOG_ACTION_OPTION, true,
                 "coordinator log retrieval on action ids (requires -log)");
+        Option log_date = new Option(LOG_DATE_OPTION, true, "coordinator log retrieval on action dates (requires -log)");
         Option definition = new Option(DEFINITION_OPTION, true, "job definition");
         Option config_content = new Option(CONFIG_CONTENT_OPTION, true, "job configuration");
         Option verbose = new Option(VERBOSE_OPTION, false, "verbose mode");
@@ -249,6 +249,7 @@ public class OozieCLI {
         jobOptions.addOption(rerun_refresh);
         jobOptions.addOption(rerun_nocleanup);
         jobOptions.addOption(log_action);
+        jobOptions.addOption(log_date);
         jobOptions.addOptionGroup(actions);
         return jobOptions;
     }
@@ -460,7 +461,6 @@ public class OozieCLI {
         }
         else {
             File file = new File(configFile);
-            System.out.println(file.getCanonicalPath());
             if (!file.exists()) {
                 throw new IOException("configuration file [" + configFile + "] not found");
             }
@@ -702,8 +702,8 @@ public class OozieCLI {
                             .contains(LOCAL_TIME_OPTION), options.contains(VERBOSE_OPTION));
                 }
             }
-
             else if (options.contains(LOG_OPTION)) {
+                PrintStream ps = System.out;
                 if (commandLine.getOptionValue(LOG_OPTION).contains("-C")) {
                     String logRetrievalScope = null;
                     String logRetrievalType = null;
@@ -711,7 +711,6 @@ public class OozieCLI {
                         logRetrievalType = RestConstants.JOB_LOG_ACTION;
                         logRetrievalScope = commandLine.getOptionValue(LOG_ACTION_OPTION);
                     }
-                    PrintStream ps = System.out;
                     try {
                         wc.getJobLog(commandLine.getOptionValue(LOG_OPTION), logRetrievalType, logRetrievalScope, ps);
                     }
@@ -720,7 +719,13 @@ public class OozieCLI {
                     }
                 }
                 else {
-                    System.out.println(wc.getJobLog(commandLine.getOptionValue(LOG_OPTION)));
+                    if (!options.contains(LOG_ACTION_OPTION)) {
+                        wc.getJobLog(commandLine.getOptionValue(LOG_OPTION), null, null, ps);
+                    }
+                    else {
+                        throw new OozieCLIException("Invalid options provided for log retrieval. " + LOG_ACTION_OPTION
+                                + " is valid only for coordinator job log retrieval");
+                    }
                 }
             }
             else if (options.contains(DEFINITION_OPTION)) {
