@@ -59,7 +59,12 @@ public abstract class BaseAdminServlet extends JsonRestServlet {
             throw new XServletException(HttpServletResponse.SC_UNAUTHORIZED, ex);
         }
 
-        setOozieMode(request, response, resourceName);
+        if (resourceName.equals(RestConstants.ADMIN_STATUS_RESOURCE)) {
+            setOozieMode(request, response, resourceName);
+        }
+        else if (resourceName.equals(RestConstants.ADMIN_RESET_INSTANCE_RESOURCE)) {
+            resetCurWorkflowInstance(request, response, resourceName);
+        }
         /*if (resourceName.equals(RestConstants.ADMIN_STATUS_RESOURCE)) {
             boolean safeMode = Boolean.parseBoolean(request.getParameter(RestConstants.ADMIN_SAFE_MODE_PARAM));
             Services.get().setSafeMode(safeMode);
@@ -173,5 +178,7 @@ public abstract class BaseAdminServlet extends JsonRestServlet {
             throws XServletException;
 
     protected abstract void getQueueDump(JSONObject json) throws XServletException;
+
+    protected abstract void resetCurWorkflowInstance(HttpServletRequest request, HttpServletResponse response, String resourceName) throws XServletException;
 
 }

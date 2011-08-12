@@ -1316,6 +1316,30 @@ public class OozieClient {
         return new GetQueueDump().call();
     }
 
+    private class ResetInstance extends ClientCallable<Void> {
+        ResetInstance() {
+            super("PUT", RestConstants.ADMIN, RestConstants.ADMIN_RESET_INSTANCE_RESOURCE, prepareParams());
+        }
+
+        @Override
+        public Void call(HttpURLConnection conn) throws IOException, OozieClientException {
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                handleError(conn);
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Reset workflow instance when any fields changes in workflow instance. Set system to safemode is
+     * highly recommended.
+     *
+     * @throws OozieClientException if it fails to reset workflow instance.
+     */
+    public void resetWFInstance() throws OozieClientException {
+        new ResetInstance().call();
+    }
+
     /**
      * Check if the string is not null or not empty.
      *

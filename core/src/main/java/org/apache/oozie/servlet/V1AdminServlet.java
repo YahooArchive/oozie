@@ -26,7 +26,9 @@ import org.apache.oozie.client.OozieClient.SYSTEM_MODE;
 import org.apache.oozie.client.rest.JsonTags;
 import org.apache.oozie.client.rest.RestConstants;
 import org.apache.oozie.service.CallableQueueService;
+import org.apache.oozie.service.ServiceException;
 import org.apache.oozie.service.Services;
+import org.apache.oozie.service.WorkflowStoreService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -34,12 +36,13 @@ public class V1AdminServlet extends BaseAdminServlet {
 
     private static final long serialVersionUID = 1L;
     private static final String INSTRUMENTATION_NAME = "v1admin";
-    private static final ResourceInfo RESOURCES_INFO[] = new ResourceInfo[7];
+    private static final ResourceInfo RESOURCES_INFO[] = new ResourceInfo[8];
 
     static {
         RESOURCES_INFO[0] = new ResourceInfo(RestConstants.ADMIN_STATUS_RESOURCE, Arrays.asList("PUT", "GET"),
                                              Arrays.asList(new ParameterInfo(RestConstants.ADMIN_SYSTEM_MODE_PARAM, String.class, true,
                                                                              Arrays.asList("PUT"))));
+
         RESOURCES_INFO[1] = new ResourceInfo(RestConstants.ADMIN_OS_ENV_RESOURCE, Arrays.asList("GET"),
                 Collections.EMPTY_LIST);
         RESOURCES_INFO[2] = new ResourceInfo(RestConstants.ADMIN_JAVA_SYS_PROPS_RESOURCE, Arrays.asList("GET"),
@@ -51,6 +54,8 @@ public class V1AdminServlet extends BaseAdminServlet {
         RESOURCES_INFO[5] = new ResourceInfo(RestConstants.ADMIN_BUILD_VERSION_RESOURCE, Arrays.asList("GET"),
                 Collections.EMPTY_LIST);
         RESOURCES_INFO[6] = new ResourceInfo(RestConstants.ADMIN_QUEUE_DUMP_RESOURCE, Arrays.asList("GET"),
+                Collections.EMPTY_LIST);
+        RESOURCES_INFO[7] = new ResourceInfo(RestConstants.ADMIN_RESET_INSTANCE_RESOURCE, Arrays.asList("PUT"),
                 Collections.EMPTY_LIST);
     }
 
@@ -124,6 +129,27 @@ public class V1AdminServlet extends BaseAdminServlet {
             uniqueDumpArray.add(jObject);
         }
         json.put(JsonTags.UNIQUE_MAP_DUMP, uniqueDumpArray);
+    }
+
+    /**
+     * Recreate WorkflowInstance to avoid the inconsistency of workflow NodeDef changes between newer and older version.
+     *
+     * @param request http servlet request
+     * @param response http servlet response
+     * @param resourceName resource name
+     * @throws XServletException thrown if error occurred in reset workflow instance
+     */
+    @Override
+    protected void resetCurWorkflowInstance(HttpServletRequest request, HttpServletResponse response,
+            String resourceName) throws XServletException {
+        try {
+            Services.get().get(WorkflowStoreService.class).resetWorkflowInstanceForRunningJobs();
+        }
+        catch (ServiceException se) {
+            throw new XServletException(HttpServletResponse.SC_BAD_REQUEST,
+                    ErrorCode.E0307, se.getMessage());
+        }
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 
 }

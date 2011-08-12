@@ -14,26 +14,38 @@
  */
 package org.apache.oozie.service;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.oozie.ErrorCode;
+import org.apache.oozie.WorkflowJobBean;
+import org.apache.oozie.XException;
 import org.apache.oozie.client.WorkflowJob;
+import org.apache.oozie.command.CommandException;
+import org.apache.oozie.executor.jpa.WorkflowJobUpdateJPAExecutor;
+import org.apache.oozie.executor.jpa.WorkflowJobsRunningGetJPAExecutor;
 import org.apache.oozie.service.SchemaService.SchemaName;
 import org.apache.oozie.store.Store;
 import org.apache.oozie.store.StoreException;
 import org.apache.oozie.store.WorkflowStore;
 import org.apache.oozie.util.Instrumentable;
 import org.apache.oozie.util.Instrumentation;
+import org.apache.oozie.util.XConfiguration;
 import org.apache.oozie.util.XLog;
+import org.apache.oozie.workflow.WorkflowApp;
+import org.apache.oozie.workflow.WorkflowException;
+import org.apache.oozie.workflow.WorkflowInstance;
 import org.apache.oozie.workflow.WorkflowLib;
 import org.apache.oozie.workflow.lite.DBLiteWorkflowLib;
 
 public class DBLiteWorkflowStoreService extends LiteWorkflowStoreService implements Instrumentable {
     private boolean selectForUpdate;
-    private XLog log;
+    private XLog LOG;
     private int statusWindow;
 
     public static final String CONF_PREFIX = Service.CONF_PREFIX + "DBLiteWorkflowStoreService.";
@@ -68,16 +80,16 @@ public class DBLiteWorkflowStoreService extends LiteWorkflowStoreService impleme
                 if (store != null) {
                     store.rollbackTrx();
                 }
-                log.warn("Exception while accessing the store", e);
+                LOG.warn("Exception while accessing the store", e);
             }
             catch (Exception ex) {
-                log.error("Exception, {0}", ex.getMessage(), ex);
+                LOG.error("Exception, {0}", ex.getMessage(), ex);
                 if (store != null && store.isActive()) {
                     try {
                         store.rollbackTrx();
                     }
                     catch (RuntimeException rex) {
-                        log.warn("openjpa error, {0}", rex.getMessage(), rex);
+                        LOG.warn("openjpa error, {0}", rex.getMessage(), rex);
                     }
                 }
             }
@@ -88,11 +100,11 @@ public class DBLiteWorkflowStoreService extends LiteWorkflowStoreService impleme
                             store.closeTrx();
                         }
                         catch (RuntimeException rex) {
-                            log.warn("Exception while attempting to close store", rex);
+                            LOG.warn("Exception while attempting to close store", rex);
                         }
                     }
                     else {
-                        log.warn("transaction is not committed or rolled back before closing entitymanager.");
+                        LOG.warn("transaction is not committed or rolled back before closing entitymanager.");
                     }
                 }
             }
@@ -103,7 +115,7 @@ public class DBLiteWorkflowStoreService extends LiteWorkflowStoreService impleme
         Configuration conf = services.getConf();
         statusWindow = conf.getInt(CONF_METRICS_INTERVAL_WINDOW, 3600);
         int statusMetricsCollectionInterval = conf.getInt(CONF_METRICS_INTERVAL_MINS, 5);
-        log = XLog.getLog(getClass());
+        LOG = XLog.getLog(getClass());
         selectForUpdate = false;
 
         WorkflowJob.Status[] wfStatusArr = WorkflowJob.Status.values();
@@ -154,6 +166,86 @@ public class DBLiteWorkflowStoreService extends LiteWorkflowStoreService impleme
         }
     }
 
+    /**
+     * Reset workflow instances for all running jobs. Highly suggest to use '-systemmode SAFEMODE' before calling this
+     * function.
+     *
+     * @throws ServiceException thrown if instance has errors
+     */
+    @Override
+    public void resetWorkflowInstanceForRunningJobs() throws ServiceException {
+        try {
+            List<WorkflowJobBean> jobList = null;
+            JPAService jpaService = Services.get().get(JPAService.class);
+            if (jpaService != null) {
+                jobList = jpaService.execute(new WorkflowJobsRunningGetJPAExecutor());
+            }
+            else {
+                throw new CommandException(ErrorCode.E0610);
+            }
+            try {
+                if (jobList != null && !jobList.isEmpty()) {
+                    for (WorkflowJobBean job : jobList) {
+                        resetWorkflowInstance(job);
+                        jpaService.execute(new WorkflowJobUpdateJPAExecutor(job));
+                    }
+                }
+            }
+            catch (IOException ioe) {
+                throw new ServiceException(ErrorCode.E0702, ioe.getMessage());
+            }
+        }
+        catch (XException ex) {
+            throw new ServiceException(ex);
+        }
+    }
+
+    /**
+     * Create new instance for existing running workflow job
+     *
+     * @param wfBean workflow job bean
+     * @throws ServiceException thrown if instance has errors
+     * @throws IOException thrown if can not create XConfiguration
+     * @throws WorkflowException thrown if unable to parse wf definition
+     */
+    private void resetWorkflowInstance(WorkflowJobBean wfBean) throws ServiceException, IOException, WorkflowException {
+        LOG.debug("Ready to reset workflow instance for wf job = " + wfBean.getId());
+        WorkflowLib workflowLib = Services.get().get(WorkflowStoreService.class).getWorkflowLibWithNoDB();
+        WorkflowAppService wps = Services.get().get(WorkflowAppService.class);
+        XConfiguration jobConf = new XConfiguration(new StringReader(wfBean.getConf()));
+        WorkflowApp app = wps.parseDef(jobConf, wfBean.getAuthToken());
+        WorkflowInstance oldWfInstance = null;
+        try {
+            oldWfInstance = wfBean.getWorkflowInstance();
+        }
+        catch (Exception ex) {
+            LOG.warn("Can not get old workflow instance, it has to be killed.", ex);
+        }
+        WorkflowInstance newWfInstance = null;
+
+        try {
+            newWfInstance = workflowLib.createInstance(app, jobConf, wfBean.getId());
+        }
+        catch (WorkflowException e) {
+            throw new ServiceException(e);
+        }
+
+        if (oldWfInstance != null) {
+            Map<String, String> oldVars = new HashMap<String, String>();
+            Map<String, String> newVars = new HashMap<String, String>();
+            oldVars = oldWfInstance.getAllVars();
+            for (String var : oldVars.keySet()) {
+                newVars.put(var, oldVars.get(var));
+            }
+            newWfInstance.setAllVars(newVars);
+            LOG.debug("Able to move all vars from old wf instance to new one for wf job = " + wfBean.getId());
+        }
+        else {
+            wfBean.setStatus(WorkflowJob.Status.KILLED);
+            LOG.debug("Unable to set all vars, so kill wf job = " + wfBean.getId());
+        }
+        wfBean.setWorkflowInstance(newWfInstance);
+    }
 
     @Override
     public void instrument(Instrumentation instr) {

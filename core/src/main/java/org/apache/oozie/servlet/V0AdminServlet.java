@@ -106,4 +106,15 @@ public class V0AdminServlet extends BaseAdminServlet {
     protected void getQueueDump(JSONObject json) throws XServletException {
         throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ErrorCode.E0301);
     }
+
+
+    /* (non-Javadoc)
+     * @see org.apache.oozie.servlet.BaseAdminServlet#resetCurWorkflowInstance(javax.servlet.http.HttpServletRequest,
+     *  javax.servlet.http.HttpServletResponse, java.lang.String)
+     */
+    @Override
+    protected void resetCurWorkflowInstance(HttpServletRequest request, HttpServletResponse response,
+            String resourceName) throws XServletException {
+        throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ErrorCode.E0301);
+    }
 }

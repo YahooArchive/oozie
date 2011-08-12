@@ -233,6 +233,18 @@ public class TestV1AdminServlet extends DagServletTestCase {
                 return null;
             }
         });
+    }
 
+
+    public void testV1ResetWFInstance() throws Exception {
+        runTest("/v1/admin/*", V1AdminServlet.class, IS_SECURITY_ENABLED, new Callable<Void>() {
+            public Void call() throws Exception {
+                URL url = createURL(RestConstants.ADMIN_RESET_INSTANCE_RESOURCE, Collections.EMPTY_MAP);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("PUT");
+                assertEquals(HttpServletResponse.SC_OK, conn.getResponseCode());
+                return null;
+            }
+        });
     }
 }

@@ -63,6 +63,14 @@ public abstract class WorkflowStoreService implements Service {
     public abstract WorkflowStore create() throws StoreException;
 
     /**
+     * Reset workflow instances for all running jobs. Highly suggest to use '-systemmode SAFEMODE' before calling this
+     * function.
+     *
+     * @throws ServiceException thrown if instance has errors
+     */
+    public abstract void resetWorkflowInstanceForRunningJobs() throws ServiceException;
+
+    /**
      * Return a workflow store instance with an existing transaction. <p/> The workflow store has to be committed and
      * then closed to commit changes, if only close it rolls back.
      *
