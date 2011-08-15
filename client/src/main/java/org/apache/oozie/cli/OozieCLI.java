@@ -96,7 +96,6 @@ public class OozieCLI {
     public static final String INFO_OPTION = "info";
     public static final String LOG_OPTION = "log";
     public static final String LOG_ACTION_OPTION = "action";
-    public static final String LOG_DATE_OPTION = "date";
     public static final String DEFINITION_OPTION = "definition";
     public static final String CONFIG_CONTENT_OPTION = "configcontent";
 
@@ -140,7 +139,7 @@ public class OozieCLI {
      * Entry point for the Oozie CLI when invoked from the command line.
      * <p/>
      * Upon completion this method exits the JVM with '0' (success) or '-1' (failure).
-     *
+     * 
      * @param args options and arguments for the Oozie CLI.
      */
     public static void main(String[] args) {
@@ -156,7 +155,7 @@ public class OozieCLI {
 
     /**
      * Return Oozie CLI top help lines.
-     *
+     * 
      * @return help lines.
      */
     protected String[] getCLIHelp() {
@@ -204,7 +203,6 @@ public class OozieCLI {
         Option log = new Option(LOG_OPTION, true, "job log");
         Option log_action = new Option(LOG_ACTION_OPTION, true,
                 "coordinator log retrieval on action ids (requires -log)");
-        Option log_date = new Option(LOG_DATE_OPTION, true, "coordinator log retrieval on action dates (requires -log)");
         Option definition = new Option(DEFINITION_OPTION, true, "job definition");
         Option config_content = new Option(CONFIG_CONTENT_OPTION, true, "job configuration");
         Option verbose = new Option(VERBOSE_OPTION, false, "verbose mode");
@@ -249,7 +247,6 @@ public class OozieCLI {
         jobOptions.addOption(rerun_refresh);
         jobOptions.addOption(rerun_nocleanup);
         jobOptions.addOption(log_action);
-        jobOptions.addOption(log_date);
         jobOptions.addOptionGroup(actions);
         return jobOptions;
     }
@@ -310,7 +307,7 @@ public class OozieCLI {
      * It does not exit the JVM.
      * <p/>
      * A CLI instance can be used only once.
-     *
+     * 
      * @param args options and arguments for the Oozie CLI.
      * @return '0' (success), '-1' (failure).
      */
@@ -510,7 +507,7 @@ public class OozieCLI {
      * Create a OozieClient.
      * <p/>
      * It injects any '-Dheader:' as header to the the {@link org.apache.oozie.client.OozieClient}.
-     *
+     * 
      * @param commandLine the parsed command line options.
      * @return a pre configured eXtended workflow client.
      * @throws OozieCLIException thrown if the OozieClient could not be configured.
@@ -526,7 +523,7 @@ public class OozieCLI {
      * Create a XOozieClient.
      * <p/>
      * It injects any '-Dheader:' as header to the the {@link org.apache.oozie.client.OozieClient}.
-     *
+     * 
      * @param commandLine the parsed command line options.
      * @return a pre configured eXtended workflow client.
      * @throws OozieCLIException thrown if the XOozieClient could not be configured.

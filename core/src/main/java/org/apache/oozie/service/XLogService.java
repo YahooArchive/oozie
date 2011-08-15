@@ -185,8 +185,8 @@ public class XLogService implements Service, Instrumentable {
         }
         String logFile = conf.get("log4j.appender.oozie.File");
         if (logFile == null) {
-            log
-                    .warn("Oozie WS log will be disabled, missing property 'log4j.appender.oozie.File' for 'oozie' appender");
+            log.warn("Oozie WS log will be disabled, missing property 'log4j.appender.oozie.File' for 'oozie' "
+                    + "appender");
         }
         else {
             logFile = logFile.trim();
