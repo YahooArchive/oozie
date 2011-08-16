@@ -139,7 +139,7 @@ public class OozieCLI {
      * Entry point for the Oozie CLI when invoked from the command line.
      * <p/>
      * Upon completion this method exits the JVM with '0' (success) or '-1' (failure).
-     * 
+     *
      * @param args options and arguments for the Oozie CLI.
      */
     public static void main(String[] args) {
@@ -155,7 +155,7 @@ public class OozieCLI {
 
     /**
      * Return Oozie CLI top help lines.
-     * 
+     *
      * @return help lines.
      */
     protected String[] getCLIHelp() {
@@ -307,7 +307,7 @@ public class OozieCLI {
      * It does not exit the JVM.
      * <p/>
      * A CLI instance can be used only once.
-     * 
+     *
      * @param args options and arguments for the Oozie CLI.
      * @return '0' (success), '-1' (failure).
      */
@@ -507,7 +507,7 @@ public class OozieCLI {
      * Create a OozieClient.
      * <p/>
      * It injects any '-Dheader:' as header to the the {@link org.apache.oozie.client.OozieClient}.
-     * 
+     *
      * @param commandLine the parsed command line options.
      * @return a pre configured eXtended workflow client.
      * @throws OozieCLIException thrown if the OozieClient could not be configured.
@@ -523,7 +523,7 @@ public class OozieCLI {
      * Create a XOozieClient.
      * <p/>
      * It injects any '-Dheader:' as header to the the {@link org.apache.oozie.client.OozieClient}.
-     * 
+     *
      * @param commandLine the parsed command line options.
      * @return a pre configured eXtended workflow client.
      * @throws OozieCLIException thrown if the XOozieClient could not be configured.

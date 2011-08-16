@@ -733,6 +733,7 @@ public class OozieClient {
 
     private class JobMetadata extends ClientCallable<String> {
         PrintStream printStream;
+
         JobMetadata(String jobId, String metaType) {
             super("GET", RestConstants.JOB, notEmpty(jobId, "jobId"), prepareParams(RestConstants.JOB_SHOW_PARAM,
                     metaType));
@@ -751,7 +752,12 @@ public class OozieClient {
                 InputStream is = conn.getInputStream();
                 InputStreamReader isr = new InputStreamReader(is);
                 try {
-                    sendToOutputStream(isr, -1);
+                    if (printStream != null) {
+                        sendToOutputStream(isr, -1);
+                    }
+                    else {
+                        return getReaderAsString(isr, -1);
+                    }
                 }
                 finally {
                     isr.close();
@@ -774,9 +780,6 @@ public class OozieClient {
         private void sendToOutputStream(Reader reader, int maxLen) throws IOException {
             if (reader == null) {
                 throw new IllegalArgumentException("reader cannot be null");
-            }
-            if (printStream == null) {
-                throw new IllegalArgumentException("Output Stream cannot be null");
             }
             StringBuilder sb = new StringBuilder();
             char[] buffer = new char[2048];
