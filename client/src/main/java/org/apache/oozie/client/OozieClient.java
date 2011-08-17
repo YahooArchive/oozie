@@ -366,6 +366,7 @@ public class OozieClient {
         public T call() throws OozieClientException {
             try {
                 URL url = createURL(collection, resource, params);
+                System.out.println(url);
                 if (validateCommand(url.toString())) {
                     if (getDebugMode() > 0) {
                         System.out.println("Connection URL:[" + url + "]");
@@ -748,6 +749,7 @@ public class OozieClient {
 
         @Override
         protected String call(HttpURLConnection conn) throws IOException, OozieClientException {
+            String returnVal = null;
             if ((conn.getResponseCode() == HttpURLConnection.HTTP_OK)) {
                 InputStream is = conn.getInputStream();
                 InputStreamReader isr = new InputStreamReader(is);
@@ -756,7 +758,7 @@ public class OozieClient {
                         sendToOutputStream(isr, -1);
                     }
                     else {
-                        return getReaderAsString(isr, -1);
+                        returnVal = getReaderAsString(isr, -1);
                     }
                 }
                 finally {
@@ -766,7 +768,7 @@ public class OozieClient {
             else {
                 handleError(conn);
             }
-            return null;
+            return returnVal;
         }
 
         /**
