@@ -1,17 +1,17 @@
 /**
- * Copyright (c) 2010 Yahoo! Inc. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License. See accompanying LICENSE file.
- */
+* Copyright (c) 2010 Yahoo! Inc. All rights reserved.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License. See accompanying LICENSE file.
+*/
 
 // Warn about dependencies
 if (typeof Ext == 'undefined'){
@@ -87,7 +87,7 @@ function treeNodeFromXml(XmlEl) {
     var result = new Ext.tree.TreeNode({
         text: t
     });
-    //  For Elements, process attributes and children
+    // For Elements, process attributes and children
     if (XmlEl.nodeType == 1) {
         Ext.each(XmlEl.attributes, function(a) {
             result.appendChild(new Ext.tree.TreeNode({
@@ -109,7 +109,7 @@ function treeNodeFromJson(json, rootText) {
     var result = new Ext.tree.TreeNode({
         text: rootText
     });
-    //  For Elements, process attributes and children
+    // For Elements, process attributes and children
     if (typeof json === 'object') {
         for (var i in json) {
             if (json[i]) {
@@ -553,7 +553,7 @@ function jobDetailsPopup(response, request) {
 
 function coordJobDetailsPopup(response, request) {
 
-	var jobDefinitionArea = new Ext.form.TextArea({
+var jobDefinitionArea = new Ext.form.TextArea({
         fieldLabel: 'Definition',
         editable: false,
         name: 'definition',
@@ -593,6 +593,18 @@ function coordJobDetailsPopup(response, request) {
             width: 200,
             value: jobDetails["status"]
         }, {
+            fieldLabel: 'User',
+            editable: false,
+            name: 'user',
+            width: 200,
+            value: jobDetails["user"]
+	}, {
+            fieldLabel: 'Group',
+            editable: false,
+            name: 'group',
+            width: 200,
+            value: jobDetails["group"]
+	}, {
             fieldLabel: 'Frequency',
             editable: false,
             name: 'frequency',
@@ -782,43 +794,43 @@ function coordJobDetailsPopup(response, request) {
                 }, ]
             });
             /*
-             var detail = new Ext.FormPanel( {
-             frame: true,
-             labelAlign: 'right',
-             labelWidth: 85,
-             width: 540,
-             items: [formFieldSet]
-             });
-             var win = new Ext.Window( {
-             title: 'Action (Name: ' + actionStatus["name"] + '/JobId: ' + coordJobId + ')',
-             closable: true,
-             width: 560,
-             autoHeight: true,
-             plain: true,
-             items: [new Ext.TabPanel( {
-             activeTab: 0,
-             autoHeight: true,
-             deferredRender: false,
-             items: [ {
-             title: 'Action Info',
-             items: detail
-             }, {
-             title: 'Action Configuration',
-             items: new Ext.form.TextArea( {
-             fieldLabel: 'Configuration',
-             editable: false,
-             name: 'config',
-             height: 350,
-             width: 540,
-             autoScroll: true,
-             value: actionStatus["conf"]
-             })
-             }, ]
-             })]
-             });
-             win.setPosition(50, 50);
-             win.show();
-             */
+var detail = new Ext.FormPanel( {
+frame: true,
+labelAlign: 'right',
+labelWidth: 85,
+width: 540,
+items: [formFieldSet]
+});
+var win = new Ext.Window( {
+title: 'Action (Name: ' + actionStatus["name"] + '/JobId: ' + coordJobId + ')',
+closable: true,
+width: 560,
+autoHeight: true,
+plain: true,
+items: [new Ext.TabPanel( {
+activeTab: 0,
+autoHeight: true,
+deferredRender: false,
+items: [ {
+title: 'Action Info',
+items: detail
+}, {
+title: 'Action Configuration',
+items: new Ext.form.TextArea( {
+fieldLabel: 'Configuration',
+editable: false,
+name: 'config',
+height: 350,
+width: 540,
+autoScroll: true,
+value: actionStatus["conf"]
+})
+}, ]
+})]
+});
+win.setPosition(50, 50);
+win.show();
+*/
         }
     }
     var jobDetailsTab = new Ext.TabPanel({
@@ -859,7 +871,7 @@ function coordJobDetailsPopup(response, request) {
 
 function bundleJobDetailsPopup(response, request) {
 
-	var jobDefinitionArea = new Ext.form.TextArea({
+var jobDefinitionArea = new Ext.form.TextArea({
         fieldLabel: 'Definition',
         editable: false,
         name: 'definition',
@@ -873,7 +885,7 @@ function bundleJobDetailsPopup(response, request) {
     var bundleJobName = jobDetails["bundleJobName"];
     var jobActionStatus = new Ext.data.JsonStore({
         data: jobDetails["bundleCoordJobs"],
-        fields: ['coordJobId', 'coordJobName', 'coordJobPath', 'frequency', 'timeUnit', 'nextMaterializedTime', 'status', 'startTime', 'endTime', 'pauseTime']
+        fields: ['coordJobId', 'coordJobName', 'coordJobPath', 'frequency', 'timeUnit', 'nextMaterializedTime', 'status', 'startTime', 'endTime', 'pauseTime','user','group']
     });
 
     var formFieldSet = new Ext.form.FieldSet({
@@ -968,6 +980,16 @@ function bundleJobDetailsPopup(response, request) {
             sortable: true,
             dataIndex: 'status'
         }, {
+            header: "User",
+            width: 80,
+            sortable: true,
+            dataIndex: 'user'
+        }, {
+            header: "Group",
+            width: 80,
+            sortable: true,
+            dataIndex: 'group'
+        }, {
             header: "Frequency",
             width: 80,
             sortable: true,
@@ -1020,10 +1042,10 @@ function bundleJobDetailsPopup(response, request) {
             return;
         }
         //if (selectedTab.title == 'Job Log') {
-        //    fetchLogs(workflowId);
+        // fetchLogs(workflowId);
         //}
         //else if (selectedTab.title == 'Job Definition') {
-        //    fetchDefinition(workflowId);
+        // fetchDefinition(workflowId);
         //}
         coord_jobs_grid.setVisible(false);
     });
@@ -1051,13 +1073,13 @@ function jobDetailsGridWindow(workflowId) {
 function coordJobDetailsGridWindow(coordJobId) {
     Ext.Ajax.request({
         /*
-         Ext.Msg.show({
-         title:'Coord JobDetails Window Popup'
-         msg: 'coordJobDetailsGridWindow invoked',
-         buttons: Ext.Msg.OK,
-         icon: Ext.MessageBox.INFO
-         });
-         */
+Ext.Msg.show({
+title:'Coord JobDetails Window Popup'
+msg: 'coordJobDetailsGridWindow invoked',
+buttons: Ext.Msg.OK,
+icon: Ext.MessageBox.INFO
+});
+*/
         url: getOozieBase() + 'job/' + coordJobId,
         success: coordJobDetailsPopup
         // success: alert("succeeded " + response),
@@ -1111,11 +1133,11 @@ function showConfigurationInWindow(dataObject, windowTitle) {
     win.show();
 }
 
-/* 
- * create the coord jobs store
- */
+/*
+* create the coord jobs store
+*/
 var coord_jobs_store = new Ext.data.JsonStore({
-	baseParams: {
+baseParams: {
         jobtype: "coord",
         filter: ""
     },
@@ -1123,16 +1145,16 @@ var coord_jobs_store = new Ext.data.JsonStore({
     totalProperty: 'total',
     autoLoad: true,
     root: 'coordinatorjobs',
-    fields: ['coordJobId', 'coordJobName', 'status', 'frequency', 'timeUnit', 'startTime', 'nextMaterializedTime'],
+    fields: ['coordJobId', 'coordJobName', 'status', 'user', 'group', 'frequency', 'timeUnit', 'startTime', 'nextMaterializedTime'],
     proxy: new Ext.data.HttpProxy({
         url: getOozieBase() + 'jobs'
     })
 });
 coord_jobs_store.proxy.conn.method = "GET";
 
-/* 
- * create the wf jobs store
- */
+/*
+* create the wf jobs store
+*/
 var jobs_store = new Ext.data.JsonStore({
     baseParams: {
         filter: ""
@@ -1148,12 +1170,12 @@ var jobs_store = new Ext.data.JsonStore({
 });
 jobs_store.proxy.conn.method = "GET";
 
-/* 
- * create the bundle jobs store
- */
+/*
+* create the bundle jobs store
+*/
 var bundle_jobs_store = new Ext.data.JsonStore({
 
-	baseParams: {
+baseParams: {
         jobtype: "bundle",
         filter: ""
     },
@@ -1225,20 +1247,29 @@ var refreshDoneJobsAction = new Ext.Action({
     }
 });
 
+var refreshCoordCustomJobsAction = new Ext.Action({
+    text: 'status=KILLED',
+    handler: function() {
+        coord_jobs_store.baseParams.filter = this.text;
+        coord_jobs_store.reload();
+    }
+});
+
+
 var refreshCoordActiveJobsAction = new Ext.Action({
     text: 'Active Jobs',
     handler: function() {
         coord_jobs_store.baseParams.filter = 'status=RUNNING';
         coord_jobs_store.reload();
         /*
-         Ext.Ajax.request( {
-         url: getOozieBase() + 'jobs/?jobtype=coord',
-         success: function(response, request) {
-         var coordData = getConfigObject(response.responseText);
-         coord_jobs_store.loadData(coordData);
-         },
-         });
-         */
+Ext.Ajax.request( {
+url: getOozieBase() + 'jobs/?jobtype=coord',
+success: function(response, request) {
+var coordData = getConfigObject(response.responseText);
+coord_jobs_store.loadData(coordData);
+},
+});
+*/
     }
 });
 
@@ -1248,14 +1279,14 @@ var refreshCoordAllJobsAction = new Ext.Action({
         coord_jobs_store.baseParams.filter = '';
         coord_jobs_store.reload();
         /*
-         Ext.Ajax.request( {
-         url: getOozieBase() + 'jobs/?jobtype=coord',
-         success: function(response, request) {
-         var coordData = getConfigObject(response.responseText);
-         coord_jobs_store.loadData(coordData);
-         },
-         });
-         */
+Ext.Ajax.request( {
+url: getOozieBase() + 'jobs/?jobtype=coord',
+success: function(response, request) {
+var coordData = getConfigObject(response.responseText);
+coord_jobs_store.loadData(coordData);
+},
+});
+*/
     }
 });
 
@@ -1265,14 +1296,14 @@ var refreshCoordDoneJobsAction = new Ext.Action({
         coord_jobs_store.baseParams.filter = 'status=SUCCEEDED;status=KILLED';
         coord_jobs_store.reload();
         /*
-         Ext.Ajax.request( {
-         url: getOozieBase() + 'jobs' + '?jobtype=coord',
-         success: function(response, request) {
-         var coordData = getConfigObject(response.responseText);
-         coord_jobs_store.loadData(coordData);
-         },
-         });
-         */
+Ext.Ajax.request( {
+url: getOozieBase() + 'jobs' + '?jobtype=coord',
+success: function(response, request) {
+var coordData = getConfigObject(response.responseText);
+coord_jobs_store.loadData(coordData);
+},
+});
+*/
     }
 });
 
@@ -1287,15 +1318,15 @@ var refreshBundleActiveJobsAction = new Ext.Action({
 var refreshBundleAllJobsAction = new Ext.Action({
     text: 'All Jobs',
     handler: function() {
-		bundle_jobs_store.baseParams.filter = '';
-		bundle_jobs_store.reload();
+bundle_jobs_store.baseParams.filter = '';
+bundle_jobs_store.reload();
     }
 });
 
 var refreshBundleDoneJobsAction = new Ext.Action({
     text: 'Done Jobs',
     handler: function() {
-	bundle_jobs_store.baseParams.filter = 'status=SUCCEEDED;status=KILLED';
+bundle_jobs_store.baseParams.filter = 'status=SUCCEEDED;status=KILLED';
         bundle_jobs_store.reload();
     }
 });
@@ -1324,6 +1355,20 @@ var changeFilterAction = new Ext.Action({
         });
     }
 });
+
+var changeCoordFilterAction = new Ext.Action({
+    text: 'Custom Filter',
+    handler: function() {
+        Ext.Msg.prompt('Filter Criteria', 'Filter text:', function(btn, text) {
+            if (btn == 'ok' && text) {
+                refreshCoordCustomJobsAction.setText(text);
+                coord_jobs_store.baseParams.filter = text;
+                coord_jobs_store.reload();
+            }
+        });
+    }
+});
+
 
 var getSupportedVersions = new Ext.Action({
     text: 'Checking server for supported versions...',
@@ -1430,14 +1475,14 @@ var viewCoordJobs = new Ext.Action({
     text: 'All Jobs',
     handler: function() {
         /*
-         Ext.Ajax.request( {
-         url: getOozieBase() + 'jobs/?jobtype=coord',
-         success: function(response, request) {
-         var configData = getConfigObject(response.responseText);
-         coord_job_store.loadData(configData);
-         },
-         });
-         */
+Ext.Ajax.request( {
+url: getOozieBase() + 'jobs/?jobtype=coord',
+success: function(response, request) {
+var configData = getConfigObject(response.responseText);
+coord_job_store.loadData(configData);
+},
+});
+*/
         // coord_jobs_store.baseParams.filter = 'jobtype=coord';
         coord_jobs_store.reload();
     }
@@ -1652,6 +1697,16 @@ function initConsole() {
             width: 80,
             sortable: true,
             dataIndex: 'status'
+}, {
+            header: "User",
+            width: 80,
+            sortable: true,
+            dataIndex: 'user'
+        }, {
+            header: "Group",
+            width: 80,
+            sortable: true,
+            dataIndex: 'group'
         }, {
             header: "frequency",
             width: 70,
@@ -1684,8 +1739,10 @@ function initConsole() {
             handler: function() {
                 coord_jobs_store.reload();
             }
-        }, refreshCoordAllJobsAction, refreshCoordActiveJobsAction, refreshCoordDoneJobsAction,
-            {
+        }, refreshCoordAllJobsAction, refreshCoordActiveJobsAction, refreshCoordDoneJobsAction,{
+            text: 'Custom Filter',
+            menu: [refreshCoordCustomJobsAction, changeCoordFilterAction, helpFilterAction ]
+        }, {
                 xtype: 'tbfill'
             }, checkStatus, serverVersion],
         title: 'Coordinator Jobs',
@@ -1730,7 +1787,7 @@ function initConsole() {
             width: 170,
             sortable: true,
             dataIndex: 'kickoffTime'
-        }, {	
+        }, {
             header: "Created Time",
             width: 170,
             sortable: true,
