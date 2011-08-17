@@ -164,7 +164,7 @@ public abstract class WorkflowAppService implements Service {
 
             String[] libPaths = jobConf.getStrings(OozieClient.LIBPATH);
             if (libPaths != null && libPaths.length > 0) {
-                for (int i=0; i<libPaths.length; i++) {
+                for (int i = 0; i < libPaths.length; i++) {
                     if (libPaths[i].trim().length() > 0) {
                         Path libPath = new Path(libPaths[i].trim());
                         List<String> libFilePaths = getLibFiles(fs, libPath);
