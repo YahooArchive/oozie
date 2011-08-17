@@ -366,7 +366,6 @@ public class OozieClient {
         public T call() throws OozieClientException {
             try {
                 URL url = createURL(collection, resource, params);
-                System.out.println(url);
                 if (validateCommand(url.toString())) {
                     if (getDebugMode() > 0) {
                         System.out.println("Connection URL:[" + url + "]");
