@@ -2,6 +2,7 @@
 
 OOZIE-5 Log retrieval for a Coordinator job with large number or actions 
 OOZIE-7 Ability to view the log information corresponding to particular coordinator actions
+OOZIE-18 Option to view Workflow job details from Coordinator job detail popup
 OOZIE-11  Adding Distcp Action.  
 OOZIE-6 Custom filters option and User information column added to Coordinator jobs section of Oozie Web Console
 OOZIE-124 Update documentation for job-type in WS API
