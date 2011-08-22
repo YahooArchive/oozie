@@ -1,5 +1,6 @@
 -- Oozie 2.3.2 release
 
+OOZIE-22 (Apache) Add support PostgreSQL
 OOZIE-9 (Apache) Launcher job should be able to run in different queue than job itself
 OOZIE-135 support multiple shared lib path in oozie
 OOZIE-81 Add an email action to Oozie
