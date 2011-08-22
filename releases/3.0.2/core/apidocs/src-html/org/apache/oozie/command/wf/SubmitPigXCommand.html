@@ -1,0 +1,246 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright (c) 2010 Yahoo! Inc. All rights reserved.<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Licensed under the Apache License, Version 2.0 (the "License");<a name="line.3"></a>
+<FONT color="green">004</FONT>     * you may not use this file except in compliance with the License.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * You may obtain a copy of the License at<a name="line.5"></a>
+<FONT color="green">006</FONT>     *<a name="line.6"></a>
+<FONT color="green">007</FONT>     *   http://www.apache.org/licenses/LICENSE-2.0<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *  Unless required by applicable law or agreed to in writing, software<a name="line.9"></a>
+<FONT color="green">010</FONT>     *  distributed under the License is distributed on an "AS IS" BASIS,<a name="line.10"></a>
+<FONT color="green">011</FONT>     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.11"></a>
+<FONT color="green">012</FONT>     *  See the License for the specific language governing permissions and<a name="line.12"></a>
+<FONT color="green">013</FONT>     *  limitations under the License. See accompanying LICENSE file.<a name="line.13"></a>
+<FONT color="green">014</FONT>     */<a name="line.14"></a>
+<FONT color="green">015</FONT>    package org.apache.oozie.command.wf;<a name="line.15"></a>
+<FONT color="green">016</FONT>    <a name="line.16"></a>
+<FONT color="green">017</FONT>    import org.apache.hadoop.conf.Configuration;<a name="line.17"></a>
+<FONT color="green">018</FONT>    import org.apache.oozie.util.XmlUtils;<a name="line.18"></a>
+<FONT color="green">019</FONT>    import org.jdom.Element;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import org.jdom.Namespace;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import org.apache.oozie.action.hadoop.MapReduceMain;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import org.apache.oozie.client.XOozieClient;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import org.apache.oozie.command.CommandException;<a name="line.23"></a>
+<FONT color="green">024</FONT>    <a name="line.24"></a>
+<FONT color="green">025</FONT>    import java.util.ArrayList;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import java.util.List;<a name="line.26"></a>
+<FONT color="green">027</FONT>    <a name="line.27"></a>
+<FONT color="green">028</FONT>    public class SubmitPigXCommand extends SubmitHttpXCommand {<a name="line.28"></a>
+<FONT color="green">029</FONT>        public SubmitPigXCommand(Configuration conf, String authToken) {<a name="line.29"></a>
+<FONT color="green">030</FONT>            super("submitPig", "submitPig", conf, authToken);<a name="line.30"></a>
+<FONT color="green">031</FONT>        }<a name="line.31"></a>
+<FONT color="green">032</FONT>    <a name="line.32"></a>
+<FONT color="green">033</FONT>        private Element generatePigSection(Configuration conf, Namespace ns) {<a name="line.33"></a>
+<FONT color="green">034</FONT>            Element pig = new Element("pig", ns);<a name="line.34"></a>
+<FONT color="green">035</FONT>            Element jt = new Element("job-tracker", ns);<a name="line.35"></a>
+<FONT color="green">036</FONT>            jt.addContent(conf.get(XOozieClient.JT));<a name="line.36"></a>
+<FONT color="green">037</FONT>            pig.addContent(jt);<a name="line.37"></a>
+<FONT color="green">038</FONT>            Element nn = new Element("name-node", ns);<a name="line.38"></a>
+<FONT color="green">039</FONT>            nn.addContent(conf.get(XOozieClient.NN));<a name="line.39"></a>
+<FONT color="green">040</FONT>            pig.addContent(nn);<a name="line.40"></a>
+<FONT color="green">041</FONT>    <a name="line.41"></a>
+<FONT color="green">042</FONT>            List&lt;String&gt; Dargs = new ArrayList&lt;String&gt;();<a name="line.42"></a>
+<FONT color="green">043</FONT>            List&lt;String&gt; otherArgs = new ArrayList&lt;String&gt;();<a name="line.43"></a>
+<FONT color="green">044</FONT>            String[] pigArgs = MapReduceMain.getStrings(conf, XOozieClient.PIG_OPTIONS);<a name="line.44"></a>
+<FONT color="green">045</FONT>            for (String arg : pigArgs) {<a name="line.45"></a>
+<FONT color="green">046</FONT>                if (arg.startsWith("-D")) {<a name="line.46"></a>
+<FONT color="green">047</FONT>                    Dargs.add(arg);<a name="line.47"></a>
+<FONT color="green">048</FONT>                }<a name="line.48"></a>
+<FONT color="green">049</FONT>                else {<a name="line.49"></a>
+<FONT color="green">050</FONT>                    otherArgs.add(arg);<a name="line.50"></a>
+<FONT color="green">051</FONT>                }<a name="line.51"></a>
+<FONT color="green">052</FONT>            }<a name="line.52"></a>
+<FONT color="green">053</FONT>    <a name="line.53"></a>
+<FONT color="green">054</FONT>            // configuration section<a name="line.54"></a>
+<FONT color="green">055</FONT>            if (Dargs.size() &gt; 0) {<a name="line.55"></a>
+<FONT color="green">056</FONT>                Element configuration = generateConfigurationSection(Dargs, ns);<a name="line.56"></a>
+<FONT color="green">057</FONT>                pig.addContent(configuration);<a name="line.57"></a>
+<FONT color="green">058</FONT>            }<a name="line.58"></a>
+<FONT color="green">059</FONT>    <a name="line.59"></a>
+<FONT color="green">060</FONT>            Element script = new Element("script", ns);<a name="line.60"></a>
+<FONT color="green">061</FONT>            script.addContent("dummy.pig");<a name="line.61"></a>
+<FONT color="green">062</FONT>            pig.addContent(script);<a name="line.62"></a>
+<FONT color="green">063</FONT>    <a name="line.63"></a>
+<FONT color="green">064</FONT>            // argument section<a name="line.64"></a>
+<FONT color="green">065</FONT>            for (String arg : otherArgs) {<a name="line.65"></a>
+<FONT color="green">066</FONT>                Element argument = new Element("argument", ns);<a name="line.66"></a>
+<FONT color="green">067</FONT>                argument.addContent(arg);<a name="line.67"></a>
+<FONT color="green">068</FONT>                pig.addContent(argument);<a name="line.68"></a>
+<FONT color="green">069</FONT>            }<a name="line.69"></a>
+<FONT color="green">070</FONT>    <a name="line.70"></a>
+<FONT color="green">071</FONT>            // file section<a name="line.71"></a>
+<FONT color="green">072</FONT>            addFileSection(pig, conf, ns);<a name="line.72"></a>
+<FONT color="green">073</FONT>    <a name="line.73"></a>
+<FONT color="green">074</FONT>            // archive section<a name="line.74"></a>
+<FONT color="green">075</FONT>            addArchiveSection(pig, conf, ns);<a name="line.75"></a>
+<FONT color="green">076</FONT>    <a name="line.76"></a>
+<FONT color="green">077</FONT>            return pig;<a name="line.77"></a>
+<FONT color="green">078</FONT>        }<a name="line.78"></a>
+<FONT color="green">079</FONT>    <a name="line.79"></a>
+<FONT color="green">080</FONT>        private Element generateConfigurationSection(List&lt;String&gt; Dargs, Namespace ns) {<a name="line.80"></a>
+<FONT color="green">081</FONT>            Element configuration = new Element("configuration", ns);<a name="line.81"></a>
+<FONT color="green">082</FONT>            for (String arg : Dargs) {<a name="line.82"></a>
+<FONT color="green">083</FONT>                String name = null, value = null;<a name="line.83"></a>
+<FONT color="green">084</FONT>                int pos = arg.indexOf("=");<a name="line.84"></a>
+<FONT color="green">085</FONT>                if (pos == -1) { // "-D&lt;name&gt;" or "-D" only<a name="line.85"></a>
+<FONT color="green">086</FONT>                    name = arg.substring(2, arg.length());<a name="line.86"></a>
+<FONT color="green">087</FONT>                    value = "";<a name="line.87"></a>
+<FONT color="green">088</FONT>                }<a name="line.88"></a>
+<FONT color="green">089</FONT>                else { // "-D&lt;name&gt;=&lt;value&gt;"<a name="line.89"></a>
+<FONT color="green">090</FONT>                    name = arg.substring(2, pos);<a name="line.90"></a>
+<FONT color="green">091</FONT>                    value = arg.substring(pos + 1, arg.length());<a name="line.91"></a>
+<FONT color="green">092</FONT>                }<a name="line.92"></a>
+<FONT color="green">093</FONT>    <a name="line.93"></a>
+<FONT color="green">094</FONT>                Element property = new Element("property", ns);<a name="line.94"></a>
+<FONT color="green">095</FONT>                Element nameElement = new Element("name", ns);<a name="line.95"></a>
+<FONT color="green">096</FONT>                nameElement.addContent(name);<a name="line.96"></a>
+<FONT color="green">097</FONT>                property.addContent(nameElement);<a name="line.97"></a>
+<FONT color="green">098</FONT>                Element valueElement = new Element("value", ns);<a name="line.98"></a>
+<FONT color="green">099</FONT>                valueElement.addContent(value);<a name="line.99"></a>
+<FONT color="green">100</FONT>                property.addContent(valueElement);<a name="line.100"></a>
+<FONT color="green">101</FONT>                configuration.addContent(property);<a name="line.101"></a>
+<FONT color="green">102</FONT>            }<a name="line.102"></a>
+<FONT color="green">103</FONT>    <a name="line.103"></a>
+<FONT color="green">104</FONT>            return configuration;<a name="line.104"></a>
+<FONT color="green">105</FONT>        }<a name="line.105"></a>
+<FONT color="green">106</FONT>    <a name="line.106"></a>
+<FONT color="green">107</FONT>        /*<a name="line.107"></a>
+<FONT color="green">108</FONT>         * (non-Javadoc)<a name="line.108"></a>
+<FONT color="green">109</FONT>         *<a name="line.109"></a>
+<FONT color="green">110</FONT>         * @see<a name="line.110"></a>
+<FONT color="green">111</FONT>         * org.apache.oozie.command.wf.SubmitHttpCommand#getWorkflowXml(org.apache<a name="line.111"></a>
+<FONT color="green">112</FONT>         * .hadoop.conf.Configuration)<a name="line.112"></a>
+<FONT color="green">113</FONT>         */<a name="line.113"></a>
+<FONT color="green">114</FONT>        @Override<a name="line.114"></a>
+<FONT color="green">115</FONT>        protected String getWorkflowXml(Configuration conf) {<a name="line.115"></a>
+<FONT color="green">116</FONT>            for (String key : MANDATORY_OOZIE_CONFS) {<a name="line.116"></a>
+<FONT color="green">117</FONT>                String value = conf.get(key);<a name="line.117"></a>
+<FONT color="green">118</FONT>                if (value == null) {<a name="line.118"></a>
+<FONT color="green">119</FONT>                    throw new RuntimeException(key + " is not specified");<a name="line.119"></a>
+<FONT color="green">120</FONT>                }<a name="line.120"></a>
+<FONT color="green">121</FONT>            }<a name="line.121"></a>
+<FONT color="green">122</FONT>    <a name="line.122"></a>
+<FONT color="green">123</FONT>            Namespace ns = Namespace.getNamespace("uri:oozie:workflow:0.2");<a name="line.123"></a>
+<FONT color="green">124</FONT>            Element root = new Element("workflow-app", ns);<a name="line.124"></a>
+<FONT color="green">125</FONT>            root.setAttribute("name", "oozie-pig");<a name="line.125"></a>
+<FONT color="green">126</FONT>    <a name="line.126"></a>
+<FONT color="green">127</FONT>            Element start = new Element("start", ns);<a name="line.127"></a>
+<FONT color="green">128</FONT>            start.setAttribute("to", "pig1");<a name="line.128"></a>
+<FONT color="green">129</FONT>            root.addContent(start);<a name="line.129"></a>
+<FONT color="green">130</FONT>    <a name="line.130"></a>
+<FONT color="green">131</FONT>            Element action = new Element("action", ns);<a name="line.131"></a>
+<FONT color="green">132</FONT>            action.setAttribute("name", "pig1");<a name="line.132"></a>
+<FONT color="green">133</FONT>    <a name="line.133"></a>
+<FONT color="green">134</FONT>            Element pig = generatePigSection(conf, ns);<a name="line.134"></a>
+<FONT color="green">135</FONT>            action.addContent(pig);<a name="line.135"></a>
+<FONT color="green">136</FONT>    <a name="line.136"></a>
+<FONT color="green">137</FONT>            Element ok = new Element("ok", ns);<a name="line.137"></a>
+<FONT color="green">138</FONT>            ok.setAttribute("to", "end");<a name="line.138"></a>
+<FONT color="green">139</FONT>            action.addContent(ok);<a name="line.139"></a>
+<FONT color="green">140</FONT>    <a name="line.140"></a>
+<FONT color="green">141</FONT>            Element error = new Element("error", ns);<a name="line.141"></a>
+<FONT color="green">142</FONT>            error.setAttribute("to", "fail");<a name="line.142"></a>
+<FONT color="green">143</FONT>            action.addContent(error);<a name="line.143"></a>
+<FONT color="green">144</FONT>    <a name="line.144"></a>
+<FONT color="green">145</FONT>            root.addContent(action);<a name="line.145"></a>
+<FONT color="green">146</FONT>    <a name="line.146"></a>
+<FONT color="green">147</FONT>            Element kill = new Element("kill", ns);<a name="line.147"></a>
+<FONT color="green">148</FONT>            kill.setAttribute("name", "fail");<a name="line.148"></a>
+<FONT color="green">149</FONT>            Element message = new Element("message", ns);<a name="line.149"></a>
+<FONT color="green">150</FONT>            message.addContent("Pig failed, error message[${wf:errorMessage(wf:lastErrorNode())}]");<a name="line.150"></a>
+<FONT color="green">151</FONT>            kill.addContent(message);<a name="line.151"></a>
+<FONT color="green">152</FONT>            root.addContent(kill);<a name="line.152"></a>
+<FONT color="green">153</FONT>    <a name="line.153"></a>
+<FONT color="green">154</FONT>            Element end = new Element("end", ns);<a name="line.154"></a>
+<FONT color="green">155</FONT>            end.setAttribute("name", "end");<a name="line.155"></a>
+<FONT color="green">156</FONT>            root.addContent(end);<a name="line.156"></a>
+<FONT color="green">157</FONT>    <a name="line.157"></a>
+<FONT color="green">158</FONT>            return XmlUtils.prettyPrint(root).toString();<a name="line.158"></a>
+<FONT color="green">159</FONT>        }<a name="line.159"></a>
+<FONT color="green">160</FONT>    <a name="line.160"></a>
+<FONT color="green">161</FONT>        @Override<a name="line.161"></a>
+<FONT color="green">162</FONT>        protected String getEntityKey() {<a name="line.162"></a>
+<FONT color="green">163</FONT>            return null;<a name="line.163"></a>
+<FONT color="green">164</FONT>        }<a name="line.164"></a>
+<FONT color="green">165</FONT>    <a name="line.165"></a>
+<FONT color="green">166</FONT>        @Override<a name="line.166"></a>
+<FONT color="green">167</FONT>        protected boolean isLockRequired() {<a name="line.167"></a>
+<FONT color="green">168</FONT>            return false;<a name="line.168"></a>
+<FONT color="green">169</FONT>        }<a name="line.169"></a>
+<FONT color="green">170</FONT>    <a name="line.170"></a>
+<FONT color="green">171</FONT>        @Override<a name="line.171"></a>
+<FONT color="green">172</FONT>        protected void loadState() {<a name="line.172"></a>
+<FONT color="green">173</FONT>    <a name="line.173"></a>
+<FONT color="green">174</FONT>        }<a name="line.174"></a>
+<FONT color="green">175</FONT>    <a name="line.175"></a>
+<FONT color="green">176</FONT>        @Override<a name="line.176"></a>
+<FONT color="green">177</FONT>        protected void verifyPrecondition() throws CommandException {<a name="line.177"></a>
+<FONT color="green">178</FONT>    <a name="line.178"></a>
+<FONT color="green">179</FONT>        }<a name="line.179"></a>
+<FONT color="green">180</FONT>    }<a name="line.180"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

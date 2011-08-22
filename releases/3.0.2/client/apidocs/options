@@ -1,0 +1,28 @@
+-classpath
+'/homes/angeloh/workspaces/git-y-oozie-0202/oozie-main/client/target/classes:/homes/angeloh/.m2/repository/commons-cli/commons-cli/1.2/commons-cli-1.2.jar:/homes/angeloh/.m2/repository/com/googlecode/json-simple/json-simple/1.1/json-simple-1.1.jar'
+-encoding
+'UTF-8'
+-protected
+-quiet
+-sourcepath
+'/homes/angeloh/workspaces/git-y-oozie-0202/oozie-main/client/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2011 <a href="http://www.yahoo.com">Yahoo</a>. All Rights Reserved.'
+-charset
+'UTF-8'
+-d
+'/homes/angeloh/workspaces/git-y-oozie-0202/oozie-main/client/target/site/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Oozie Client 3.0.2 API'
+-group
+'Client API' 'org.apache.oozie.client'
+-link
+'http://java.sun.com/javase/6/docs/api'
+-linksource
+-use
+-version
+-windowtitle
+'Oozie Client 3.0.2 API'
