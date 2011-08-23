@@ -16,8 +16,12 @@ package org.apache.oozie.command.coord;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -28,6 +32,7 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.coord.CoordELEvaluator;
 import org.apache.oozie.coord.CoordELFunctions;
+import org.apache.oozie.service.CallableQueueService;
 import org.apache.oozie.service.HadoopAccessorException;
 import org.apache.oozie.service.HadoopAccessorService;
 import org.apache.oozie.service.Services;
@@ -49,9 +54,62 @@ public class CoordActionInputCheckCommand extends CoordinatorCommand<Void> {
     private int COMMAND_REQUEUE_INTERVAL = 60000; // 1 minute
     private CoordinatorActionBean coordAction = null;
 
+    private static ConcurrentMap<String, String> ACTION_ID_LOOKUP = new ConcurrentHashMap<String, String>();
+
+    private static final Random RANDOM = new Random(System.currentTimeMillis());
+
+    public static boolean queue(CoordActionInputCheckCommand command, long delay) {
+        boolean ret = ACTION_ID_LOOKUP.putIfAbsent(command.actionId,  command.actionId) == null;
+        if (ret) {
+            try {
+                ret = Services.get().get(CallableQueueService.class).queue(command, delay + RANDOM.nextInt(300));
+                if (!ret) {
+                    remove(command.actionId);
+                }
+            }
+            catch (Exception ex) {
+                remove(command.actionId);
+            }
+        }
+        return ret;
+    }
+
+    private static void remove(String actionId) {
+       ACTION_ID_LOOKUP.remove(actionId);
+    }
+
+    private static class ToQueue {
+        private CoordActionInputCheckCommand command;
+        private long delay;
+
+        private ToQueue(CoordActionInputCheckCommand command, long delay) {
+            this.command = command;
+            this.delay = delay;
+        }
+    }
+
+    private List<ToQueue> inputChecks = new ArrayList<ToQueue>();
+
+    private void queueActionInputCheck(CoordActionInputCheckCommand command, long delay) {
+        inputChecks.add(new ToQueue(command, delay));
+    }
+
     public CoordActionInputCheckCommand(String actionId) {
         super("coord_action_input", "coord_action_input", 1, XLog.STD);
         this.actionId = actionId;
+    }
+
+    public String toString() {
+        return "AIC-" + actionId;
+    }
+
+    private void queueActionInputChecks() {
+        for (ToQueue toQueue : inputChecks) {
+            if (!queue(toQueue.command, toQueue.delay)) {
+                XLog.getLog(CoordActionInputCheckCommand.class).warn("Unable to queue input check command [{0}]",
+                                                                     toQueue.command.actionId);
+            }
+        }
     }
 
     @Override
@@ -66,8 +124,8 @@ public class CoordActionInputCheckCommand extends CoordinatorCommand<Void> {
             log.info("[" + actionId
                     + "]::ActionInputCheck:: nominal Time is newer than current time, so requeue and wait. Current="
                     + currentTime + ", nominal=" + nominalTime);
-            queueCallable(new CoordActionInputCheckCommand(coordAction.getId()), Math.max(
-                    (nominalTime.getTime() - currentTime.getTime()), COMMAND_REQUEUE_INTERVAL));
+            queueActionInputCheck(new CoordActionInputCheckCommand(coordAction.getId()), Math.max(
+                (nominalTime.getTime() - currentTime.getTime()), COMMAND_REQUEUE_INTERVAL));
             // update lastModifiedTime
             store.updateCoordinatorAction(coordAction);
             return null;
@@ -115,7 +173,8 @@ public class CoordActionInputCheckCommand extends CoordinatorCommand<Void> {
                         coordAction.setStatus(CoordinatorAction.Status.TIMEDOUT);
                     }
                     else {
-                        queueCallable(new CoordActionInputCheckCommand(coordAction.getId()), COMMAND_REQUEUE_INTERVAL);
+                        queueActionInputCheck(new CoordActionInputCheckCommand(coordAction.getId()),
+                                              COMMAND_REQUEUE_INTERVAL);
                     }
                 }
                 store.updateCoordActionMin(coordAction);
@@ -366,18 +425,20 @@ public class CoordActionInputCheckCommand extends CoordinatorCommand<Void> {
                 call(store);
             }
             else {
-                queueCallable(new CoordActionInputCheckCommand(actionId), LOCK_FAILURE_REQUEUE_INTERVAL);
+                queueActionInputCheck(new CoordActionInputCheckCommand(actionId), LOCK_FAILURE_REQUEUE_INTERVAL);
                 log.warn("CoordActionInputCheckCommand lock was not acquired - failed jobId=" + coordAction.getJobId()
                         + ", actionId=" + actionId + ". Requeing the same.");
             }
         }
         catch (InterruptedException e) {
-            queueCallable(new CoordActionInputCheckCommand(actionId), LOCK_FAILURE_REQUEUE_INTERVAL);
+            queueActionInputCheck(new CoordActionInputCheckCommand(actionId), LOCK_FAILURE_REQUEUE_INTERVAL);
             log.warn("CoordActionInputCheckCommand lock acquiring failed with exception " + e.getMessage() + " for jobId="
                     + coordAction.getJobId() + ", actionId=" + actionId + " Requeing the same.");
         }
         finally {
             log.info("ENDED CoordActionInputCheckCommand for actionid=" + actionId);
+            remove(actionId);
+            queueActionInputChecks();
         }
         return null;
     }

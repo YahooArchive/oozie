@@ -1,5 +1,6 @@
 -- Oozie 2.3.2 release
 
+OOZIE-24 (Apache) Dedup coord action check commands in queue
 OOZIE-11  Adding Distcp Action.  
 OOZIE-22 (Apache) Add support PostgreSQL
 OOZIE-9 (Apache) Launcher job should be able to run in different queue than job itself

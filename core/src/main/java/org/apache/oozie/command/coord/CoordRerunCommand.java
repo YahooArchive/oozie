@@ -30,15 +30,12 @@ import org.apache.oozie.CoordinatorActionInfo;
 import org.apache.oozie.CoordinatorJobBean;
 import org.apache.oozie.ErrorCode;
 import org.apache.oozie.XException;
-import org.apache.oozie.action.ActionExecutorException;
-import org.apache.oozie.action.hadoop.FsActionExecutor;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.SLAEvent.SlaAppType;
 import org.apache.oozie.client.rest.RestConstants;
 import org.apache.oozie.command.CommandException;
 import org.apache.oozie.coord.CoordELFunctions;
-import org.apache.oozie.service.HadoopAccessorException;
 import org.apache.oozie.service.HadoopAccessorService;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.store.CoordinatorStore;
@@ -105,7 +102,7 @@ public class CoordRerunCommand extends CoordinatorCommand<CoordinatorActionInfo>
 
                         // TODO: time 100s should be configurable
                         queueCallable(new CoordActionNotification(coordAction), 100);
-                        queueCallable(new CoordActionInputCheckCommand(coordAction.getId()), 100);
+                        CoordActionInputCheckCommand.queue(new CoordActionInputCheckCommand(coordAction.getId()), 100);
                     }
                 }
                 else {

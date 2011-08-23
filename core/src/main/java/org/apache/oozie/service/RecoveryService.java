@@ -195,7 +195,7 @@ public class RecoveryService implements Service {
                     Services.get().get(InstrumentationService.class).get().incr(INSTRUMENTATION_GROUP,
                                                                                 INSTR_RECOVERED_COORD_ACTIONS_COUNTER, 1);
                     if (caction.getStatus() == CoordinatorActionBean.Status.WAITING) {
-                        queueCallable(new CoordActionInputCheckCommand(caction.getId()));
+                        CoordActionInputCheckCommand.queue(new CoordActionInputCheckCommand(caction.getId()), 0);
                         log.info("Recover a WAITTING coord action :" + caction.getId());
                     }
                     else {
