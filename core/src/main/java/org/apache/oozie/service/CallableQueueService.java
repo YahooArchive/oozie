@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -97,6 +98,9 @@ public class CallableQueueService implements Service, Instrumentable {
         }
     }
 
+    private final Random random = new Random(System.currentTimeMillis());
+    private final AtomicLong lastConcurrencyWarning = new AtomicLong(System.currentTimeMillis());
+
     // Callables are wrapped with the this wrapper for execution, for logging and instrumentation.
     // The wrapper implements Runnable and Comparable to be able to work with an executor and a priority queue.
     class CallableWrapper extends PriorityDelayQueue.QueueElement<XCallable<Void>> implements Runnable {
@@ -138,9 +142,12 @@ public class CallableQueueService implements Service, Instrumentable {
                     }
                 }
                 else {
-                    log.warn("max concurrency for callable [{0}] exceeded, requeueing with [{1}]ms delay",
-                             callable.getType(), CONCURRENCY_DELAY);
-                    setDelay(CONCURRENCY_DELAY, TimeUnit.MILLISECONDS);
+                    long delay = CONCURRENCY_DELAY + random.nextInt(300);
+                    if ((System.currentTimeMillis() - lastConcurrencyWarning.get()) > 60 * 1000) {
+                        lastConcurrencyWarning.set(System.currentTimeMillis());
+                        log.warn("max concurrency for callable exceeded");
+                    }
+                    setDelay(delay, TimeUnit.MILLISECONDS);
                     queue(this, true);
                     incrCounter(callable.getType() + "#exceeded.concurrency", 1);
                 }
@@ -324,21 +331,21 @@ public class CallableQueueService implements Service, Instrumentable {
      */
     @Override
     public void destroy() {
-        try {
-            long limit = System.currentTimeMillis() + 30 * 1000;// 30 seconds
-            executor.shutdown();
-            queue.clear();
-            while (!executor.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
-                log.info("Waiting for executor to shutdown");
-                if (System.currentTimeMillis() > limit) {
-                    log.warn("Gave up, continuing without waiting for executor to shutdown");
-                    break;
-                }
-            }
-        }
-        catch (InterruptedException ex) {
-            log.warn(ex);
-        }
+       try {
+           long limit = System.currentTimeMillis() + 30 * 1000;// 30 seconds
+           executor.shutdown();
+           queue.clear();
+           while (!executor.awaitTermination(1000, TimeUnit.MILLISECONDS)) {
+               log.info("Waiting for executor to shutdown");
+               if (System.currentTimeMillis() > limit) {
+                   log.warn("Gave up, continuing without waiting for executor to shutdown");
+                   break;
+               }
+           }
+       }
+       catch (InterruptedException ex) {
+           log.warn(ex);
+       }
     }
 
     /**
