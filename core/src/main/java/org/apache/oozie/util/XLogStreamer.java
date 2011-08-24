@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 /**
  * XLogStreamer streams the given log file to logWriter after applying the given filter.
@@ -45,7 +47,7 @@ public class XLogStreamer {
         private boolean noFilter;
         private Pattern filterPattern;
 
-        //TODO Patterns to be read from config file
+        // TODO Patterns to be read from config file
         private static final String DEFAULT_REGEX = "[^\\]]*";
 
         public static final String ALLOW_ALL_REGEX = "(.*)";
@@ -103,7 +105,7 @@ public class XLogStreamer {
 
         /**
          * Checks if the logLevel and logMessage goes through the logFilter.
-         *
+         * 
          * @param logParts
          * @return
          */
@@ -122,7 +124,7 @@ public class XLogStreamer {
         /**
          * Splits the log line into timestamp, logLevel and remaining log message. Returns array containing logLevel and
          * logMessage if the pattern matches i.e A new log statement, else returns null.
-         *
+         * 
          * @param logLine
          * @return Array containing log level and log message
          */
@@ -188,7 +190,7 @@ public class XLogStreamer {
     /**
      * Gets the files that are modified between startTime and endTime in the given logPath and streams the log after
      * applying the filters.
-     *
+     * 
      * @param startTime
      * @param endTime
      * @throws IOException
@@ -207,10 +209,30 @@ public class XLogStreamer {
         }
         File dir = new File(logPath);
         ArrayList<FileInfo> fileList = getFileList(dir, startTimeMillis, endTimeMillis, logRotation, logFile);
+        File file;
+        String fileName;
+        XLogReader logReader;
         for (int i = 0; i < fileList.size(); i++) {
+            fileName = fileList.get(i).getFileName();
+            if (fileName.endsWith(".gz")) {
+                file = new File(fileName);
+                GZIPInputStream gzipInputStream = null;
+                try {
+                    gzipInputStream = new GZIPInputStream(new FileInputStream(file));
+                    logReader = new XLogReader(gzipInputStream, logFilter, logWriter);
+                    logReader.processLog();
+                }
+                catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                finally {
+                    gzipInputStream.close();
+                }
+                continue;
+            }
             InputStream ifs;
-            ifs = new FileInputStream(fileList.get(i).getFileName());
-            XLogReader logReader = new XLogReader(ifs, logFilter, logWriter);
+            ifs = new FileInputStream(fileName);
+            logReader = new XLogReader(ifs, logFilter, logWriter);
             logReader.processLog();
         }
     }
@@ -237,11 +259,13 @@ public class XLogStreamer {
 
         public int compareTo(FileInfo fileInfo) {
             long diff = this.modTime - fileInfo.modTime;
-            if(diff > 0) {
+            if (diff > 0) {
                 return 1;
-            } else if(diff < 0) {
+            }
+            else if (diff < 0) {
                 return -1;
-            } else {
+            }
+            else {
                 return 0;
             }
         }
@@ -249,7 +273,7 @@ public class XLogStreamer {
 
     /**
      * Gets the file list that will have the logs between startTime and endTime.
-     *
+     * 
      * @param dir
      * @param startTime
      * @param endTime
@@ -257,8 +281,7 @@ public class XLogStreamer {
      * @param logFile
      * @return List of files to be streamed
      */
-    private ArrayList<FileInfo> getFileList(File dir, long startTime, long endTime, long logRotationTime,
-                                            String logFile) {
+    private ArrayList<FileInfo> getFileList(File dir, long startTime, long endTime, long logRotationTime, String logFile) {
         String[] children = dir.list();
         ArrayList<FileInfo> fileList = new ArrayList<FileInfo>();
         if (children == null) {
@@ -266,11 +289,21 @@ public class XLogStreamer {
         }
         else {
             for (int i = 0; i < children.length; i++) {
-                String filename = children[i];
-                if (!filename.startsWith(logFile) && !filename.equals(logFile)) {
+                String fileName = children[i];
+                if (!fileName.startsWith(logFile) && !fileName.equals(logFile)) {
                     continue;
                 }
-                File file = new File(dir.getAbsolutePath(), filename);
+                File file = new File(dir.getAbsolutePath(), fileName);
+                if (fileName.endsWith(".gz")) {
+                    long gzFileCreationTime = getGZFileCreationTime(fileName, startTime, endTime);
+                    if (gzFileCreationTime != -1) {
+                        fileList.add(new FileInfo(file.getAbsolutePath(), gzFileCreationTime));
+                        continue;
+                    }
+                    else {
+                        continue;
+                    }
+                }
                 long modTime = file.lastModified();
                 if (modTime < startTime) {
                     continue;
@@ -283,5 +316,35 @@ public class XLogStreamer {
         }
         Collections.sort(fileList);
         return fileList;
+    }
+
+    /**
+     * Returns the creation time of the .gz archive if it is relevant to the job
+     * 
+     * @param fileName
+     * @param startTime
+     * @param endTime
+     * @return Modification time of .gz file after checking if it is relevant to the job
+     */
+    private long getGZFileCreationTime(String fileName, long startTime, long endTime) {
+        long returnVal = -1;
+        int dateStartIndex = 10;
+        String[] dateDetails;
+        dateDetails = fileName.substring(dateStartIndex, fileName.length() - 3).split("-");
+        int year = Integer.parseInt(dateDetails[0]);
+        int month = Integer.parseInt(dateDetails[1]);
+        int day = Integer.parseInt(dateDetails[2]);
+        int hour = Integer.parseInt(dateDetails[3]);
+        int minute = 0;
+        Calendar calendarEntry = Calendar.getInstance();
+        calendarEntry.set(year, month - 1, day, hour, minute); // give month-1(Say, 7 for August)
+        long logFileStartTime = calendarEntry.getTimeInMillis();
+        long milliSecondsPerHour = 3600000;
+        long logFileEndTime = logFileStartTime + milliSecondsPerHour;
+        if ((startTime >= logFileStartTime && startTime <= logFileEndTime)
+                || (endTime >= logFileStartTime && endTime <= logFileEndTime)) {
+            returnVal = logFileStartTime;
+        }
+        return returnVal;
     }
 }
