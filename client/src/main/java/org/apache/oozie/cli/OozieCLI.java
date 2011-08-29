@@ -1213,8 +1213,10 @@ public class OozieCLI {
         if (file.exists()) {
             try {
                 List<StreamSource> sources = new ArrayList<StreamSource>();
-                sources.add(new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                        "oozie-workflow-0.1.xsd")));
+              sources.add(new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                      "oozie-workflow-0.1.xsd")));
+              sources.add(new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                      "oozie-workflow-0.2.xsd")));
                 sources.add(new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream(
                         "email-action-0.1.xsd")));
                 sources.add(new StreamSource(Thread.currentThread().getContextClassLoader().getResourceAsStream(
