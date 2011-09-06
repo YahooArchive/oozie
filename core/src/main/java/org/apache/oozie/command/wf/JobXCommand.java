@@ -142,21 +142,32 @@ public class JobXCommand extends WorkflowXCommand<WorkflowJobBean> {
         LiteWorkflowApp wfApp = (LiteWorkflowApp) wfInstance.getApp();
 
         int executionPathLengthEstimate = wfApp.getExecutionPathLengthEstimate();
+        float progress;
         if (executionPathLengthEstimate == 0) { // noop wf
-            return 1.0f;
+            progress = 1.0f;
         }
-        List<WorkflowAction> actions = wf.getActions();
-        int doneActions = 0;
-        for (WorkflowAction action : actions) {
-            // Skip decision nodes, note start, kill, end, fork/join will not have action entry.
-            if (action.getType().equals(DecisionActionExecutor.ACTION_TYPE)) {
-                continue;
+        else {
+            List<WorkflowAction> actions = wf.getActions();
+            int doneActions = 0;
+            for (WorkflowAction action : actions) {
+                // Skip decision nodes, note start, kill, end, fork/join will not have action entry.
+                if (action.getType().equals(DecisionActionExecutor.ACTION_TYPE)) {
+                    // noop
+                }
+                else {
+                    // Make progress if an action is in terminal state
+                    if (action.getStatus() == WorkflowAction.Status.OK
+                            || action.getStatus() == WorkflowAction.Status.ERROR
+                            || action.getStatus() == WorkflowAction.Status.FAILED
+                            || action.getStatus() == WorkflowAction.Status.KILLED) {
+                        doneActions++;
+                    }
+                }
             }
-            if (action.getStatus() == WorkflowAction.Status.OK || action.getStatus() == WorkflowAction.Status.DONE) {
-                doneActions++;
-            }
+
+            progress = (doneActions * 1.0f) / executionPathLengthEstimate;
         }
 
-        return (doneActions * 1.0f) / executionPathLengthEstimate;
+        return progress;
     }
 }
