@@ -1,9 +1,9 @@
-Oozie, Yahoo Workflow Engine for Hadoop.
+Oozie, Workflow Engine for Hadoop.
 
 PLEASE NOTE:
 
- * Yahoo! does not offer any support for the
-   Yahoo! Distribution of Oozie.
+ * Oozie becomes Apache incubator project. Please follow
+   Oozie at http://incubator.apache.org/oozie/.
 
  * This distribution includes cryptographic software that
    is subject to U.S. export control laws and applicable
@@ -19,6 +19,10 @@ PLEASE NOTE:
    contrary to U.S. law is prohibited.
 
 --------------------------------------
+Oozie Apache Site:
+
+  http://incubator.apache.org/oozie/
+
 Oozie Documentation:
 
   http://yahoo.github.com/oozie/releases/3.0.0
@@ -37,6 +41,8 @@ Building Oozie:
 
 --------------------------------------
 
-If you have any questions/issues, please send an email to:
+Please subsuribe Oozie mailing lists at:
 
-  oozie-users@yahoogroups.com
+  oozie-dev-subscribe@incubator.apache.org
+  oozie-commits-subscribe@incubator.apache.org
+
