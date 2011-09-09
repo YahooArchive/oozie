@@ -1,15 +1,22 @@
 ---
 layout: default
-title: Yahoo!'s workflow engine for Hadoop
+title: Workflow engine for Hadoop
 ---
 
 h2(#overview). Overview
 
 Oozie is an open-source workflow/coordination service to manage data processing jobs for Apache Hadoop(tm). It is an extensible, scalable and data-aware service to orchestrate dependencies between jobs running on Hadoop (including HDFS, Pig and MapReduce). Oozie is a lot of things, but being:
 * A workflow solution for off Hadoop processing
-* Another query processing API, a la Cascading
+* Another query processing API, a la Cascading is not one of them.
 
-is not one of them.
+h2(#apache). Apache Oozie
+
+Oozie becomes Apache incubator project. Please follow Oozie at http://incubator.apache.org/oozie/.
+
+Please subsuribe Oozie mailing lists at:
+
+* oozie-dev-subscribe@incubator.apache.org
+* oozie-commits-subscribe@incubator.apache.org
 
 h2(#benefits). Oozie Benefits 
 * Complex workflow action dependencies: Oozie workflow comprises of actions and dependencies among them. Users create Directed Acyclical Graphs (DAG) to model their workflow. Oozie at runtime manages the dependencies and execute the actions when the dependencies identified in the DAG are satisfied. 
