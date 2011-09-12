@@ -9,14 +9,21 @@ Oozie is an open-source workflow/coordination service to manage data processing 
 * A workflow solution for off Hadoop processing
 * Another query processing API, a la Cascading is not one of them.
 
-h2(#apache). Apache Oozie
+h2(#apache). %{color:red}Apache Oozie%
 
-Oozie becomes Apache incubator project. Please follow Oozie at http://incubator.apache.org/oozie/.
+%{color:red}Oozie Is Now Apache Incubator Project.% 
+<div style="float:right;">
 
-Please subsuribe Oozie mailing lists at:
+h3. Please follow Oozie at
 
-* oozie-dev-subscribe@incubator.apache.org
-* oozie-commits-subscribe@incubator.apache.org
+"Apache Oozie":http://incubator.apache.org/oozie/
+
+</div>
+
+%{color:red}Please subsuribe Oozie mailing lists at:%
+
+* %{color:red}oozie-dev-subscribe@incubator.apache.org%
+* %{color:red}oozie-commits-subscribe@incubator.apache.org%
 
 h2(#benefits). Oozie Benefits 
 * Complex workflow action dependencies: Oozie workflow comprises of actions and dependencies among them. Users create Directed Acyclical Graphs (DAG) to model their workflow. Oozie at runtime manages the dependencies and execute the actions when the dependencies identified in the DAG are satisfied. 
