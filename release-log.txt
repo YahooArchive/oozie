@@ -1,5 +1,6 @@
 -- Oozie 3.1.0 release
 
+OOZIE-26 Ability to get the log content from Archived file(.gz format)
 OOZIE-37 Documentation related modifications for "log -action" option
 OOZIE-35 add auto-rerun for error codes JA008 and JA009 in action executor
 OOZIE-21 Fixed bug forked subwf not returning status to the parent wf job
