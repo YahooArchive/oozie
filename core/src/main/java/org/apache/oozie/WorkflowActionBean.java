@@ -161,6 +161,7 @@ public class WorkflowActionBean extends JsonWorkflowAction implements Writable {
         dataOutput.writeInt(getUserRetryCount());
         dataOutput.writeInt(getUserRetryInterval());
         dataOutput.writeInt(getUserRetryMax());
+        WritableUtils.writeStr(dataOutput, getUserProductVersion());
     }
 
     /**
@@ -209,6 +210,7 @@ public class WorkflowActionBean extends JsonWorkflowAction implements Writable {
         setUserRetryCount(dataInput.readInt());
         setUserRetryInterval(dataInput.readInt());
         setUserRetryMax(dataInput.readInt());
+        setUserProductVersion(WritableUtils.readStr(dataInput));
     }
 
     /**

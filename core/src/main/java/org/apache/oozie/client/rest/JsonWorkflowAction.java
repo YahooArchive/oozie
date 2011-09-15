@@ -66,10 +66,14 @@ public class JsonWorkflowAction implements WorkflowAction, JsonBean {
     @Basic
     @Column(name = "user_retry_max")
     private int userRetryMax;
-    
+
     @Basic
     @Column(name = "user_retry_interval")
     private int userRetryInterval;
+
+    @Basic
+    @Column(name = "user_product_version")
+    private String userProductVersion = null;
 
     @Transient
     private Date startTime;
@@ -218,6 +222,14 @@ public class JsonWorkflowAction implements WorkflowAction, JsonBean {
 
     public void setUserRetryInterval(int retryInterval) {
         this.userRetryInterval = retryInterval;
+    }
+    
+    public String getUserProductVersion(){
+        return userProductVersion;
+    }
+    
+    public void setUserProductVersion(String productVersion){
+        this.userProductVersion = productVersion;
     }
 
     public Date getStartTime() {

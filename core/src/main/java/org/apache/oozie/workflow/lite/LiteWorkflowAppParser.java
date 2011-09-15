@@ -58,6 +58,7 @@ public class LiteWorkflowAppParser {
     private static final String CRED_A = "cred";
     private static final String USER_RETRY_MAX_A = "retry-max";
     private static final String USER_RETRY_INTERVAL_A = "retry-interval";
+    private static final String USER_USE_VERSION = "use_version";
     private static final String TO_A = "to";
 
     private static final String FORK_PATH_E = "path";
@@ -198,15 +199,16 @@ public class LiteWorkflowAppParser {
                                                 }
                                             }
                                         }
-                                        
+
                                         String credStr = eNode.getAttributeValue(CRED_A);
                                         String userRetryMaxStr = eNode.getAttributeValue(USER_RETRY_MAX_A);
                                         String userRetryIntervalStr = eNode.getAttributeValue(USER_RETRY_INTERVAL_A);
-                                        
+                                        String userProductVersion = eNode.getAttributeValue(USER_USE_VERSION);
+
                                         String actionConf = XmlUtils.prettyPrint(eActionConf).toString();
-                                        def.addNode(new ActionNodeDef(eNode.getAttributeValue(NAME_A), actionConf, actionHandlerClass,
-                                                                      transitions[0], transitions[1], credStr,
-                                                                      userRetryMaxStr, userRetryIntervalStr));
+                                        def.addNode(new ActionNodeDef(eNode.getAttributeValue(NAME_A), actionConf,
+                                                actionHandlerClass, transitions[0], transitions[1], credStr,
+                                                userRetryMaxStr, userRetryIntervalStr, userProductVersion));
                                     }
                                     else {
                                         if (SLA_INFO.equals(eNode.getName()) || CREDENTIALS.equals(eNode.getName())) {

@@ -63,7 +63,8 @@ public abstract class WorkflowAppService implements Service {
      *
      * @param services services instance.
      */
-    public void init(Services services) {
+    @Override
+	public void init(Services services) {
         String path = services.getConf().get(SYSTEM_LIB_PATH, " ");
         if (path.trim().length() > 0) {
             systemLibPath = new Path(path.trim());
@@ -73,7 +74,8 @@ public abstract class WorkflowAppService implements Service {
     /**
      * Destroy the workflow application service.
      */
-    public void destroy() {
+    @Override
+	public void destroy() {
     }
 
     /**
@@ -81,7 +83,8 @@ public abstract class WorkflowAppService implements Service {
      *
      * @return {@link WorkflowAppService}.
      */
-    public Class<? extends Service> getInterface() {
+    @Override
+	public Class<? extends Service> getInterface() {
         return WorkflowAppService.class;
     }
 
@@ -167,7 +170,8 @@ public abstract class WorkflowAppService implements Service {
                 Path path = new Path(uri.getPath());
                 if (!fs.isFile(path)) {
                     filePaths = getLibFiles(fs, new Path(appPath + "/lib"));
-                } else {
+                }
+                else {
                     filePaths = getLibFiles(fs, new Path(appPath.getParent(), "lib"));
                 }
             }
@@ -185,15 +189,17 @@ public abstract class WorkflowAppService implements Service {
                     }
                 }
             }
-
-            if (systemLibPath != null && jobConf.getBoolean(OozieClient.USE_SYSTEM_LIBPATH, false)) {
-                List<String> libFilePaths = getLibFiles(fs, systemLibPath);
-                filePaths.addAll(libFilePaths);
-            }
-
             conf.setStrings(APP_LIB_PATH_LIST, filePaths.toArray(new String[filePaths.size()]));
 
-            //Add all properties start with 'oozie.'
+            List<String> sysFilePaths = new ArrayList<String>();
+            if (systemLibPath != null && jobConf.getBoolean(OozieClient.USE_SYSTEM_LIBPATH, false)) {
+                List<String> libPaths = getLibFiles(fs, systemLibPath);
+                sysFilePaths.addAll(libPaths);
+            }
+
+            conf.setStrings(SYSTEM_LIB_PATH, sysFilePaths.toArray(new String[sysFilePaths.size()]));
+
+            // Add all properties start with 'oozie.'
             for (Map.Entry<String, String> entry : jobConf) {
                 if (entry.getKey().startsWith("oozie.")) {
                     String name = entry.getKey();
@@ -213,8 +219,7 @@ public abstract class WorkflowAppService implements Service {
             throw new WorkflowException(ex);
         }
         catch (Exception ex) {
-            throw new WorkflowException(ErrorCode.E0712, jobConf.get(OozieClient.APP_PATH),
-                                        ex.getMessage(), ex);
+            throw new WorkflowException(ErrorCode.E0712, jobConf.get(OozieClient.APP_PATH), ex.getMessage(), ex);
         }
     }
 
@@ -244,17 +249,22 @@ public abstract class WorkflowAppService implements Service {
      * @return list of paths.
      * @throws IOException thrown if the lib paths could not be obtained.
      */
-    private List<String> getLibFiles(FileSystem fs, Path libPath) throws IOException {
+    public static List<String> getLibFiles(FileSystem fs, Path libPath) throws IOException {
         List<String> libPaths = new ArrayList<String>();
         if (fs.exists(libPath)) {
-            FileStatus[] files = fs.listStatus(libPath, new NoPathFilter());
+            FileStatus[] files = fs.listStatus(libPath, new PathFilter() {
+                @Override
+                public boolean accept(Path path) {
+                    return true;
+                }
+            });
 
             for (FileStatus file : files) {
                 libPaths.add(file.getPath().toUri().getPath().trim());
             }
         }
         else {
-            XLog.getLog(getClass()).warn("libpath [{0}] does not exists", libPath);
+            XLog.getLog("WorkflowAppService").warn("libpath [{0}] does not exists", libPath);
         }
         return libPaths;
     }
@@ -271,3 +281,4 @@ public abstract class WorkflowAppService implements Service {
         }
     }
 }
+
