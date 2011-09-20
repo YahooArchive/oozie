@@ -193,8 +193,8 @@ public abstract class WorkflowAppService implements Service {
 
             List<String> sysFilePaths = new ArrayList<String>();
             if (systemLibPath != null && jobConf.getBoolean(OozieClient.USE_SYSTEM_LIBPATH, false)) {
-                List<String> libPaths = getLibFiles(fs, systemLibPath);
-                sysFilePaths.addAll(libPaths);
+                List<String> sysLibPaths = getLibFiles(fs, systemLibPath);
+                sysFilePaths.addAll(sysLibPaths);
             }
 
             conf.setStrings(SYSTEM_LIB_PATH, sysFilePaths.toArray(new String[sysFilePaths.size()]));
