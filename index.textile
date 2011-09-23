@@ -22,6 +22,7 @@ h3. Please follow Oozie at
 
 %{color:red}Please subsuribe Oozie mailing lists at:%
 
+* %{color:red}oozie-users-subscribe@incubator.apache.org%
 * %{color:red}oozie-dev-subscribe@incubator.apache.org%
 * %{color:red}oozie-commits-subscribe@incubator.apache.org%
 
