@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2011-09-30
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<hr />
+<a name="Oozie_Email_Action_Extension"></a>
+<div class="section"><h2> Oozie Email Action Extension</h2>
+<p><ul><ul><li><a href="#a3.2.4_Email_action">3.2.4 Email action</a>
+</li>
+<li><a href="#AE.A_Appendix_A_Email_XML-Schema">AE.A Appendix A, Email XML-Schema</a>
+</li>
+</ul>
+</ul>
+</p>
+<p><a name="EmailAction"></a>
+</p>
+<a name="a3.2.4_Email_action"></a>
+<div class="section"><h5>3.2.4 Email action</h5>
+<p>The <tt>email</tt>
+ action allows sending emails in Oozie from a workflow application. An email action must provide <tt>to</tt>
+
+addresses, <tt>cc</tt>
+ addresses (optional), a <tt>subject</tt>
+ and a <tt>body</tt>
+. Multiple reciepents of an email can be provided
+as comma separated addresses.</p>
+<p>The email action is executed synchronously, and the workflow job will wait until the specified
+emails are sent before continuing to the next action.</p>
+<p>All values specified in the <tt>email</tt>
+ action can be parameterized (templatized) using EL expressions.</p>
+<p><b>Syntax:</b>
+</p>
+<p><pre>
+&lt;workflow-app name=&quot;[WF-DEF-NAME]&quot; xmlns=&quot;uri:oozie:workflow:0.1&quot;&gt;
+    ...
+    &lt;action name=&quot;[NODE-NAME]&quot;&gt;
+        &lt;email xmlns=&quot;uri:oozie:email-action:0.1&quot;&gt;
+            &lt;to&gt;[COMMA-SEPARATED-TO-ADDRESSES]&lt;/to&gt;
+            &lt;cc&gt;[COMMA-SEPARATED-CC-ADDRESSES]&lt;/cc&gt; &lt;!-- cc is optional --&gt;
+            &lt;subject&gt;[SUBJECT]&lt;/subject&gt;
+            &lt;body&gt;[BODY]&lt;/body&gt;
+        &lt;/email&gt;
+        &lt;ok to=&quot;[NODE-NAME]&quot;/&gt;
+        &lt;error to=&quot;[NODE-NAME]&quot;/&gt;
+    &lt;/action&gt;
+    ...
+&lt;/workflow-app&gt;
+</pre></p>
+<p>The <tt>to</tt>
+ and <tt>cc</tt>
+ commands are used to specify reciepents who should get the mail. Multiple email reciepents can be provided
+using comma-separated values. Providing a <tt>to</tt>
+ command is necessary, while the <tt>cc</tt>
+ may optionally be used along.</p>
+<p>The <tt>subject</tt>
+ and <tt>body</tt>
+ commands are used to specify the plain-text subject and body of the mail.</p>
+<p><b>Configuration</b>
+</p>
+<p>The <tt>email</tt>
+ action requires some SMTP server configuration to be present (in oozie-site.xml). The following are the values
+it looks for:</p>
+<p><tt>oozie.email.smtp.host</tt>
+ - The host where the email action may find the SMTP server (localhost by default).
+=oozie.email.smtp.port= - The port to connect to for the SMTP server (25 by default).
+=oozie.email.from.address= - The from address to be used for mailing all emails (oozie@localhost by default).
+=oozie.email.smtp.auth= - Boolean property that toggles if authentication is to be done or not. (false by default).
+=oozie.email.smtp.username= - If authentication is enabled, the username to login as (empty by default).
+=oozie.email.smtp.password= - If authentication is enabled, the username's password (empty by default).</p>
+<p><b>Example:</b>
+</p>
+<p><pre>
+&lt;workflow-app name=&quot;sample-wf&quot; xmlns=&quot;uri:oozie:workflow:0.1&quot;&gt;
+    ...
+    &lt;action name=&quot;an-email&quot;&gt;
+        &lt;email xmlns=&quot;uri:oozie:email-action:0.1&quot;&gt;
+            &lt;to&gt;bob@initech.com,the.other.bob@initech.com&lt;/to&gt;
+            &lt;cc&gt;will@initech.com&lt;/cc&gt;
+            &lt;subject&gt;Email notifications for ${wf:id()}&lt;/subject&gt;
+            &lt;body&gt;The wf ${wf:id()} successfully completed.&lt;/body&gt;
+        &lt;/email&gt;
+        &lt;ok to=&quot;myotherjob&quot;/&gt;
+        &lt;error to=&quot;errorcleanup&quot;/&gt;
+    &lt;/action&gt;
+    ...
+&lt;/workflow-app&gt;
+</pre></p>
+<p>In the above example, an email is sent to 'bob', 'the.other.bob' and 'will' (cc)
+with the subject and body both containing the workflow ID after substitution.</p>
+<a name="AE.A_Appendix_A_Email_XML-Schema"></a>
+</div>
+<div class="section"><h4>AE.A Appendix A, Email XML-Schema</h4>
+<p><pre>
+&lt;xs:schema xmlns:xs=&quot;http://www.w3.org/2001/XMLSchema&quot;
+           xmlns:hive=&quot;uri:oozie:email-action:0.1&quot; elementFormDefault=&quot;qualified&quot;
+           targetNamespace=&quot;uri:oozie:email-action:0.1&quot;&gt;
+.
+    &lt;xs:element name=&quot;email&quot; type=&quot;email:ACTION&quot;/&gt;
+.
+    &lt;xs:complexType name=&quot;ACTION&quot;&gt;
+        &lt;xs:sequence&gt;
+            &lt;xs:element name=&quot;to&quot; type=&quot;xs:string&quot; minOccurs=&quot;1&quot; maxOccurs=&quot;1&quot;/&gt;
+            &lt;xs:element name=&quot;cc&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; maxOccurs=&quot;1&quot;/&gt;
+            &lt;xs:element name=&quot;subject&quot; type=&quot;xs:string&quot; minOccurs=&quot;1&quot; maxOccurs=&quot;1&quot;/&gt;
+            &lt;xs:element name=&quot;body&quot; type=&quot;xs:string&quot; minOccurs=&quot;1&quot; maxOccurs=&quot;1&quot;/&gt;
+        &lt;/xs:sequence&gt;
+    &lt;/xs:complexType&gt;
+&lt;/xs:schema&gt;
+</pre></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2011
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

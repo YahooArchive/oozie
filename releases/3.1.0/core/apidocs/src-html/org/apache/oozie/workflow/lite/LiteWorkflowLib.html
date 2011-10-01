@@ -1,0 +1,130 @@
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    /**<a name="line.1"></a>
+<FONT color="green">002</FONT>     * Copyright (c) 2010 Yahoo! Inc. All rights reserved.<a name="line.2"></a>
+<FONT color="green">003</FONT>     * Licensed under the Apache License, Version 2.0 (the "License");<a name="line.3"></a>
+<FONT color="green">004</FONT>     * you may not use this file except in compliance with the License.<a name="line.4"></a>
+<FONT color="green">005</FONT>     * You may obtain a copy of the License at<a name="line.5"></a>
+<FONT color="green">006</FONT>     *<a name="line.6"></a>
+<FONT color="green">007</FONT>     *   http://www.apache.org/licenses/LICENSE-2.0<a name="line.7"></a>
+<FONT color="green">008</FONT>     *<a name="line.8"></a>
+<FONT color="green">009</FONT>     *  Unless required by applicable law or agreed to in writing, software<a name="line.9"></a>
+<FONT color="green">010</FONT>     *  distributed under the License is distributed on an "AS IS" BASIS,<a name="line.10"></a>
+<FONT color="green">011</FONT>     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.11"></a>
+<FONT color="green">012</FONT>     *  See the License for the specific language governing permissions and<a name="line.12"></a>
+<FONT color="green">013</FONT>     *  limitations under the License. See accompanying LICENSE file.<a name="line.13"></a>
+<FONT color="green">014</FONT>     */<a name="line.14"></a>
+<FONT color="green">015</FONT>    package org.apache.oozie.workflow.lite;<a name="line.15"></a>
+<FONT color="green">016</FONT>    <a name="line.16"></a>
+<FONT color="green">017</FONT>    <a name="line.17"></a>
+<FONT color="green">018</FONT>    import org.apache.oozie.workflow.WorkflowApp;<a name="line.18"></a>
+<FONT color="green">019</FONT>    import org.apache.oozie.workflow.WorkflowException;<a name="line.19"></a>
+<FONT color="green">020</FONT>    import org.apache.oozie.workflow.WorkflowInstance;<a name="line.20"></a>
+<FONT color="green">021</FONT>    import org.apache.oozie.workflow.WorkflowLib;<a name="line.21"></a>
+<FONT color="green">022</FONT>    import org.apache.oozie.service.Services;<a name="line.22"></a>
+<FONT color="green">023</FONT>    import org.apache.oozie.service.UUIDService;<a name="line.23"></a>
+<FONT color="green">024</FONT>    import org.apache.oozie.service.UUIDService.ApplicationType;<a name="line.24"></a>
+<FONT color="green">025</FONT>    import org.apache.oozie.util.ParamChecker;<a name="line.25"></a>
+<FONT color="green">026</FONT>    import org.apache.hadoop.conf.Configuration;<a name="line.26"></a>
+<FONT color="green">027</FONT>    <a name="line.27"></a>
+<FONT color="green">028</FONT>    import javax.xml.validation.Schema;<a name="line.28"></a>
+<FONT color="green">029</FONT>    import java.io.StringReader;<a name="line.29"></a>
+<FONT color="green">030</FONT>    <a name="line.30"></a>
+<FONT color="green">031</FONT>    //TODO javadoc<a name="line.31"></a>
+<FONT color="green">032</FONT>    public abstract class LiteWorkflowLib implements WorkflowLib {<a name="line.32"></a>
+<FONT color="green">033</FONT>        private Schema schema;<a name="line.33"></a>
+<FONT color="green">034</FONT>        private Class&lt;? extends DecisionNodeHandler&gt; decisionHandlerClass;<a name="line.34"></a>
+<FONT color="green">035</FONT>        private Class&lt;? extends ActionNodeHandler&gt; actionHandlerClass;<a name="line.35"></a>
+<FONT color="green">036</FONT>    <a name="line.36"></a>
+<FONT color="green">037</FONT>        public LiteWorkflowLib(Schema schema, Class&lt;? extends DecisionNodeHandler&gt; decisionHandlerClass,<a name="line.37"></a>
+<FONT color="green">038</FONT>                               Class&lt;? extends ActionNodeHandler&gt; actionHandlerClass) {<a name="line.38"></a>
+<FONT color="green">039</FONT>            this.schema = schema;<a name="line.39"></a>
+<FONT color="green">040</FONT>            this.decisionHandlerClass = decisionHandlerClass;<a name="line.40"></a>
+<FONT color="green">041</FONT>            this.actionHandlerClass = actionHandlerClass;<a name="line.41"></a>
+<FONT color="green">042</FONT>        }<a name="line.42"></a>
+<FONT color="green">043</FONT>    <a name="line.43"></a>
+<FONT color="green">044</FONT>        @Override<a name="line.44"></a>
+<FONT color="green">045</FONT>        public WorkflowApp parseDef(String appXml) throws WorkflowException {<a name="line.45"></a>
+<FONT color="green">046</FONT>            ParamChecker.notEmpty(appXml, "appXml");<a name="line.46"></a>
+<FONT color="green">047</FONT>            return new LiteWorkflowAppParser(schema, decisionHandlerClass, actionHandlerClass)<a name="line.47"></a>
+<FONT color="green">048</FONT>                    .validateAndParse(new StringReader(appXml));<a name="line.48"></a>
+<FONT color="green">049</FONT>        }<a name="line.49"></a>
+<FONT color="green">050</FONT>    <a name="line.50"></a>
+<FONT color="green">051</FONT>        @Override<a name="line.51"></a>
+<FONT color="green">052</FONT>        public WorkflowInstance createInstance(WorkflowApp app, Configuration conf) throws WorkflowException {<a name="line.52"></a>
+<FONT color="green">053</FONT>            ParamChecker.notNull(app, "app");<a name="line.53"></a>
+<FONT color="green">054</FONT>            String jobId = Services.get().get(UUIDService.class).generateId(ApplicationType.WORKFLOW);<a name="line.54"></a>
+<FONT color="green">055</FONT>            return new LiteWorkflowInstance((LiteWorkflowApp) app, conf, jobId);<a name="line.55"></a>
+<FONT color="green">056</FONT>        }<a name="line.56"></a>
+<FONT color="green">057</FONT>    <a name="line.57"></a>
+<FONT color="green">058</FONT>        @Override<a name="line.58"></a>
+<FONT color="green">059</FONT>        public WorkflowInstance createInstance(WorkflowApp app, Configuration conf, String wfId) throws WorkflowException {<a name="line.59"></a>
+<FONT color="green">060</FONT>            ParamChecker.notNull(app, "app");<a name="line.60"></a>
+<FONT color="green">061</FONT>            ParamChecker.notNull(wfId, "wfId");<a name="line.61"></a>
+<FONT color="green">062</FONT>            return new LiteWorkflowInstance((LiteWorkflowApp) app, conf, wfId);<a name="line.62"></a>
+<FONT color="green">063</FONT>        }<a name="line.63"></a>
+<FONT color="green">064</FONT>    }<a name="line.64"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</PRE>
+</BODY>
+</HTML>

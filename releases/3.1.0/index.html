@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2011-09-30
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<a name="Oozie_Yahoo_Workflow_Engine_for_Hadoop"></a>
+<div class="section"><h2> Oozie, Yahoo! Workflow Engine for Hadoop</h2>
+<p>Oozie v3 is a server based <i>Bundle Engine</i>
+ that provides a higher-level oozie abstraction that will batch a set of coordinator applications. The user will be able to start/stop/suspend/resume/rerun a set coordinator jobs in the bundle level resulting a better and easy operational control.</p>
+<p>Oozie v2 is a server based <i>Coordinator Engine</i>
+ specialized in running workflows based on time and data triggers.
+It can continuously run workflows based on time (e.g. run it every hour), and data availability 
+(e.g. wait for my input data to exist before running my workflow).</p>
+<p>Oozie v1 is a server based <i>Workflow Engine</i>
+ specialized in running workflow jobs with actions that 
+execute Hadoop Map/Reduce and Pig jobs.</p>
+<p><ul><ul><li><a href="#Distribution_Contents">Distribution Contents</a>
+</li>
+<li><a href="#Quick_Start">Quick Start</a>
+</li>
+<li><a href="#Developer_Documentation">Developer Documentation</a>
+</li>
+<li><a href="#Administrator_Documentation">Administrator Documentation</a>
+</li>
+<li><a href="#Licensing_Information">Licensing Information</a>
+</li>
+<li><a href="#Engineering_Documentation">Engineering Documentation</a>
+</li>
+</ul>
+</ul>
+</p>
+<a name="Distribution_Contents"></a>
+<div class="section"><h3>Distribution Contents</h3>
+<p>Oozie distribution consists of a single 'tar.gz' file containing:</p>
+<p><ul><li>Readme, license, notice &amp; <a href="./release-log.txt">Release log</a>
+ files.</li>
+<li>Oozie server: <tt>oozie-server</tt>
+ directory.</li>
+<li>Scripts: <tt>bin/</tt>
+ directory, client and server scripts.</li>
+<li>Binaries: <tt>lib/</tt>
+ directory, client JAR files.</li>
+<li>Configuration: <tt>conf/</tt>
+ server configuration directory.</li>
+<li>Archives:<ul><li><tt>oozie-client-*.tar.gz</tt>
+: Client tools.</li>
+<li><tt>oozie.war</tt>
+: Oozie WAR file.</li>
+<li><tt>docs.zip</tt>
+: Documentation.</li>
+<li><tt>oozie-examples-*.tar.gz</tt>
+: Examples.</li>
+<li><tt>oozie-sharelib-*.tar.gz</tt>
+: Share libraries (with Streaming, Pig JARs).</li>
+</ul>
+</li>
+</ul>
+</p>
+<a name="Quick_Start"></a>
+</div>
+<div class="section"><h3>Quick Start</h3>
+<p>Enough reading already? Follow the steps in <a href="./DG_QuickStart.html">Oozie Quick Start</a>
+ to get Oozie up and running.</p>
+<a name="Developer_Documentation"></a>
+</div>
+<div class="section"><h3>Developer Documentation</h3>
+<p><ul><li><a href="./DG_Overview.html">Overview</a>
+</li>
+<li><a href="./DG_QuickStart.html">Oozie Quick Start</a>
+</li>
+<li><a href="./DG_Examples.html">Running the Examples</a>
+</li>
+<li><a href="./WorkflowFunctionalSpec.html">Workflow Functional Specification</a>
+</li>
+<li><a href="./CoordinatorFunctionalSpec.html">Coordinator Functional Specification</a>
+</li>
+<li><a href="./BundleFunctionalSpec.html">Bundle Functional Specification</a>
+</li>
+<li><a href="http://java.sun.com/j2ee/1.4/docs/tutorial/doc/JSPIntro7.html#wp77280" class="externalLink">EL Expression Language Quick Reference</a>
+</li>
+<li><a href="./DG_CommandLineTool.html">Command Line Tool</a>
+</li>
+<li><a href="./DG_WorkflowReRun.html">Workflow Re-runs Explained</a>
+</li>
+<li><a href="./DG_UsingHadoopKerberos.html">Using a Hadoop cluster with Kerberos Authentication</a>
+</li>
+<li><a href="./DG_EmailActionExtension.html">Email Action</a>
+</li>
+</ul>
+</p>
+<p><ul><li><a href="./DG_CustomActionExecutor.html">Writing a Custom Action Executor</a>
+</li>
+<li><a href="./client/apidocs/index.html">Oozie Client Javadocs</a>
+</li>
+<li><a href="./core/apidocs/index.html">Oozie Core Javadocs</a>
+</li>
+<li><a href="./WebServicesAPI.html">Oozie Web Services API</a>
+</li>
+</ul>
+</p>
+<a name="Administrator_Documentation"></a>
+</div>
+<div class="section"><h3>Administrator Documentation</h3>
+<p><ul><li><a href="./AG_Install.html">Oozie Install</a>
+</li>
+<li><a href="./AG_Monitoring.html">Oozie Monitoring</a>
+</li>
+<li><a href="./DG_CommandLineTool.html">Command Line Tool</a>
+</li>
+</ul>
+</p>
+<p><a name="LicenseInfo"></a>
+</p>
+<a name="Licensing_Information"></a>
+</div>
+<div class="section"><h3>Licensing Information</h3>
+<p>Oozie is distributed under <a href="http://www.apache.org/licenses/LICENSE-2.0" class="externalLink">Apache License 2.0</a>
+.</p>
+<p>For details on the license of the dependent components, refer to the
+<a href="./dependencies.html#Licenses">Dependencies Report, Licenses section</a>
+.</p>
+<p>Oozie bundles an embedded Apache Tomcat 6.x.</p>
+<p>Some of the components in the dependencies report don't mention their license in the published POM. They are:</p>
+<p><ul><li>JDOM: <a href="http://www.jdom.org/docs/faq.html#a0030" class="externalLink">JDOM License</a>
+ (Apache style).</li>
+<li>Oro: <a href="http://www.apache.org/licenses/LICENSE-2.0" class="externalLink">Apache License 2.0</a>
+.</li>
+</ul>
+</p>
+<p>Oozie uses a modified version of the Apache Doxia core and twiki plugins to generate Oozie documentation.</p>
+<a name="Engineering_Documentation"></a>
+</div>
+<div class="section"><h3>Engineering Documentation</h3>
+<p><ul><li><a href="./ENG_Building.html">Building Oozie</a>
+</li>
+<li><a href="./dependencies.html">Dependencies Report</a>
+</li>
+</ul>
+</p>
+<p></p>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2011
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>

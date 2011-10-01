@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Oozie - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <div id="banner">
+                    <span id="bannerLeft">
+    
+            Oozie
+    
+            </span>
+                    <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="breadcrumbs">
+          
+  
+
+  
+    
+  
+  
+    
+            <div class="xleft">
+        Last Published: 2011-09-30
+                      </div>
+            <div class="xright">      
+  
+
+  
+    
+  
+  
+    
+  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    <div id="leftColumn">
+      <div id="navcolumn">
+           
+  
+
+  
+    
+  
+  
+    
+                                                <a href="http://maven.apache.org/" title="Built by Maven" class="poweredBy">
+            <img alt="Built by Maven" src="./images/logos/maven-feather.png"></img>
+          </a>
+                       
+  
+
+  
+    
+  
+  
+    
+        </div>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <p></p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<a name="Using_a_Hadoop_Cluster_with_Kerberos_Authentication"></a>
+<div class="section"><h2> Using a Hadoop Cluster with Kerberos Authentication</h2>
+<p>When submitting a job or accessing HDFS on a Hadoop cluster running with Kerberos security, the configuration
+object used to establish the connection to the cluster (creating a <tt>JobClient</tt>
+ or a <tt>FileSystem</tt>
+ instance)
+must include the JobTracker and/or NameNode Kerberos principals.</p>
+<p>If Hadoop uses Kerberos principals of the form <tt>mapred/JOBTRACKER_HOSTNAME@REALM</tt>
+ and
+ <tt>hdfs/NAMENODE_HOSTNAME@REALM</tt>
+, Oozie will resolve the principals correctly without any change required when
+submitting jobs to Oozie.</p>
+<p>However, if the Kerberos principals don't follow the above rule, the Oozie job configuration properties must
+include the following 2 properties set to the right values:</p>
+<p><ul><li><tt>mapreduce.jobtracker.kerberos.principal</tt>
+ : the Kerberos principal name of the Hadoop Jobtracker (i.e. <tt>mapred/bluesky@FOO.BAR</tt>
+ ).</li>
+<li><tt>dfs.namenode.kerberos.principal</tt>
+ : the Kerberos principal name of the Hadoop Namenode (i.e. <tt>hdfs/bluesky@FOO.BAR</tt>
+ ).</li>
+</ul>
+</p>
+<a name="Changes_in_Workflow_XML_Applications"></a>
+<div class="section"><h3>Changes in Workflow XML Applications</h3>
+<p>There are not required changed in existing workflow applications.</p>
+<p>The 2 configuration properties mentioned above are not allowed in workflow action configuration sections.</p>
+<a name="Limitations"></a>
+</div>
+<div class="section"><h3>Limitations</h3>
+<p>All actions in a workflow application must interact with the same Hadoop JobTracker and NameNode.</p>
+<p><a href="./index.html">::Go back to Oozie Documentation Index::</a>
+</p>
+<p></p>
+</div>
+</div>
+
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2011
+    
+          Yahoo
+          
+  
+
+  
+    
+  
+  
+    
+   - <a href="http://maven.apache.org/privacy-policy.html">Privacy Policy</a></div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>
