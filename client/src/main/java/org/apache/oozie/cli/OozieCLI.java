@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -757,7 +759,15 @@ public class OozieCLI {
         System.out.println("App Path : " + maskIfNull(coordJob.getAppPath()));
         System.out.println("Status   : " + coordJob.getStatus());
         System.out.println(RULER);
+        
+        sortActionsByActionNumber(actions, new Comparator<CoordinatorAction>() {
 
+			@Override
+			public int compare(CoordinatorAction action1, CoordinatorAction action2) {
+				return action1.getActionNumber() - action2.getActionNumber();
+			}
+		});
+        
         if (verbose) {
             System.out.println("ID" + VERBOSE_DELIMITER + "Action Number" + VERBOSE_DELIMITER + "Console URL"
                     + VERBOSE_DELIMITER + "Error Code" + VERBOSE_DELIMITER + "Error Message" + VERBOSE_DELIMITER
@@ -797,7 +807,12 @@ public class OozieCLI {
         }
     }
 
-    private void printBundleJob(BundleJob bundleJob, boolean localtime, boolean verbose) {
+    public void sortActionsByActionNumber(List<CoordinatorAction> actions,
+			Comparator<CoordinatorAction> comparator) {
+		Collections.sort(actions, comparator);
+	}
+
+	private void printBundleJob(BundleJob bundleJob, boolean localtime, boolean verbose) {
         System.out.println("Job ID : " + bundleJob.getId());
 
         System.out.println(RULER);
