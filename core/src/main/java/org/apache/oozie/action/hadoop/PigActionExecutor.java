@@ -18,26 +18,35 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.oozie.ErrorCode;
 import org.apache.oozie.action.ActionExecutorException;
+import org.apache.oozie.action.ActionExecutor.Context;
 import org.apache.oozie.client.XOozieClient;
 import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.util.XLog;
 import org.apache.oozie.util.XmlUtils;
+import org.apache.oozie.service.Services;
+import org.apache.oozie.service.WorkflowAppService;
+import org.apache.oozie.util.XLog;
+
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.JDOMException;
 import org.mortbay.log.Log;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class PigActionExecutor extends JavaActionExecutor {
-
+    public static final String PIG_STABLE="pig.stable";
+    public static final String PIG_HOME="pig.home";
     public PigActionExecutor() {
         super("pig");
     }
 
-    protected List<Class> getLauncherClasses() {
+    @Override
+	protected List<Class> getLauncherClasses() {
         List<Class> classes = super.getLauncherClasses();
         classes.add(LauncherMain.class);
         classes.add(MapReduceMain.class);
@@ -45,11 +54,13 @@ public class PigActionExecutor extends JavaActionExecutor {
         return classes;
     }
 
-    protected String getLauncherMain(Configuration launcherConf, Element actionXml) {
+    @Override
+	protected String getLauncherMain(Configuration launcherConf, Element actionXml) {
         return launcherConf.get(LauncherMapper.CONF_OOZIE_ACTION_MAIN_CLASS, PigMain.class.getName());
     }
 
-    void injectActionCallback(Context context, Configuration launcherConf) {
+    @Override
+	void injectActionCallback(Context context, Configuration launcherConf) {
     }
 
     @Override
@@ -96,7 +107,55 @@ public class PigActionExecutor extends JavaActionExecutor {
         return conf;
     }
 
-    @SuppressWarnings("unchecked")
+
+    @Override
+    protected String[] getProductLibPaths(Context context, WorkflowAction action) throws ActionExecutorException {
+        String pigVersion = getVersion(action);
+        String prodPaths[] = getPigLibraryPath(context, pigVersion);
+        return prodPaths;
+    }
+
+    private String getVersion(WorkflowAction action) {
+        String pigVersion = action.getUserProductVersion();
+        if (pigVersion.equals("null")) {
+            pigVersion = super.getOozieConf().get(PigActionExecutor.PIG_STABLE, " ");
+        }
+        return pigVersion;
+    }
+
+    private String[] getPigLibraryPath(Context context, String pigVersion) throws ActionExecutorException {
+        String[] paths = null;
+        String pigHome = super.getOozieConf().get(PigActionExecutor.PIG_HOME, " ");
+        String path = pigHome + "/" + pigVersion + "/lib/";
+        Path pigLibPath = new Path(path.trim());
+        FileSystem fs = null;
+        try {
+            fs = context.getAppFileSystem();
+        }
+        catch (Exception ex) {
+            throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, ex.getMessage(),
+                    "Error in FileSystem handle", ex);
+        }
+        try {
+            if (!fs.exists(pigLibPath)) {
+                throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR,
+                        ErrorCode.E0903.getTemplate(), XLog.format("Pig library path doesn't exist:" + path));
+            }
+            List<String> pigLibPaths = WorkflowAppService.getLibFiles(fs, pigLibPath);
+            paths = pigLibPaths.toArray(new String[pigLibPaths.size()]);
+        }
+        catch (IOException ioe) {
+            throw new ActionExecutorException(ActionExecutorException.ErrorType.ERROR, ioe.getMessage(),
+                    "IO Error while retrieving files from fs", ioe);
+        }
+        return paths;
+
+    }
+
+
+
+    @Override
+	@SuppressWarnings("unchecked")
     Configuration setupActionConf(Configuration actionConf, Context context, Element actionXml, Path appPath)
             throws ActionExecutorException {
         super.setupActionConf(actionConf, context, actionXml, appPath);
@@ -104,7 +163,6 @@ public class PigActionExecutor extends JavaActionExecutor {
 
         String script = actionXml.getChild("script", ns).getTextTrim();
         String pigName = new Path(script).getName();
-
         List<Element> params = (List<Element>) actionXml.getChildren("param", ns);
         String[] strParams = new String[params.size()];
         for (int i = 0; i < params.size(); i++) {
@@ -122,7 +180,8 @@ public class PigActionExecutor extends JavaActionExecutor {
         return actionConf;
     }
 
-    protected boolean getCaptureOutput(WorkflowAction action) throws JDOMException {
+    @Override
+	protected boolean getCaptureOutput(WorkflowAction action) throws JDOMException {
         return true;
     }
 

@@ -35,8 +35,11 @@ public class WorkflowActionsRunningGetJPAExecutor implements JPAExecutor<List<Wo
         this.checkAgeSecs = checkAgeSecs;
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.EntityManager)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.oozie.executor.jpa.JPAExecutor#execute(javax.persistence.
+     * EntityManager)
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -59,7 +62,9 @@ public class WorkflowActionsRunningGetJPAExecutor implements JPAExecutor<List<Wo
         return actionList;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.oozie.executor.jpa.JPAExecutor#getName()
      */
     @Override
@@ -69,11 +74,11 @@ public class WorkflowActionsRunningGetJPAExecutor implements JPAExecutor<List<Wo
 
     /**
      * Re-create workflow action bean
-     *
+     * 
      * @param bean
      * @return workflow action bean
      */
-    private WorkflowActionBean getBeanForRunningAction(WorkflowActionBean bean){
+    private WorkflowActionBean getBeanForRunningAction(WorkflowActionBean bean) {
         if (bean != null) {
             WorkflowActionBean action = new WorkflowActionBean();
             action.setId(bean.getId());
@@ -105,6 +110,7 @@ public class WorkflowActionsRunningGetJPAExecutor implements JPAExecutor<List<Wo
             action.setUserRetryCount(bean.getUserRetryCount());
             action.setUserRetryInterval(bean.getUserRetryInterval());
             action.setUserRetryMax(bean.getUserRetryMax());
+            action.setUserProductVersion(bean.getUserProductVersion());
             return action;
         }
         return null;

@@ -101,17 +101,24 @@ public interface WorkflowAction {
      * @return the max number of user retry of the action.
      */
     int getUserRetryMax();
-    
+
     /**
      * Return the interval of user retry of the action, in minutes.
-     *
+     * 
      * @return the interval of user retry of the action, in minutes.
      */
     int getUserRetryInterval();
 
     /**
+     * Return the user specified product version.
+     * 
+     * @return the user specified product version.
+     */
+    String getUserProductVersion();
+
+    /**
      * Return the start time of the action action.
-     *
+     * 
      * @return the start time of the action action.
      */
     Date getStartTime();

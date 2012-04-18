@@ -44,18 +44,23 @@ public class TestLiteWorkflowAppService extends XTestCase {
             super("test");
         }
 
+        @Override
         public void start(Context context, WorkflowAction action) throws ActionExecutorException {
         }
 
+        @Override
         public void end(Context context, WorkflowAction action) throws ActionExecutorException {
         }
 
+        @Override
         public void check(Context context, WorkflowAction action) throws ActionExecutorException {
         }
 
+        @Override
         public void kill(Context context, WorkflowAction action) throws ActionExecutorException {
         }
 
+        @Override
         public boolean isCompleted(String externalStatus) {
             return true;
         }
@@ -421,6 +426,7 @@ public class TestLiteWorkflowAppService extends XTestCase {
 
     public void testCreateprotoConfWithSystemLibPath() throws Exception {
         String systemLibPath = createTestCaseSubDir("syslib");
+        System.out.println("SystemLibPath "+systemLibPath);
         setSystemProperty(WorkflowAppService.SYSTEM_LIB_PATH, systemLibPath);
         Services services = new Services();
         try {
@@ -485,12 +491,13 @@ public class TestLiteWorkflowAppService extends XTestCase {
             assertEquals(getTestUser(), protoConf.get(OozieClient.USER_NAME));
             assertEquals(getTestGroup(), protoConf.get(OozieClient.GROUP_NAME));
 
-            assertEquals(4, protoConf.getStrings(WorkflowAppService.APP_LIB_PATH_LIST).length);
+            assertEquals(3, protoConf.getStrings(WorkflowAppService.APP_LIB_PATH_LIST).length);
+            assertEquals(1, protoConf.getStrings(WorkflowAppService.SYSTEM_LIB_PATH).length);
             found = new ArrayList<String>();
             found.add(protoConf.getStrings(WorkflowAppService.APP_LIB_PATH_LIST)[0]);
             found.add(protoConf.getStrings(WorkflowAppService.APP_LIB_PATH_LIST)[1]);
             found.add(protoConf.getStrings(WorkflowAppService.APP_LIB_PATH_LIST)[2]);
-            found.add(protoConf.getStrings(WorkflowAppService.APP_LIB_PATH_LIST)[3]);
+            found.add(protoConf.getStrings(WorkflowAppService.SYSTEM_LIB_PATH)[0]);
             expected = new ArrayList<String>();
             expected.add(getTestCaseDir() + "/lib/reduceutil.so");
             expected.add(getTestCaseDir() + "/lib/maputil.jar");

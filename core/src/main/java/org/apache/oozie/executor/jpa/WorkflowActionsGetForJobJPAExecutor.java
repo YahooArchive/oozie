@@ -100,6 +100,7 @@ public class WorkflowActionsGetForJobJPAExecutor implements JPAExecutor<List<Wor
             action.setUserRetryCount(a.getUserRetryCount());
             action.setUserRetryInterval(a.getUserRetryInterval());
             action.setUserRetryMax(a.getUserRetryMax());
+            action.setUserProductVersion(a.getUserProductVersion());
             return action;
         }
         return null;

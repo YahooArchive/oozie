@@ -224,14 +224,14 @@ public class TestJavaActionExecutor extends ActionExecutorTestCase {
 
         conf = ae.createBaseHadoopConf(context, actionXml);
         ae.setupLauncherConf(conf, actionXml, getFsTestCaseDir(), context);
-        ae.setLibFilesArchives(context, actionXml, appPath, conf);
+        ae.setLibFilesArchives(context, actionXml, appPath, conf, action);
 
         assertTrue(conf.get("mapred.cache.files").contains(filePath.toUri().getPath()));
         assertTrue(conf.get("mapred.cache.archives").contains(archivePath.toUri().getPath()));
 
         conf = ae.createBaseHadoopConf(context, actionXml);
         ae.setupActionConf(conf, context, actionXml, getFsTestCaseDir());
-        ae.setLibFilesArchives(context, actionXml, appPath, conf);
+        ae.setLibFilesArchives(context, actionXml, appPath, conf, action);
 
         assertTrue(conf.get("mapred.cache.files").contains(filePath.toUri().getPath()));
         assertTrue(conf.get("mapred.cache.archives").contains(archivePath.toUri().getPath()));
@@ -645,7 +645,7 @@ public class TestJavaActionExecutor extends ActionExecutorTestCase {
 
         Configuration jobConf = ae.createBaseHadoopConf(context, eActionXml);
         ae.setupActionConf(jobConf, context, eActionXml, appPath);
-        ae.setLibFilesArchives(context, eActionXml, appPath, jobConf);
+        ae.setLibFilesArchives(context, eActionXml, appPath, jobConf, null);
 
 
         assertTrue(DistributedCache.getSymlink(jobConf));

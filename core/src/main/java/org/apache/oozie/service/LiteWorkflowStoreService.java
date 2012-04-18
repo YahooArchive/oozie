@@ -108,6 +108,7 @@ public abstract class LiteWorkflowStoreService extends WorkflowStoreService {
 
         action.setName(nodeName);
         action.setId(actionId);
+        action.setUserProductVersion(context.getNodeDef().getUserProductVersino());
         context.setVar(nodeName + WorkflowInstance.NODE_VAR_SEPARATOR + ACTION_ID, actionId);
         List list = (List) context.getTransientVar(ACTIONS_TO_START);
         if (list == null) {

@@ -37,8 +37,9 @@ public class NodeDef implements Writable {
     private String conf = null;
     private List<String> transitions = new ArrayList<String>();
     private String cred = "null";
-    private String userRetryMax = "null";
-    private String userRetryInterval = "null";
+	private String userRetryMax = "null";
+	private String userRetryInterval = "null";
+	private String userProductVersion = "null";
 
     NodeDef() {
     }
@@ -58,7 +59,7 @@ public class NodeDef implements Writable {
     }
 
     NodeDef(String name, String conf, Class<? extends NodeHandler> handlerClass, List<String> transitions, String cred,
-            String userRetryMax, String userRetryInterval) {
+            String userRetryMax, String userRetryInterval, String userProductVersion) {
         this(name, conf, handlerClass, transitions, cred);
         if (userRetryMax != null) {
             this.userRetryMax = userRetryMax;
@@ -66,6 +67,10 @@ public class NodeDef implements Writable {
         if (userRetryInterval != null) {
             this.userRetryInterval = userRetryInterval;
         }
+        if (userProductVersion != null) {
+            this.userProductVersion = userProductVersion;
+        }
+
     }
 
     public boolean equals(NodeDef other) {
@@ -103,6 +108,10 @@ public class NodeDef implements Writable {
 
     public String getUserRetryInterval() {
         return userRetryInterval;
+    }
+    
+    public String getUserProductVersino() {
+        return userProductVersion;
     }
 
     public String getNodeDefVersion() {
@@ -170,6 +179,7 @@ public class NodeDef implements Writable {
         }
         userRetryMax = dataInput.readUTF();
         userRetryInterval = dataInput.readUTF();
+        userProductVersion = dataInput.readUTF();
     }
 
     /* (non-Javadoc)
@@ -242,6 +252,12 @@ public class NodeDef implements Writable {
         }
         if (userRetryInterval != null) {
             dataOutput.writeUTF(userRetryInterval);
+        }
+        else {
+            dataOutput.writeUTF("null");
+        }
+        if (userProductVersion != null) {
+            dataOutput.writeUTF(userProductVersion);
         }
         else {
             dataOutput.writeUTF("null");

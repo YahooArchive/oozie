@@ -23,6 +23,7 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.oozie.WorkflowActionBean;
 import org.apache.oozie.WorkflowJobBean;
+import org.apache.oozie.action.ActionExecutorException;
 import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.service.WorkflowAppService;
@@ -36,6 +37,7 @@ import org.apache.pig.Main;
 import org.jdom.Element;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.FileInputStream;
@@ -49,11 +51,23 @@ import java.util.Properties;
 import jline.ConsoleReaderInputStream;
 
 public class TestPigActionExecutor extends ActionExecutorTestCase {
+    private Path pigPath;
+    private Path pigStablePath;
+    private String pigStableVersion = "stable";
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        pigPath = new Path(getFsTestCaseDir(), "pig");
+        pigStablePath = new Path(pigStableVersion + "/lib/" + "stable.jar");
+        getFileSystem().create(new Path(pigPath, pigStablePath)).close();
+    }
 
     @Override
     protected void setSystemProps() {
         super.setSystemProps();
         setSystemProperty("oozie.service.ActionService.executor.classes", PigActionExecutor.class.getName());
+        setSystemProperty(PigActionExecutor.PIG_HOME, getFsTestCaseDir()+"/pig" );
+        setSystemProperty(PigActionExecutor.PIG_STABLE, pigStableVersion );
     }
 
     public void testLauncherJar() throws Exception {
@@ -108,6 +122,41 @@ public class TestPigActionExecutor extends ActionExecutorTestCase {
         assertEquals("b=B", conf.get("oozie.pig.params.1"));
     }
 
+    public void testPigLibPaths() throws Exception {
+        PigActionExecutor pe = new PigActionExecutor();
+        String userVersion = "0.8";
+        String unsupportedVersion = "0.6";
+        Path pigUserPath = new Path(userVersion + "/lib/" + "userv.jar");
+        getFileSystem().create(new Path(pigPath, pigUserPath)).close();
+
+        XConfiguration protoConf = new XConfiguration();
+        protoConf.set(WorkflowAppService.HADOOP_USER, getTestUser());
+        protoConf.set(WorkflowAppService.HADOOP_UGI, getTestUser() + "," + getTestGroup());
+        protoConf.set(OozieClient.GROUP_NAME, getTestGroup());
+        injectKerberosInfo(protoConf);
+        WorkflowJobBean wf = createBaseWorkflow(protoConf, "pig-action");
+        WorkflowActionBean action = (WorkflowActionBean) wf.getActions().get(0);
+        action.setType(pe.getType());
+        action.setUserProductVersion(userVersion);
+
+        Context context = new Context(wf, action);
+        String[] p = pe.getProductLibPaths(context, context.getAction());
+        assertTrue(p[0].contains(new Path(pigPath, pigUserPath).getName()));
+        action.setUserProductVersion(unsupportedVersion);
+        try {
+            pe.getProductLibPaths(context, action);
+            fail();
+        }
+        catch (ActionExecutorException aee) {
+
+        }
+        action.setUserProductVersion("null");
+        context = new Context(wf, action);
+        p = pe.getProductLibPaths(context, action);
+        assertTrue(p[0].contains(new Path(pigPath, pigStablePath).getName()));
+
+    }
+
     private Context createContext(String actionXml) throws Exception {
         PigActionExecutor ae = new PigActionExecutor();
 
@@ -123,7 +172,6 @@ public class TestPigActionExecutor extends ActionExecutorTestCase {
         os = fs.create(new Path(getAppPath(), jLineJar));
         IOUtils.copyStream(is, os);
 
-
         XConfiguration protoConf = new XConfiguration();
         protoConf.set(WorkflowAppService.HADOOP_USER, getTestUser());
         protoConf.set(WorkflowAppService.HADOOP_UGI, getTestUser() + "," + getTestGroup());
@@ -133,6 +181,7 @@ public class TestPigActionExecutor extends ActionExecutorTestCase {
 
         WorkflowJobBean wf = createBaseWorkflow(protoConf, "pig-action");
         WorkflowActionBean action = (WorkflowActionBean) wf.getActions().get(0);
+        action.setUserProductVersion("null");
         action.setType(ae.getType());
         action.setConf(actionXml);
 
@@ -177,7 +226,8 @@ public class TestPigActionExecutor extends ActionExecutorTestCase {
         final RunningJob launcherJob = submitAction(context);
         String launcherId = context.getAction().getExternalId();
         waitFor(180 * 1000, new Predicate() {
-            public boolean evaluate() throws Exception {
+            @Override
+			public boolean evaluate() throws Exception {
                 return launcherJob.isComplete();
             }
         });

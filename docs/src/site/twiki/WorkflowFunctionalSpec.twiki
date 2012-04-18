@@ -801,6 +801,7 @@ configuration.
 As with Hadoop map-reduce jobs, it  is possible to add files and archives to be available to the Pig job, refer to
 section [#FilesAchives][Adding Files and Archives for the Job].
 
+
 *Syntax for Pig actions in Oozie schema 0.2:*
 <verbatim>
 <workflow-app name="[WF-DEF-NAME]" xmlns="uri:oozie:workflow:0.2">
@@ -903,6 +904,37 @@ NOTE: Oozie will perform the parameter substitution before firing the pig job. T
 few limitations.
 
 The =params= element, if present, contains parameters to be passed to the pig script.
+
+*In Oozie schema 0.4:*
+
+In addition to job and sytem share libraries, the product (currently only pig is supported) libraries can be specified by the =use_version= element. If "use_version" is not specified, the stable lib path of the product is used.   
+
+*Example for Oozie Schema 0.4:*
+
+<verbatim>
+<workflow-app name="sample-wf" xmlns="uri:oozie:workflow:0.4">
+    ...
+    <action name="myfirstpigjob" use_version=0.9>
+        <pig>
+            <job-tracker>foo:9001</job-tracker>
+            <name-node>bar:9000</name-node>
+            <prepare>
+                <delete path="${jobOutput}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapred.compress.map.output</name>
+                    <value>true</value>
+                </property>
+            </configuration>
+            <script>/mypigscript.pig</script>
+        </pig>
+        <ok to="myotherjob"/>
+        <error to="errorcleanup"/>
+    </action>
+    ...
+</workflow-app>
+</verbatim>
 
 *In Oozie schema 0.2:*
 The =arguments= element, if present, contains arguments to be passed to the pig script.

@@ -23,6 +23,16 @@
     <!-- ************************** VERY IMPORTANT  ************************** -->
 
     <!-- Base Oozie URL: <SCHEME>://<HOST>:<PORT>/<CONTEXT> -->
+    
+    <property>
+		<name>pig.home</name>
+		<value>/user/${user.name}/pig</value>
+	</property>
+
+	<property>
+		<name>pig.stable</name>
+		<value>stable</value>
+	</property>
 
     <property>
         <name>oozie.base.url</name>
