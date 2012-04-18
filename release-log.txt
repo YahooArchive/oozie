@@ -1,3 +1,7 @@
+-- Oozie 3.2.0 release
+
+OOZIE-25 Removing confusing exception trace during wf suspend/kill/resume
+
 -- Oozie 3.1.0 release
 
 OOZIE-37 Documentation related modifications for "log -action" option
