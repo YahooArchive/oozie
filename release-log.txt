@@ -43,6 +43,7 @@ OOZIE-115 oozie should check if app path is directory and read the app xml under
 
 -- Oozie 3.0.1 release
 
+OOZIE-101 ${wf:lastErrorNode()} is not set when an action ends in error
 OOZIE-93 coordinator start and end instances doesn't work with float number.
 OOZIE-80 Make coordinator backward compatible
 OOZIE-58 Add date/time formatting function to coord.
