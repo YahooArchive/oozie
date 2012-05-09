@@ -508,6 +508,27 @@ public class V1JobServlet extends BaseJobServlet {
             throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ex);
         }
     }
+    
+    /**
+     * Change a bundle job
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws XServletException
+     */
+    private void changeBundleJob(HttpServletRequest request, HttpServletResponse response)
+            throws XServletException {
+        BundleEngine bundleEngine = Services.get().get(BundleEngineService.class).getBundleEngine(
+                getUser(request), getAuthToken(request));
+        String jobId = getResourceName(request);
+        String changeValue = request.getParameter(RestConstants.JOB_CHANGE_VALUE);
+        try {
+            bundleEngine.change(jobId, changeValue);
+        }
+        catch (BundleEngineException ex) {
+            throw new XServletException(HttpServletResponse.SC_BAD_REQUEST, ex);
+        }
+    }
 
     /**
      * Change a bundle job
