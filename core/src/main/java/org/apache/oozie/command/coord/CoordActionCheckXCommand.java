@@ -85,7 +85,7 @@ public class CoordActionCheckXCommand extends CoordinatorXCommand<Void> {
                 }
             }
 
-            LOG.debug("Updating Coordintaor actionId :" + coordAction.getId() + "status to ="
+            LOG.debug("Updating Coordinator actionId :" + coordAction.getId() + "status to ="
                             + coordAction.getStatus());
             coordAction.setLastModifiedTime(new Date());
             jpaService.execute(new org.apache.oozie.executor.jpa.CoordActionUpdateJPAExecutor(coordAction));
